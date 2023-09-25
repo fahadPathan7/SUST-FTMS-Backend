@@ -16,7 +16,7 @@ type Player struct {
 
 type Team struct {
 	TournamentId      int    `json:"tournamentId"`
-	TeamSumissionDate string `json:"teamSumissionDate"`
+	TeamSubmissionDate string `json:"teamSubmissionDate"`
 	DeptCode          int    `json:"deptCode"`
 	DeptHeadName      string `json:"deptHeadName"`
 	TeamManager       string `json:"teamManager"`
