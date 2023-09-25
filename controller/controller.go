@@ -16,7 +16,8 @@ var db *sql.DB
 // connecting to mysql database
 func CreateDbConnection() {
 	var err error
-	db, err = sql.Open("mysql", "fahadftms:fahadftms@tcp(localhost:3306)/ftms") // port 3306 is the default port for mysql in xampp
+	db, err = sql.Open("mysql", "fahadftms:fahadftms@tcp(localhost:3306)/ftms")
+	// port 3306 is the default port for mysql in xampp
 	// here ftms is the database name
 
 	if err != nil {
@@ -75,3 +76,8 @@ func InsertNewDept(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode("Dept already exists!")
 	}
 }
+
+
+
+
+

@@ -27,9 +27,13 @@ func main() {
 	// wrapping is done to allow api to be accessed from any origin
 	handler := c.Handler(r)
 
-	http.Handle("/", handler) // registering router with http Handle. it will handle all the incoming requests. "/" means all incoming requests. second parameter is the router. here it is wrapped with CORS handler.
+	http.Handle("/", handler) // registering router with http Handle.
+	// it will handle all the incoming requests. "/" means all incoming requests.
+	// second parameter is the router. here it is wrapped with CORS handler.
 
-	http.ListenAndServe(":5000", nil) // this will start the server. second parameter is the handler. nil means use default handler. default handler is router. so it will use router to handle all the incoming requests.
+	http.ListenAndServe(":5000", nil) // this will start the server.
+	// second parameter is the handler. nil means use default handler.
+	// default handler is router. so it will use router to handle all the incoming requests.
 
 	fmt.Println("Server is stopped!...") // shows that server is stopped
 }
