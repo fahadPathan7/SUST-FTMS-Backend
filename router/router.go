@@ -15,7 +15,9 @@ func Router() *mux.Router {
 	router.HandleFunc("/api/dept", controller.InsertNewDept).Methods("POST") // to insert new dept
 	router.HandleFunc("/api/player", controller.InsertNewPlayer).Methods("POST") // to insert new player
 	router.HandleFunc("/api/team", controller.InsertNewTeam).Methods("POST") // to insert new team
-	router.HandleFunc("/api/tournament", controller.InsertNewTournament).Methods("POST") // to insert new individualPunishment
+	router.HandleFunc("/api/tournament", controller.InsertNewTournament).Methods("POST") // to insert new tournament
+	router.HandleFunc("/api/referee", controller.InsertNewReferee).Methods("POST") // to insert new referee
+	router.HandleFunc("/api/match", controller.InsertNewMatch).Methods("POST") // to insert new match
 	// router.HandleFunc("/api/movie/{id}", controller.MarkAsWatched).Methods("PUT")
 	// router.HandleFunc("/api/movie/{id}", controller.DeleteOneMovie).Methods("DELETE")
 	// router.HandleFunc("/api/dmovies", controller.DeleteAllMovies).Methods("DELETE")

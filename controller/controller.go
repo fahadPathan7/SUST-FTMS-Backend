@@ -111,6 +111,22 @@ func refereeExists(refereeID int) bool {
 	return true
 }
 
+// check if match exists in database
+func matchExists(tournamentId int, matchId int) bool {
+	var match models.Match
+	err := db.QueryRow("SELECT * FROM tblmatch WHERE tournamentId = ? AND matchId = ?", tournamentId, matchId).Scan(&match.TournamentId, &match.MatchId, &match.MatchDate, &match.Team1DeptCode, &match.Team2DeptCode, &match.Team1Score, &match.Team2Score, &match.WinnerTeamDeptCode, &match.MatchRefereeID, &match.MatchLinesman1ID, &match.MatchLinesman2ID, &match.MatchFourthRefereeID)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false
+		} else {
+			panic(err.Error())
+		}
+	}
+
+	return true
+}
+
 
 
 
@@ -479,4 +495,75 @@ func InsertNewReferee(w http.ResponseWriter, r *http.Request) {
 
 	insertNewReferee(referee)
 	json.NewEncoder(w).Encode(referee)
+}
+
+
+
+
+
+// insert match info into database
+func insertNewMatch(match models.Match) {
+	// match.TournamentId is int type. and match.MatchId is int type. and both are primary key.
+	insert, err := db.Query("INSERT INTO tblmatch VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", match.TournamentId, match.MatchId, match.MatchDate, match.Team1DeptCode, match.Team2DeptCode, match.Team1Score, match.Team2Score, match.WinnerTeamDeptCode, match.MatchRefereeID, match.MatchLinesman1ID, match.MatchLinesman2ID, match.MatchFourthRefereeID)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer insert.Close()
+}
+
+// controller function to insert new match
+func InsertNewMatch(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
+	w.Header().Set("Allow-Control-Allow-Methods", "POST")
+
+	var match models.Match
+	_ = json.NewDecoder(r.Body).Decode(&match)
+
+	// check if match already exists
+	if matchExists(match.TournamentId, match.MatchId) {
+		json.NewEncoder(w).Encode("Match already exists!")
+		return
+	}
+
+	// check if tournament exists
+	if !tournamentExists(match.TournamentId) {
+		json.NewEncoder(w).Encode("Tournament doesn't exist!")
+		return
+	}
+
+	// check if team1 exists
+	if !teamExists(match.TournamentId, match.Team1DeptCode) {
+		json.NewEncoder(w).Encode("Team1 doesn't exist!")
+		return
+	}
+
+	// check if team2 exists
+	if !teamExists(match.TournamentId, match.Team2DeptCode) {
+		json.NewEncoder(w).Encode("Team2 doesn't exist!")
+		return
+	}
+
+	// check if referee exists
+	if !refereeExists(match.MatchRefereeID) {
+		json.NewEncoder(w).Encode("Referee doesn't exist!")
+		return
+	}
+	if !refereeExists(match.MatchLinesman1ID) {
+		json.NewEncoder(w).Encode("Linesman1 doesn't exist!")
+		return
+	}
+	if !refereeExists(match.MatchLinesman2ID) {
+		json.NewEncoder(w).Encode("Linesman2 doesn't exist!")
+		return
+	}
+	if !refereeExists(match.MatchFourthRefereeID) {
+		json.NewEncoder(w).Encode("Fourth referee doesn't exist!")
+		return
+	}
+
+	// insert new match
+	insertNewMatch(match)
+	json.NewEncoder(w).Encode(match)
 }
