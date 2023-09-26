@@ -785,7 +785,8 @@ func getADept(deptCode int) models.Dept {
 	err := db.QueryRow("SELECT * FROM tbldept WHERE deptCode = ?", deptCode).Scan(&dept.DeptCode, &dept.DeptName, &dept.DeptShortName)
 
 	if err != nil {
-		panic(err.Error())
+		//panic(err.Error())
+		return models.Dept{}
 	}
 
 	return dept
@@ -795,19 +796,118 @@ func getADept(deptCode int) models.Dept {
 func GetADept(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
 
-	// router.HandleFunc("/api/dept/{id}", controller.GetADept).Methods("GET")
+	// router.HandleFunc("/api/dept/{deptCode}", controller.GetADept).Methods("GET")
 	// get id from url
 	params := mux.Vars(r)
 
 	// convert id from string to int
-	id, err := strconv.Atoi(params["id"])
+	id, err := strconv.Atoi(params["deptCode"])
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	// dept exists or not
+	if !deptExists(id) {
+		json.NewEncoder(w).Encode("Dept doesn't exist!")
+		return
 	}
 
 	var dept models.Dept
 	dept = getADept(id)
 
 	json.NewEncoder(w).Encode(dept)
+}
+
+
+
+
+
+// get all the tournaments
+func getAllTournaments() []models.Tournament {
+	var tournament models.Tournament
+	var tournaments []models.Tournament
+
+	result, err := db.Query("SELECT * FROM tbltournament")
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for result.Next() {
+		err = result.Scan(&tournament.TournamentId, &tournament.TournamentName, &tournament.TournamentYear)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		tournaments = append(tournaments, tournament)
+	}
+
+	return tournaments
+}
+
+// controller function to get all tournaments
+func GetAllTournaments(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
+
+	var tournaments []models.Tournament
+	tournaments = getAllTournaments()
+
+	json.NewEncoder(w).Encode(tournaments)
+}
+
+
+
+
+
+// get all teams of a tournament
+func getAllTeamsOfATournament(tournamentId int) []models.Team {
+	var team models.Team
+	var teams []models.Team
+
+	result, err := db.Query("SELECT * FROM tblteam WHERE tournamentId = ?", tournamentId)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for result.Next() {
+		err = result.Scan(&team.TournamentId, &team.TeamSubmissionDate, &team.DeptCode, &team.DeptHeadName, &team.TeamManager, &team.TeamCaptainRegID, &team.Player1RegNo, &team.Player2RegNo, &team.Player3RegNo, &team.Player4RegNo, &team.Player5RegNo, &team.Player6RegNo, &team.Player7RegNo, &team.Player8RegNo, &team.Player9RegNo, &team.Player10RegNo, &team.Player11RegNo, &team.Player12RegNo, &team.Player13RegNo, &team.Player14RegNo, &team.Player15RegNo, &team.Player16RegNo, &team.Player17RegNo, &team.Player18RegNo, &team.Player19RegNo, &team.Player20RegNo)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		teams = append(teams, team)
+	}
+
+	return teams
+}
+
+// controller function to get all teams of a tournament
+func GetAllTeamsOfATournament(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/tournament/teams/{tournamentId}", controller.GetAllTeamsOfATournament).Methods("GET")
+	// get id from url
+	params := mux.Vars(r)
+
+	// convert id from string to int
+	id, err := strconv.Atoi(params["tournamentId"])
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	// tournament exists or not
+	if !tournamentExists(id) {
+		json.NewEncoder(w).Encode("Tournament doesn't exist!")
+		return
+	}
+
+	var teams []models.Team
+	teams = getAllTeamsOfATournament(id)
+
+	json.NewEncoder(w).Encode(teams)
 }
