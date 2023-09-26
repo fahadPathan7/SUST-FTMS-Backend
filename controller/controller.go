@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"ftms/models"
+	"strconv"
 
 	"net/http"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/mux"
 )
 
 var db *sql.DB
@@ -619,4 +621,193 @@ func InsertNewTiebreaker(w http.ResponseWriter, r *http.Request) {
 	// insert new tiebreaker
 	insertNewTiebreaker(tiebreaker)
 	json.NewEncoder(w).Encode(tiebreaker)
+}
+
+
+
+
+
+// insert individual score info into database
+func insertNewIndividualScore(individualScore models.IndividualScore) {
+	// individualScore.TournamentId is int type. and individualScore.MatchId is int type. and individualScore.PlayerRegNo is int type. and all are primary key.
+	insert, err := db.Query("INSERT INTO tblindividualscore VALUES (?, ?, ?, ?, ?)", individualScore.TournamentId, individualScore.MatchId, individualScore.PlayerRegNo, individualScore.TeamDeptCode, individualScore.Goals)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer insert.Close()
+}
+
+// controller function to insert new individual score
+func InsertNewIndividualScore(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
+	w.Header().Set("Allow-Control-Allow-Methods", "POST")
+
+	var individualScore models.IndividualScore
+	_ = json.NewDecoder(r.Body).Decode(&individualScore)
+
+	// check if tournament exists
+	if !tournamentExists(individualScore.TournamentId) {
+		json.NewEncoder(w).Encode("Tournament doesn't exist!")
+		return
+	}
+
+	// check if match exists
+	if !matchExists(individualScore.TournamentId, individualScore.MatchId) {
+		json.NewEncoder(w).Encode("Match doesn't exist!")
+		return
+	}
+
+	// check if team exists
+	if !teamExists(individualScore.TournamentId, individualScore.TeamDeptCode) {
+		json.NewEncoder(w).Encode("Team doesn't exist!")
+		return
+	}
+
+	// check if player exists
+	if !playerExists(individualScore.PlayerRegNo) {
+		json.NewEncoder(w).Encode("Player doesn't exist!")
+		return
+	}
+
+	// insert new individual score
+	insertNewIndividualScore(individualScore)
+	json.NewEncoder(w).Encode(individualScore)
+}
+
+
+
+
+
+// insert individual punishment info into database
+func insertNewIndividualPunishment(individualPunishment models.IndividualPunishment) {
+	// individualPunishment.TournamentId is int type. and individualPunishment.MatchId is int type. and individualPunishment.PlayerRegNo is int type. and all are primary key.
+	insert, err := db.Query("INSERT INTO tblindividualpunishment VALUES (?, ?, ?, ?, ?)", individualPunishment.TournamentId, individualPunishment.MatchId, individualPunishment.PlayerRegNo, individualPunishment.TeamDeptCode, individualPunishment.PunishmentType)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer insert.Close()
+}
+
+// controller function to insert new individual punishment
+func InsertNewIndividualPunishment(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
+	w.Header().Set("Allow-Control-Allow-Methods", "POST")
+
+	var individualPunishment models.IndividualPunishment
+	_ = json.NewDecoder(r.Body).Decode(&individualPunishment)
+
+	// check if tournament exists
+	if !tournamentExists(individualPunishment.TournamentId) {
+		json.NewEncoder(w).Encode("Tournament doesn't exist!")
+		return
+	}
+
+	// check if match exists
+	if !matchExists(individualPunishment.TournamentId, individualPunishment.MatchId) {
+		json.NewEncoder(w).Encode("Match doesn't exist!")
+		return
+	}
+
+	// check if team exists
+	if !teamExists(individualPunishment.TournamentId, individualPunishment.TeamDeptCode) {
+		json.NewEncoder(w).Encode("Team doesn't exist!")
+		return
+	}
+
+	// check if player exists
+	if !playerExists(individualPunishment.PlayerRegNo) {
+		json.NewEncoder(w).Encode("Player doesn't exist!")
+		return
+	}
+
+	// insert new individual punishment
+	insertNewIndividualPunishment(individualPunishment)
+	json.NewEncoder(w).Encode(individualPunishment)
+}
+
+
+
+
+
+
+
+
+
+
+// getting info from database
+
+// get all depts from database
+func getAllDepts() []models.Dept {
+	var dept models.Dept
+	var depts []models.Dept
+
+	result, err := db.Query("SELECT * FROM tbldept")
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for result.Next() {
+		err = result.Scan(&dept.DeptCode, &dept.DeptName, &dept.DeptShortName)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		depts = append(depts, dept)
+	}
+
+	return depts
+}
+
+// controller function to get all depts
+func GetAllDepts(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	var depts []models.Dept
+	depts = getAllDepts()
+
+	json.NewEncoder(w).Encode(depts)
+}
+
+
+
+
+
+// get a dept from database
+func getADept(deptCode int) models.Dept {
+	var dept models.Dept
+
+	err := db.QueryRow("SELECT * FROM tbldept WHERE deptCode = ?", deptCode).Scan(&dept.DeptCode, &dept.DeptName, &dept.DeptShortName)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	return dept
+}
+
+// controller function to get a dept
+func GetADept(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
+
+	// router.HandleFunc("/api/dept/{id}", controller.GetADept).Methods("GET")
+	// get id from url
+	params := mux.Vars(r)
+
+	// convert id from string to int
+	id, err := strconv.Atoi(params["id"])
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	var dept models.Dept
+	dept = getADept(id)
+
+	json.NewEncoder(w).Encode(dept)
 }
