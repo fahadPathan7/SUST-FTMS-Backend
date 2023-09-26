@@ -29,10 +29,6 @@ func CreateDbConnection() {
 	fmt.Println("Successfully connected to mysql database")
 }
 
-
-
-
-
 // verifications.
 
 // check if player exists in database
@@ -83,22 +79,6 @@ func tournamentExists(tournamentId int) bool {
 	return true
 }
 
-
-
-
-
-// insert dept info into database
-func insertNewDept(dept models.Dept) {
-	// dept.DeptCode is int type. and it is primary key.
-	insert, err := db.Query("INSERT INTO tbldept VALUES (?, ?, ?)", dept.DeptCode, dept.DeptName, dept.DeptShortName)
-
-	if err != nil {
-		panic(err.Error())
-	}
-
-	defer insert.Close()
-}
-
 // check if dept exists in database
 func deptExists(deptCode int) bool {
 	var dept models.Dept
@@ -113,6 +93,38 @@ func deptExists(deptCode int) bool {
 	}
 
 	return true
+}
+
+// check if referee exists in database
+func refereeExists(refereeID int) bool {
+	var referee models.Referee
+	err := db.QueryRow("SELECT * FROM tblreferee WHERE refereeID = ?", refereeID).Scan(&referee.RefereeID, &referee.RefereeName, &referee.RefereeInstitute)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false
+		} else {
+			panic(err.Error())
+		}
+	}
+
+	return true
+}
+
+
+
+
+
+// insert dept info into database
+func insertNewDept(dept models.Dept) {
+	// dept.DeptCode is int type. and it is primary key.
+	insert, err := db.Query("INSERT INTO tbldept VALUES (?, ?, ?)", dept.DeptCode, dept.DeptName, dept.DeptShortName)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer insert.Close()
 }
 
 // controller function to insert new dept
@@ -155,12 +167,21 @@ func InsertNewPlayer(w http.ResponseWriter, r *http.Request) {
 	var player models.Player
 	_ = json.NewDecoder(r.Body).Decode(&player)
 
-	if !playerExists(player.PlayerRegNo) {
-		insertNewPlayer(player)
-		json.NewEncoder(w).Encode(player)
-	} else {
+	// check if player already exists
+	if playerExists(player.PlayerRegNo) {
 		json.NewEncoder(w).Encode("Player already exists!")
+		return
 	}
+
+	// check if dept exists
+	if !deptExists(player.PlayerDeptCode) {
+		json.NewEncoder(w).Encode("Dept doesn't exist!")
+		return
+	}
+
+	// insert new player
+	insertNewPlayer(player)
+	json.NewEncoder(w).Encode(player)
 }
 
 
@@ -179,6 +200,18 @@ func insertNewTeam(team models.Team) {
 	insert.Close()
 }
 
+// return player's dept code from tblplayer in database
+func getPlayerDeptCode(playerRegNo int) int {
+	var player models.Player
+	err := db.QueryRow("SELECT * FROM tblplayer WHERE playerRegNo = ?", playerRegNo).Scan(&player.PlayerRegNo, &player.PlayerSession, &player.PlayerSemester, &player.PlayerName, &player.PlayerDeptCode)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	return player.PlayerDeptCode
+}
+
 // controller function to insert new team
 func InsertNewTeam(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
@@ -187,12 +220,200 @@ func InsertNewTeam(w http.ResponseWriter, r *http.Request) {
 	var team models.Team
 	_ = json.NewDecoder(r.Body).Decode(&team)
 
-	if !teamExists(team.TournamentId, team.DeptCode) {
-		insertNewTeam(team)
-		json.NewEncoder(w).Encode(team)
-	} else {
+	// check if team already exists
+	if teamExists(team.TournamentId, team.DeptCode) {
 		json.NewEncoder(w).Encode("Team already exists!")
+		return
 	}
+
+	// check if tournament exists
+	if !tournamentExists(team.TournamentId) {
+		json.NewEncoder(w).Encode("Tournament doesn't exist!")
+		return
+	}
+
+	// check if dept exists
+	if !deptExists(team.DeptCode) {
+		json.NewEncoder(w).Encode("Dept doesn't exist!")
+		return
+	}
+
+	// check if all players exist
+	if !playerExists(team.TeamCaptainRegID) {
+		json.NewEncoder(w).Encode("Team captain doesn't exist!")
+		return
+	}
+	if !playerExists(team.Player1RegNo) {
+		json.NewEncoder(w).Encode("Player1 doesn't exist!")
+		return
+	}
+	if !playerExists(team.Player2RegNo) {
+		json.NewEncoder(w).Encode("Player2 doesn't exist!")
+		return
+	}
+	if !playerExists(team.Player3RegNo) {
+		json.NewEncoder(w).Encode("Player3 doesn't exist!")
+		return
+	}
+	if !playerExists(team.Player4RegNo) {
+		json.NewEncoder(w).Encode("Player4 doesn't exist!")
+		return
+	}
+	if !playerExists(team.Player5RegNo) {
+		json.NewEncoder(w).Encode("Player5 doesn't exist!")
+		return
+	}
+	if !playerExists(team.Player6RegNo) {
+		json.NewEncoder(w).Encode("Player6 doesn't exist!")
+		return
+	}
+	if !playerExists(team.Player7RegNo) {
+		json.NewEncoder(w).Encode("Player7 doesn't exist!")
+		return
+	}
+	if !playerExists(team.Player8RegNo) {
+		json.NewEncoder(w).Encode("Player8 doesn't exist!")
+		return
+	}
+	if !playerExists(team.Player9RegNo) {
+		json.NewEncoder(w).Encode("Player9 doesn't exist!")
+		return
+	}
+	if !playerExists(team.Player10RegNo) {
+		json.NewEncoder(w).Encode("Player10 doesn't exist!")
+		return
+	}
+	if !playerExists(team.Player11RegNo) {
+		json.NewEncoder(w).Encode("Player11 doesn't exist!")
+		return
+	}
+	if !playerExists(team.Player12RegNo) {
+		json.NewEncoder(w).Encode("Player12 doesn't exist!")
+		return
+	}
+	if !playerExists(team.Player13RegNo) {
+		json.NewEncoder(w).Encode("Player13 doesn't exist!")
+		return
+	}
+	if !playerExists(team.Player14RegNo) {
+		json.NewEncoder(w).Encode("Player14 doesn't exist!")
+		return
+	}
+	if !playerExists(team.Player15RegNo) {
+		json.NewEncoder(w).Encode("Player15 doesn't exist!")
+		return
+	}
+	if !playerExists(team.Player16RegNo) {
+		json.NewEncoder(w).Encode("Player16 doesn't exist!")
+		return
+	}
+	if !playerExists(team.Player17RegNo) {
+		json.NewEncoder(w).Encode("Player17 doesn't exist!")
+		return
+	}
+	if !playerExists(team.Player18RegNo) {
+		json.NewEncoder(w).Encode("Player18 doesn't exist!")
+		return
+	}
+	if !playerExists(team.Player19RegNo) {
+		json.NewEncoder(w).Encode("Player19 doesn't exist!")
+		return
+	}
+	if !playerExists(team.Player20RegNo) {
+		json.NewEncoder(w).Encode("Player20 doesn't exist!")
+		return
+	}
+
+	// check if all players are from same dept.
+	if getPlayerDeptCode(team.TeamCaptainRegID) != team.DeptCode {
+		json.NewEncoder(w).Encode("Team captain is not from this dept!")
+		return
+	}
+	if getPlayerDeptCode(team.Player1RegNo) != team.DeptCode {
+		json.NewEncoder(w).Encode("Player1 is not from this dept!")
+		return
+	}
+	if getPlayerDeptCode(team.Player2RegNo) != team.DeptCode {
+		json.NewEncoder(w).Encode("Player2 is not from this dept!")
+		return
+	}
+	if getPlayerDeptCode(team.Player3RegNo) != team.DeptCode {
+		json.NewEncoder(w).Encode("Player3 is not from this dept!")
+		return
+	}
+	if getPlayerDeptCode(team.Player4RegNo) != team.DeptCode {
+		json.NewEncoder(w).Encode("Player4 is not from this dept!")
+		return
+	}
+	if getPlayerDeptCode(team.Player5RegNo) != team.DeptCode {
+		json.NewEncoder(w).Encode("Player5 is not from this dept!")
+		return
+	}
+	if getPlayerDeptCode(team.Player6RegNo) != team.DeptCode {
+		json.NewEncoder(w).Encode("Player6 is not from this dept!")
+		return
+	}
+	if getPlayerDeptCode(team.Player7RegNo) != team.DeptCode {
+		json.NewEncoder(w).Encode("Player7 is not from this dept!")
+		return
+	}
+	if getPlayerDeptCode(team.Player8RegNo) != team.DeptCode {
+		json.NewEncoder(w).Encode("Player8 is not from this dept!")
+		return
+	}
+	if getPlayerDeptCode(team.Player9RegNo) != team.DeptCode {
+		json.NewEncoder(w).Encode("Player9 is not from this dept!")
+		return
+	}
+	if getPlayerDeptCode(team.Player10RegNo) != team.DeptCode {
+		json.NewEncoder(w).Encode("Player10 is not from this dept!")
+		return
+	}
+	if getPlayerDeptCode(team.Player11RegNo) != team.DeptCode {
+		json.NewEncoder(w).Encode("Player11 is not from this dept!")
+		return
+	}
+	if getPlayerDeptCode(team.Player12RegNo) != team.DeptCode {
+		json.NewEncoder(w).Encode("Player12 is not from this dept!")
+		return
+	}
+	if getPlayerDeptCode(team.Player13RegNo) != team.DeptCode {
+		json.NewEncoder(w).Encode("Player13 is not from this dept!")
+		return
+	}
+	if getPlayerDeptCode(team.Player14RegNo) != team.DeptCode {
+		json.NewEncoder(w).Encode("Player14 is not from this dept!")
+		return
+	}
+	if getPlayerDeptCode(team.Player15RegNo) != team.DeptCode {
+		json.NewEncoder(w).Encode("Player15 is not from this dept!")
+		return
+	}
+	if getPlayerDeptCode(team.Player16RegNo) != team.DeptCode {
+		json.NewEncoder(w).Encode("Player16 is not from this dept!")
+		return
+	}
+	if getPlayerDeptCode(team.Player17RegNo) != team.DeptCode {
+		json.NewEncoder(w).Encode("Player17 is not from this dept!")
+		return
+	}
+	if getPlayerDeptCode(team.Player18RegNo) != team.DeptCode {
+		json.NewEncoder(w).Encode("Player18 is not from this dept!")
+		return
+	}
+	if getPlayerDeptCode(team.Player19RegNo) != team.DeptCode {
+		json.NewEncoder(w).Encode("Player19 is not from this dept!")
+		return
+	}
+	if getPlayerDeptCode(team.Player20RegNo) != team.DeptCode {
+		json.NewEncoder(w).Encode("Player20 is not from this dept!")
+		return
+	}
+
+
+	// insert new team
+	insertNewTeam(team)
+	json.NewEncoder(w).Encode(team)
 }
 
 
@@ -225,4 +446,37 @@ func InsertNewTournament(w http.ResponseWriter, r *http.Request) {
 	} else {
 		json.NewEncoder(w).Encode("Tournament already exists!")
 	}
+}
+
+
+
+
+
+// insert referee info into database
+func insertNewReferee(referee models.Referee) {
+	// referee.RefereeID is int type. and it is primary key.
+	insert, err := db.Query("INSERT INTO tblreferee VALUES (?, ?, ?)", referee.RefereeID, referee.RefereeName, referee.RefereeInstitute)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer insert.Close()
+}
+
+// controller function to insert new referee
+func InsertNewReferee(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
+	w.Header().Set("Allow-Control-Allow-Methods", "POST")
+
+	var referee models.Referee
+	_ = json.NewDecoder(r.Body).Decode(&referee)
+
+	if refereeExists(referee.RefereeID) {
+		json.NewEncoder(w).Encode("Referee already exists!")
+		return
+	}
+
+	insertNewReferee(referee)
+	json.NewEncoder(w).Encode(referee)
 }
