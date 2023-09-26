@@ -567,3 +567,56 @@ func InsertNewMatch(w http.ResponseWriter, r *http.Request) {
 	insertNewMatch(match)
 	json.NewEncoder(w).Encode(match)
 }
+
+
+
+
+
+// insert tiebreaker info into database
+func insertNewTiebreaker(tiebreaker models.Tiebreaker) {
+	// tiebreaker.TournamentId is int type. and tiebreaker.MatchId is int type. and both are primary key.
+	insert, err := db.Query("INSERT INTO tbltiebreaker VALUES (?, ?, ?, ?, ?, ?)", tiebreaker.TournamentId, tiebreaker.MatchId, tiebreaker.Team1DeptCode, tiebreaker.Team2DeptCode, tiebreaker.Team1TieBreakerScore, tiebreaker.Team2TieBreakerScore)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer insert.Close()
+}
+
+// controller function to insert new tiebreaker
+func InsertNewTiebreaker(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
+	w.Header().Set("Allow-Control-Allow-Methods", "POST")
+
+	var tiebreaker models.Tiebreaker
+	_ = json.NewDecoder(r.Body).Decode(&tiebreaker)
+
+	// check if tournament exists
+	if !tournamentExists(tiebreaker.TournamentId) {
+		json.NewEncoder(w).Encode("Tournament doesn't exist!")
+		return
+	}
+
+	// check if match exists
+	if !matchExists(tiebreaker.TournamentId, tiebreaker.MatchId) {
+		json.NewEncoder(w).Encode("Match doesn't exist!")
+		return
+	}
+
+	// check if team1 exists
+	if !teamExists(tiebreaker.TournamentId, tiebreaker.Team1DeptCode) {
+		json.NewEncoder(w).Encode("Team1 doesn't exist!")
+		return
+	}
+
+	// check if team2 exists
+	if !teamExists(tiebreaker.TournamentId, tiebreaker.Team2DeptCode) {
+		json.NewEncoder(w).Encode("Team2 doesn't exist!")
+		return
+	}
+
+	// insert new tiebreaker
+	insertNewTiebreaker(tiebreaker)
+	json.NewEncoder(w).Encode(tiebreaker)
+}

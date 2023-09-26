@@ -65,7 +65,7 @@ type Tournament struct {
 	TournamentYear string `json:"tournamentYear"`
 }
 
-type TieBreaker struct {
+type Tiebreaker struct {
 	TournamentId         int `json:"tournamentId"`
 	MatchId              int `json:"matchId"`
 	Team1DeptCode        int `json:"team1DeptCode"`
