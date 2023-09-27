@@ -1144,3 +1144,48 @@ func GetAMatchOfATournament(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(match)
 }
+
+
+
+
+
+// get a player
+func getAPlayer(playerRegNo int) models.Player {
+	var player models.Player
+
+	err := db.QueryRow("SELECT * FROM tblplayer WHERE playerRegNo = ?", playerRegNo).Scan(&player.PlayerRegNo, &player.PlayerSession, &player.PlayerSemester, &player.PlayerName, &player.PlayerDeptCode)
+
+	if err != nil {
+		//panic(err.Error())
+		return models.Player{}
+	}
+
+	return player
+}
+
+// controller function to get a player
+func GetAPlayer(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
+
+	// router.HandleFunc("/api/player/{playerRegNo}", controller.GetAPlayer).Methods("GET")
+	// get id from url
+	params := mux.Vars(r)
+
+	// convert id from string to int
+	id, err := strconv.Atoi(params["playerRegNo"])
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	// player exists or not
+	if !playerExists(id) {
+		json.NewEncoder(w).Encode("Player doesn't exist!")
+		return
+	}
+
+	var player models.Player
+	player = getAPlayer(id)
+
+	json.NewEncoder(w).Encode(player)
+}

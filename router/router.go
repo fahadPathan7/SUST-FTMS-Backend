@@ -21,6 +21,7 @@ func Router() *mux.Router {
 	router.HandleFunc("/api/individualscore", controller.InsertNewIndividualScore).Methods("POST") // to insert new individualscore
 
 	// GET operations
+	router.HandleFunc("/api/player/{playerRegNo}", controller.GetAPlayer).Methods("GET") // to get a specific player
 	router.HandleFunc("/api/depts", controller.GetAllDepts).Methods("GET") // to get all depts
 	router.HandleFunc("/api/dept/{deptCode}", controller.GetADept).Methods("GET") // to get a specific dept
 	router.HandleFunc("/api/tournaments", controller.GetAllTournaments).Methods("GET") // to get all tournaments
