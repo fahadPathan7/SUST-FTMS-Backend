@@ -1066,7 +1066,7 @@ func GetAllMatchesOfATournament(w http.ResponseWriter, r *http.Request) {
 
 
 // get a match of a tournament
-func getAMatchOfATournament(tournamentId string, matchId int) models.Match {
+func getAMatchOfATournament(tournamentId string, matchId string) models.Match {
 	var match models.Match
 
 	err := db.QueryRow("SELECT * FROM tblmatch WHERE tournamentId = ? AND matchId = ?", tournamentId, matchId).Scan(&match.TournamentId, &match.MatchId, &match.MatchDate, &match.Team1DeptCode, &match.Team2DeptCode, &match.Team1Score, &match.Team2Score, &match.WinnerTeamDeptCode, &match.MatchRefereeID, &match.MatchLinesman1ID, &match.MatchLinesman2ID, &match.MatchFourthRefereeID)
@@ -1077,4 +1077,29 @@ func getAMatchOfATournament(tournamentId string, matchId int) models.Match {
 	}
 
 	return match
+}
+
+// controller function to get a match of a tournament
+func GetAMatchOfATournament(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
+
+	// router.HandleFunc("/api/tournament/match/{tournamentId}/{matchId}", controller.GetAMatchOfATournament).Methods("GET")
+	// get id from url
+	params := mux.Vars(r)
+
+	// get tournamentId and matchId from url
+	tournamentId, _ := params["tournamentId"]
+	matchId, _ := params["matchId"]
+
+
+	// match exists or not
+	if !matchExists(tournamentId, matchId) {
+		json.NewEncoder(w).Encode("Match doesn't exist!")
+		return
+	}
+
+	var match models.Match
+	match = getAMatchOfATournament(tournamentId, matchId)
+
+	json.NewEncoder(w).Encode(match)
 }
