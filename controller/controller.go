@@ -1272,3 +1272,54 @@ func GetAReferee(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(referee)
 }
+
+
+
+
+
+// get all tiebreakers of a tournament
+func getAllTiebreakersOfATournament(tournamentId string) []models.Tiebreaker {
+	var tiebreaker models.Tiebreaker
+	var tiebreakers []models.Tiebreaker
+
+	result, err := db.Query("SELECT * FROM tbltiebreaker WHERE tournamentId = ?", tournamentId)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for result.Next() {
+		err = result.Scan(&tiebreaker.TournamentId, &tiebreaker.MatchId, &tiebreaker.Team1DeptCode, &tiebreaker.Team2DeptCode, &tiebreaker.Team1TieBreakerScore, &tiebreaker.Team2TieBreakerScore)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		tiebreakers = append(tiebreakers, tiebreaker)
+	}
+
+	return tiebreakers
+}
+
+// controller function to get all tiebreakers of a tournament
+func GetAllTiebreakersOfATournament(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/tournament/tiebreakers/{tournamentId}", controller.GetAllTiebreakersOfATournament).Methods("GET")
+	// get id from url
+	params := mux.Vars(r)
+
+	id, _ := params["tournamentId"]
+	// id is string type
+
+	// tournament exists or not
+	if !tournamentExists(id) {
+		json.NewEncoder(w).Encode("Tournament doesn't exist!")
+		return
+	}
+
+	var tiebreakers []models.Tiebreaker
+	tiebreakers = getAllTiebreakersOfATournament(id)
+
+	json.NewEncoder(w).Encode(tiebreakers)
+}
