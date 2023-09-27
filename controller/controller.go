@@ -1227,3 +1227,48 @@ func GetAllReferees(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(referees)
 }
+
+
+
+
+
+// get a referee
+func getAReferee(refereeId int) models.Referee {
+	var referee models.Referee
+
+	err := db.QueryRow("SELECT * FROM tblreferee WHERE refereeID = ?", refereeId).Scan(&referee.RefereeID, &referee.RefereeName, &referee.RefereeInstitute)
+
+	if err != nil {
+		//panic(err.Error())
+		return models.Referee{}
+	}
+
+	return referee
+}
+
+// controller function to get a referee
+func GetAReferee(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
+
+	// router.HandleFunc("/api/referee/{refereeId}", controller.GetAReferee).Methods("GET")
+	// get id from url
+	params := mux.Vars(r)
+
+	// convert id from string to int
+	id, err := strconv.Atoi(params["refereeId"])
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	// referee exists or not
+	if !refereeExists(id) {
+		json.NewEncoder(w).Encode("Referee doesn't exist!")
+		return
+	}
+
+	var referee models.Referee
+	referee = getAReferee(id)
+
+	json.NewEncoder(w).Encode(referee)
+}
