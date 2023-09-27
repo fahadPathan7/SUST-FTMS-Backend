@@ -52,7 +52,7 @@ func playerExists(playerRegNo int) bool {
 // check if team exists in database
 func teamExists(tournamentId string, deptCode int) bool {
 	var team models.Team
-	err := db.QueryRow("SELECT * FROM tblteam WHERE tournamentId = ? AND deptCode = ?", tournamentId, deptCode).Scan(&team.TournamentId, &team.TeamSubmissionDate, &team.DeptCode, &team.TeamManager, &team.TeamCaptainRegID, &team.Player1RegNo, &team.Player2RegNo, &team.Player3RegNo, &team.Player4RegNo, &team.Player5RegNo, &team.Player6RegNo, &team.Player7RegNo, &team.Player8RegNo, &team.Player9RegNo, &team.Player10RegNo, &team.Player11RegNo, &team.Player12RegNo, &team.Player13RegNo, &team.Player14RegNo, &team.Player15RegNo, &team.Player16RegNo, &team.Player17RegNo, &team.Player18RegNo, &team.Player19RegNo, &team.Player20RegNo)
+	err := db.QueryRow("SELECT * FROM tblteam WHERE tournamentId = ? AND deptCode = ?", tournamentId, deptCode).Scan(&team.TournamentId, &team.TeamSubmissionDate, &team.DeptCode, &team.TeamManager, &team.TeamCaptainRegID, &team.PlayerRegNo[0], &team.PlayerRegNo[1], &team.PlayerRegNo[2], &team.PlayerRegNo[3], &team.PlayerRegNo[4], &team.PlayerRegNo[5], &team.PlayerRegNo[6], &team.PlayerRegNo[7], &team.PlayerRegNo[8], &team.PlayerRegNo[9], &team.PlayerRegNo[10], &team.PlayerRegNo[11], &team.PlayerRegNo[12], &team.PlayerRegNo[13], &team.PlayerRegNo[14], &team.PlayerRegNo[15], &team.PlayerRegNo[16], &team.PlayerRegNo[17], &team.PlayerRegNo[18], &team.PlayerRegNo[19])
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -225,7 +225,7 @@ func InsertNewPlayer(w http.ResponseWriter, r *http.Request) {
 // insert team info into database
 func insertNewTeam(team models.Team) {
 	// team.TournamentId is int type. and team.deptCode is int type. and both are primary key.
-	insert, err := db.Query("INSERT INTO tblteam VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", team.TournamentId, team.TeamSubmissionDate, team.DeptCode, team.TeamManager, team.TeamCaptainRegID, team.Player1RegNo, team.Player2RegNo, team.Player3RegNo, team.Player4RegNo, team.Player5RegNo, team.Player6RegNo, team.Player7RegNo, team.Player8RegNo, team.Player9RegNo, team.Player10RegNo, team.Player11RegNo, team.Player12RegNo, team.Player13RegNo, team.Player14RegNo, team.Player15RegNo, team.Player16RegNo, team.Player17RegNo, team.Player18RegNo, team.Player19RegNo, team.Player20RegNo)
+	insert, err := db.Query("INSERT INTO tblteam VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", team.TournamentId, team.TeamSubmissionDate, team.DeptCode, team.TeamManager, team.TeamCaptainRegID, team.PlayerRegNo[0], team.PlayerRegNo[1], team.PlayerRegNo[2], team.PlayerRegNo[3], team.PlayerRegNo[4], team.PlayerRegNo[5], team.PlayerRegNo[6], team.PlayerRegNo[7], team.PlayerRegNo[8], team.PlayerRegNo[9], team.PlayerRegNo[10], team.PlayerRegNo[11], team.PlayerRegNo[12], team.PlayerRegNo[13], team.PlayerRegNo[14], team.PlayerRegNo[15], team.PlayerRegNo[16], team.PlayerRegNo[17], team.PlayerRegNo[18], team.PlayerRegNo[19])
 
 	if err != nil {
 		panic(err.Error())
@@ -277,85 +277,11 @@ func InsertNewTeam(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode("Team captain doesn't exist!")
 		return
 	}
-	if !playerExists(team.Player1RegNo) {
-		json.NewEncoder(w).Encode("Player1 doesn't exist!")
-		return
-	}
-	if !playerExists(team.Player2RegNo) {
-		json.NewEncoder(w).Encode("Player2 doesn't exist!")
-		return
-	}
-	if !playerExists(team.Player3RegNo) {
-		json.NewEncoder(w).Encode("Player3 doesn't exist!")
-		return
-	}
-	if !playerExists(team.Player4RegNo) {
-		json.NewEncoder(w).Encode("Player4 doesn't exist!")
-		return
-	}
-	if !playerExists(team.Player5RegNo) {
-		json.NewEncoder(w).Encode("Player5 doesn't exist!")
-		return
-	}
-	if !playerExists(team.Player6RegNo) {
-		json.NewEncoder(w).Encode("Player6 doesn't exist!")
-		return
-	}
-	if !playerExists(team.Player7RegNo) {
-		json.NewEncoder(w).Encode("Player7 doesn't exist!")
-		return
-	}
-	if !playerExists(team.Player8RegNo) {
-		json.NewEncoder(w).Encode("Player8 doesn't exist!")
-		return
-	}
-	if !playerExists(team.Player9RegNo) {
-		json.NewEncoder(w).Encode("Player9 doesn't exist!")
-		return
-	}
-	if !playerExists(team.Player10RegNo) {
-		json.NewEncoder(w).Encode("Player10 doesn't exist!")
-		return
-	}
-	if !playerExists(team.Player11RegNo) {
-		json.NewEncoder(w).Encode("Player11 doesn't exist!")
-		return
-	}
-	if !playerExists(team.Player12RegNo) {
-		json.NewEncoder(w).Encode("Player12 doesn't exist!")
-		return
-	}
-	if !playerExists(team.Player13RegNo) {
-		json.NewEncoder(w).Encode("Player13 doesn't exist!")
-		return
-	}
-	if !playerExists(team.Player14RegNo) {
-		json.NewEncoder(w).Encode("Player14 doesn't exist!")
-		return
-	}
-	if !playerExists(team.Player15RegNo) {
-		json.NewEncoder(w).Encode("Player15 doesn't exist!")
-		return
-	}
-	if !playerExists(team.Player16RegNo) {
-		json.NewEncoder(w).Encode("Player16 doesn't exist!")
-		return
-	}
-	if !playerExists(team.Player17RegNo) {
-		json.NewEncoder(w).Encode("Player17 doesn't exist!")
-		return
-	}
-	if !playerExists(team.Player18RegNo) {
-		json.NewEncoder(w).Encode("Player18 doesn't exist!")
-		return
-	}
-	if !playerExists(team.Player19RegNo) {
-		json.NewEncoder(w).Encode("Player19 doesn't exist!")
-		return
-	}
-	if !playerExists(team.Player20RegNo) {
-		json.NewEncoder(w).Encode("Player20 doesn't exist!")
-		return
+	for i := 0; i < 20; i++ {
+		if !playerExists(team.PlayerRegNo[i]) {
+			json.NewEncoder(w).Encode("Player" + strconv.Itoa(i+1) + " doesn't exist!")
+			return
+		}
 	}
 
 	// check if all players are from same dept.
@@ -363,85 +289,34 @@ func InsertNewTeam(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode("Team captain is not from this dept!")
 		return
 	}
-	if getPlayerDeptCode(team.Player1RegNo) != team.DeptCode {
-		json.NewEncoder(w).Encode("Player1 is not from this dept!")
+	for i := 0; i < 20; i++ {
+		if getPlayerDeptCode(team.PlayerRegNo[i]) != team.DeptCode {
+			json.NewEncoder(w).Encode("Player" + strconv.Itoa(i+1) + " is not from this dept!")
+			return
+		}
+	}
+
+	// check if team captain is in player list or not
+	var captainFound bool = false
+	for i := 0; i < 20; i++ {
+		if team.PlayerRegNo[i] == team.TeamCaptainRegID {
+			captainFound = true
+			break
+		}
+	}
+	if !captainFound {
+		json.NewEncoder(w).Encode("Team captain is not in player list!")
 		return
 	}
-	if getPlayerDeptCode(team.Player2RegNo) != team.DeptCode {
-		json.NewEncoder(w).Encode("Player2 is not from this dept!")
-		return
-	}
-	if getPlayerDeptCode(team.Player3RegNo) != team.DeptCode {
-		json.NewEncoder(w).Encode("Player3 is not from this dept!")
-		return
-	}
-	if getPlayerDeptCode(team.Player4RegNo) != team.DeptCode {
-		json.NewEncoder(w).Encode("Player4 is not from this dept!")
-		return
-	}
-	if getPlayerDeptCode(team.Player5RegNo) != team.DeptCode {
-		json.NewEncoder(w).Encode("Player5 is not from this dept!")
-		return
-	}
-	if getPlayerDeptCode(team.Player6RegNo) != team.DeptCode {
-		json.NewEncoder(w).Encode("Player6 is not from this dept!")
-		return
-	}
-	if getPlayerDeptCode(team.Player7RegNo) != team.DeptCode {
-		json.NewEncoder(w).Encode("Player7 is not from this dept!")
-		return
-	}
-	if getPlayerDeptCode(team.Player8RegNo) != team.DeptCode {
-		json.NewEncoder(w).Encode("Player8 is not from this dept!")
-		return
-	}
-	if getPlayerDeptCode(team.Player9RegNo) != team.DeptCode {
-		json.NewEncoder(w).Encode("Player9 is not from this dept!")
-		return
-	}
-	if getPlayerDeptCode(team.Player10RegNo) != team.DeptCode {
-		json.NewEncoder(w).Encode("Player10 is not from this dept!")
-		return
-	}
-	if getPlayerDeptCode(team.Player11RegNo) != team.DeptCode {
-		json.NewEncoder(w).Encode("Player11 is not from this dept!")
-		return
-	}
-	if getPlayerDeptCode(team.Player12RegNo) != team.DeptCode {
-		json.NewEncoder(w).Encode("Player12 is not from this dept!")
-		return
-	}
-	if getPlayerDeptCode(team.Player13RegNo) != team.DeptCode {
-		json.NewEncoder(w).Encode("Player13 is not from this dept!")
-		return
-	}
-	if getPlayerDeptCode(team.Player14RegNo) != team.DeptCode {
-		json.NewEncoder(w).Encode("Player14 is not from this dept!")
-		return
-	}
-	if getPlayerDeptCode(team.Player15RegNo) != team.DeptCode {
-		json.NewEncoder(w).Encode("Player15 is not from this dept!")
-		return
-	}
-	if getPlayerDeptCode(team.Player16RegNo) != team.DeptCode {
-		json.NewEncoder(w).Encode("Player16 is not from this dept!")
-		return
-	}
-	if getPlayerDeptCode(team.Player17RegNo) != team.DeptCode {
-		json.NewEncoder(w).Encode("Player17 is not from this dept!")
-		return
-	}
-	if getPlayerDeptCode(team.Player18RegNo) != team.DeptCode {
-		json.NewEncoder(w).Encode("Player18 is not from this dept!")
-		return
-	}
-	if getPlayerDeptCode(team.Player19RegNo) != team.DeptCode {
-		json.NewEncoder(w).Encode("Player19 is not from this dept!")
-		return
-	}
-	if getPlayerDeptCode(team.Player20RegNo) != team.DeptCode {
-		json.NewEncoder(w).Encode("Player20 is not from this dept!")
-		return
+
+	// check if player list has duplicate players
+	for i := 0; i < 20 - 1; i++ {
+		for j := i + 1; j < 20; j++ {
+			if team.PlayerRegNo[i] == team.PlayerRegNo[j] {
+				json.NewEncoder(w).Encode("Player" + strconv.Itoa(i+1) + " and Player" + strconv.Itoa(j+1) + " are same!")
+				return
+			}
+		}
 	}
 
 
@@ -930,7 +805,7 @@ func getAllTeamsOfATournament(tournamentId string) []models.Team {
 	}
 
 	for result.Next() {
-		err = result.Scan(&team.TournamentId, &team.TeamSubmissionDate, &team.DeptCode, &team.TeamManager, &team.TeamCaptainRegID, &team.Player1RegNo, &team.Player2RegNo, &team.Player3RegNo, &team.Player4RegNo, &team.Player5RegNo, &team.Player6RegNo, &team.Player7RegNo, &team.Player8RegNo, &team.Player9RegNo, &team.Player10RegNo, &team.Player11RegNo, &team.Player12RegNo, &team.Player13RegNo, &team.Player14RegNo, &team.Player15RegNo, &team.Player16RegNo, &team.Player17RegNo, &team.Player18RegNo, &team.Player19RegNo, &team.Player20RegNo)
+		err = result.Scan(&team.TournamentId, &team.TeamSubmissionDate, &team.DeptCode, &team.TeamManager, &team.TeamCaptainRegID, &team.PlayerRegNo[0], &team.PlayerRegNo[1], &team.PlayerRegNo[2], &team.PlayerRegNo[3], &team.PlayerRegNo[4], &team.PlayerRegNo[5], &team.PlayerRegNo[6], &team.PlayerRegNo[7], &team.PlayerRegNo[8], &team.PlayerRegNo[9], &team.PlayerRegNo[10], &team.PlayerRegNo[11], &team.PlayerRegNo[12], &team.PlayerRegNo[13], &team.PlayerRegNo[14], &team.PlayerRegNo[15], &team.PlayerRegNo[16], &team.PlayerRegNo[17], &team.PlayerRegNo[18], &team.PlayerRegNo[19])
 
 		if err != nil {
 			panic(err.Error())
@@ -1028,7 +903,7 @@ func GetPlayersOfADept(w http.ResponseWriter, r *http.Request) {
 func getATeamOfATournament(tournamentId string, deptCode int) models.Team {
 	var team models.Team
 
-	err := db.QueryRow("SELECT * FROM tblteam WHERE tournamentId = ? AND deptCode = ?", tournamentId, deptCode).Scan(&team.TournamentId, &team.TeamSubmissionDate, &team.DeptCode, &team.TeamManager, &team.TeamCaptainRegID, &team.Player1RegNo, &team.Player2RegNo, &team.Player3RegNo, &team.Player4RegNo, &team.Player5RegNo, &team.Player6RegNo, &team.Player7RegNo, &team.Player8RegNo, &team.Player9RegNo, &team.Player10RegNo, &team.Player11RegNo, &team.Player12RegNo, &team.Player13RegNo, &team.Player14RegNo, &team.Player15RegNo, &team.Player16RegNo, &team.Player17RegNo, &team.Player18RegNo, &team.Player19RegNo, &team.Player20RegNo)
+	err := db.QueryRow("SELECT * FROM tblteam WHERE tournamentId = ? AND deptCode = ?", tournamentId, deptCode).Scan(&team.TournamentId, &team.TeamSubmissionDate, &team.DeptCode, &team.TeamManager, &team.TeamCaptainRegID, &team.PlayerRegNo[0], &team.PlayerRegNo[1], &team.PlayerRegNo[2], &team.PlayerRegNo[3], &team.PlayerRegNo[4], &team.PlayerRegNo[5], &team.PlayerRegNo[6], &team.PlayerRegNo[7], &team.PlayerRegNo[8], &team.PlayerRegNo[9], &team.PlayerRegNo[10], &team.PlayerRegNo[11], &team.PlayerRegNo[12], &team.PlayerRegNo[13], &team.PlayerRegNo[14], &team.PlayerRegNo[15], &team.PlayerRegNo[16], &team.PlayerRegNo[17], &team.PlayerRegNo[18], &team.PlayerRegNo[19])
 
 	if err != nil {
 		//panic(err.Error())
