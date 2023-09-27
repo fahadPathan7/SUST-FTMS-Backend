@@ -1432,3 +1432,55 @@ func GetAllIndividualScoresOfATournament(w http.ResponseWriter, r *http.Request)
 
 	json.NewEncoder(w).Encode(individualScores)
 }
+
+
+
+
+
+// get all individual scores of a match
+func getAllIndividualScoresOfAMatch(tournamentId string, matchId string) []models.IndividualScore {
+	var individualScore models.IndividualScore
+	var individualScores []models.IndividualScore
+
+	result, err := db.Query("SELECT * FROM tblindividualscore WHERE tournamentId = ? AND matchId = ?", tournamentId, matchId)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for result.Next() {
+		err = result.Scan(&individualScore.TournamentId, &individualScore.MatchId, &individualScore.PlayerRegNo, &individualScore.TeamDeptCode, &individualScore.Goals)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		individualScores = append(individualScores, individualScore)
+	}
+
+	return individualScores
+}
+
+// controller function to get all individual scores of a match
+func GetAllIndividualScoresOfAMatch(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/tournament/match/individualscores/{tournamentId}/{matchId}", controller.GetAllIndividualScoresOfAMatch).Methods("GET")
+	// get id from url
+	params := mux.Vars(r)
+
+	// get tournamentId and matchId from url
+	tournamentId, _ := params["tournamentId"]
+	matchId, _ := params["matchId"]
+
+	// match exists or not
+	if !matchExists(tournamentId, matchId) {
+		json.NewEncoder(w).Encode("Match doesn't exist!")
+		return
+	}
+
+	var individualScores []models.IndividualScore
+	individualScores = getAllIndividualScoresOfAMatch(tournamentId, matchId)
+
+	json.NewEncoder(w).Encode(individualScores)
+}
