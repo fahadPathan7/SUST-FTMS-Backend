@@ -25,6 +25,7 @@ func Router() *mux.Router {
 	router.HandleFunc("/api/dept/{deptCode}", controller.GetADept).Methods("GET") // to get a specific dept
 	router.HandleFunc("/api/tournaments", controller.GetAllTournaments).Methods("GET")
 	router.HandleFunc("/api/tournament/teams/{tournamentId}", controller.GetAllTeamsOfATournament).Methods("GET") // to get all teams of a tournament
+	router.HandleFunc("/api/dept/players/{deptCode}", controller.GetPlayersOfADept).Methods("GET") // to get all players of a dept
 
 	return router
 }

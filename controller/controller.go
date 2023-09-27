@@ -911,3 +911,58 @@ func GetAllTeamsOfATournament(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(teams)
 }
+
+
+
+
+
+// get players of a dept
+func getPlayersOfADept(deptCode int) []models.Player {
+	var player models.Player
+	var players []models.Player
+
+	result, err := db.Query("SELECT * FROM tblplayer WHERE playerDeptCode = ?", deptCode)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for result.Next() {
+		err = result.Scan(&player.PlayerRegNo, &player.PlayerSession, &player.PlayerSemester, &player.PlayerName, &player.PlayerDeptCode)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		players = append(players, player)
+	}
+
+	return players
+}
+
+// controller function to get players of a dept
+func GetPlayersOfADept(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/dept/players/{deptCode}", controller.GetPlayersOfADept).Methods("GET")
+	// get id from url
+	params := mux.Vars(r)
+
+	// convert id from string to int
+	id, err := strconv.Atoi(params["deptCode"])
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	// dept exists or not
+	if !deptExists(id) {
+		json.NewEncoder(w).Encode("Dept doesn't exist!")
+		return
+	}
+
+	var players []models.Player
+	players = getPlayersOfADept(id)
+
+	json.NewEncoder(w).Encode(players)
+}
