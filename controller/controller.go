@@ -129,6 +129,22 @@ func matchExists(tournamentId string, matchId string) bool {
 	return true
 }
 
+// check if tiebreaker exists in database
+func tiebreakerExists(tournamentId string, matchId string) bool {
+	var tiebreaker models.Tiebreaker
+	err := db.QueryRow("SELECT * FROM tbltiebreaker WHERE tournamentId = ? AND matchId = ?", tournamentId, matchId).Scan(&tiebreaker.TournamentId, &tiebreaker.MatchId, &tiebreaker.Team1DeptCode, &tiebreaker.Team2DeptCode, &tiebreaker.Team1TieBreakerScore, &tiebreaker.Team2TieBreakerScore)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false
+		} else {
+			panic(err.Error())
+		}
+	}
+
+	return true
+}
+
 
 
 
@@ -1322,4 +1338,46 @@ func GetAllTiebreakersOfATournament(w http.ResponseWriter, r *http.Request) {
 	tiebreakers = getAllTiebreakersOfATournament(id)
 
 	json.NewEncoder(w).Encode(tiebreakers)
+}
+
+
+
+
+
+// get a tiebreaker of a tournament
+func getATiebreakerOfATournament(tournamentId string, matchId string) models.Tiebreaker {
+	var tiebreaker models.Tiebreaker
+
+	err := db.QueryRow("SELECT * FROM tbltiebreaker WHERE tournamentId = ? AND matchId = ?", tournamentId, matchId).Scan(&tiebreaker.TournamentId, &tiebreaker.MatchId, &tiebreaker.Team1DeptCode, &tiebreaker.Team2DeptCode, &tiebreaker.Team1TieBreakerScore, &tiebreaker.Team2TieBreakerScore)
+
+	if err != nil {
+		//panic(err.Error())
+		return models.Tiebreaker{}
+	}
+
+	return tiebreaker
+}
+
+// controller function to get a tiebreaker of a tournament
+func GetATiebreakerOfATournament(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
+
+	// router.HandleFunc("/api/tournament/tiebreaker/{tournamentId}/{matchId}", controller.GetATiebreakerOfATournament).Methods("GET")
+	// get id from url
+	params := mux.Vars(r)
+
+	// get tournamentId and matchId from url
+	tournamentId, _ := params["tournamentId"]
+	matchId, _ := params["matchId"]
+
+	// tiebreaker exists or not
+	if !tiebreakerExists(tournamentId, matchId) {
+		json.NewEncoder(w).Encode("Tiebreaker doesn't exist!")
+		return
+	}
+
+	var tiebreaker models.Tiebreaker
+	tiebreaker = getATiebreakerOfATournament(tournamentId, matchId)
+
+	json.NewEncoder(w).Encode(tiebreaker)
 }
