@@ -1549,3 +1549,54 @@ func GetAllIndividualScoresOfAPlayerInATournament(w http.ResponseWriter, r *http
 
 	json.NewEncoder(w).Encode(individualScores)
 }
+
+
+
+
+
+// get all individual punishments of a tournament
+func getAllIndividualPunishmentsOfATournament(tournamentId string) []models.IndividualPunishment {
+	var individualPunishment models.IndividualPunishment
+	var individualPunishments []models.IndividualPunishment
+
+	result, err := db.Query("SELECT * FROM tblindividualpunishment WHERE tournamentId = ?", tournamentId)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for result.Next() {
+		err = result.Scan(&individualPunishment.TournamentId, &individualPunishment.MatchId, &individualPunishment.PlayerRegNo, &individualPunishment.TeamDeptCode, &individualPunishment.PunishmentType)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		individualPunishments = append(individualPunishments, individualPunishment)
+	}
+
+	return individualPunishments
+}
+
+// controller function to get all individual punishments of a tournament
+func GetAllIndividualPunishmentsOfATournament(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/tournament/individualpunishments/{tournamentId}", controller.GetAllIndividualPunishmentsOfATournament).Methods("GET")
+	// get id from url
+	params := mux.Vars(r)
+
+	id, _ := params["tournamentId"]
+	// id is string type
+
+	// tournament exists or not
+	if !tournamentExists(id) {
+		json.NewEncoder(w).Encode("Tournament doesn't exist!")
+		return
+	}
+
+	var individualPunishments []models.IndividualPunishment
+	individualPunishments = getAllIndividualPunishmentsOfATournament(id)
+
+	json.NewEncoder(w).Encode(individualPunishments)
+}
