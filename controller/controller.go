@@ -1009,3 +1009,72 @@ func GetATeamOfATournament(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(team)
 }
+
+
+
+
+
+// get all matches of a tournament
+func getAllMatchesOfATournament(tournamentId string) []models.Match {
+	var match models.Match
+	var matches []models.Match
+
+	result, err := db.Query("SELECT * FROM tblmatch WHERE tournamentId = ?", tournamentId)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for result.Next() {
+		err = result.Scan(&match.TournamentId, &match.MatchId, &match.MatchDate, &match.Team1DeptCode, &match.Team2DeptCode, &match.Team1Score, &match.Team2Score, &match.WinnerTeamDeptCode, &match.MatchRefereeID, &match.MatchLinesman1ID, &match.MatchLinesman2ID, &match.MatchFourthRefereeID)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		matches = append(matches, match)
+	}
+
+	return matches
+}
+
+// controller function to get all matches of a tournament
+func GetAllMatchesOfATournament(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/tournament/matches/{tournamentId}", controller.GetAllMatchesOfATournament).Methods("GET")
+	// get id from url
+	params := mux.Vars(r)
+
+	id, _ := params["tournamentId"]
+	// id is string type
+
+	// tournament exists or not
+	if !tournamentExists(id) {
+		json.NewEncoder(w).Encode("Tournament doesn't exist!")
+		return
+	}
+
+	var matches []models.Match
+	matches = getAllMatchesOfATournament(id)
+
+	json.NewEncoder(w).Encode(matches)
+}
+
+
+
+
+
+// get a match of a tournament
+func getAMatchOfATournament(tournamentId string, matchId int) models.Match {
+	var match models.Match
+
+	err := db.QueryRow("SELECT * FROM tblmatch WHERE tournamentId = ? AND matchId = ?", tournamentId, matchId).Scan(&match.TournamentId, &match.MatchId, &match.MatchDate, &match.Team1DeptCode, &match.Team2DeptCode, &match.Team1Score, &match.Team2Score, &match.WinnerTeamDeptCode, &match.MatchRefereeID, &match.MatchLinesman1ID, &match.MatchLinesman2ID, &match.MatchFourthRefereeID)
+
+	if err != nil {
+		//panic(err.Error())
+		return models.Match{}
+	}
+
+	return match
+}
