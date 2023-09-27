@@ -1484,3 +1484,68 @@ func GetAllIndividualScoresOfAMatch(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(individualScores)
 }
+
+
+
+
+
+// get all individual scores of a player in a tournament
+func getAllIndividualScoresOfAPlayerInATournament(tournamentId string, playerRegNo int) []models.IndividualScore {
+	var individualScore models.IndividualScore
+	var individualScores []models.IndividualScore
+
+	result, err := db.Query("SELECT * FROM tblindividualscore WHERE tournamentId = ? AND playerRegNo = ?", tournamentId, playerRegNo)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for result.Next() {
+		err = result.Scan(&individualScore.TournamentId, &individualScore.MatchId, &individualScore.PlayerRegNo, &individualScore.TeamDeptCode, &individualScore.Goals)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		individualScores = append(individualScores, individualScore)
+	}
+
+	return individualScores
+}
+
+// controller function to get all individual scores of a player in a tournament
+func GetAllIndividualScoresOfAPlayerInATournament(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/tournament/player/individualscores/{tournamentId}/{playerRegNo}", controller.GetAllIndividualScoresOfAPlayerInATournament).Methods("GET")
+	// get id from url
+	params := mux.Vars(r)
+
+	// get tournamentId and playerRegNo from url
+	tournamentId, _ := params["tournamentId"]
+	playerRegNo, _ := params["playerRegNo"]
+
+	// convert playerRegNo from string to int
+	playerRegNoInt, err := strconv.Atoi(playerRegNo)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	// tournament exists or not
+	if !tournamentExists(tournamentId) {
+		json.NewEncoder(w).Encode("Tournament doesn't exist!")
+		return
+	}
+
+	// player exists or not
+	if !playerExists(playerRegNoInt) {
+		json.NewEncoder(w).Encode("Player doesn't exist!")
+		return
+	}
+
+	var individualScores []models.IndividualScore
+	individualScores = getAllIndividualScoresOfAPlayerInATournament(tournamentId, playerRegNoInt)
+
+	json.NewEncoder(w).Encode(individualScores)
+}
