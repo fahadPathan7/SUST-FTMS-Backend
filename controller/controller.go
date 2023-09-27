@@ -861,6 +861,47 @@ func GetAllTournaments(w http.ResponseWriter, r *http.Request) {
 
 
 
+// get a tournament
+func getATournament(tournamentId string) models.Tournament {
+	var tournament models.Tournament
+
+	err := db.QueryRow("SELECT * FROM tbltournament WHERE tournamentId = ?", tournamentId).Scan(&tournament.TournamentId, &tournament.TournamentName, &tournament.TournamentYear)
+
+	if err != nil {
+		//panic(err.Error())
+		return models.Tournament{}
+	}
+
+	return tournament
+}
+
+// controller function to get a tournament
+func GetATournament(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
+
+	// router.HandleFunc("/api/tournament/{tournamentId}", controller.GetATournament).Methods("GET")
+	// get id from url
+	params := mux.Vars(r)
+
+	id, _ := params["tournamentId"]
+	// id is string type
+
+	// tournament exists or not
+	if !tournamentExists(id) {
+		json.NewEncoder(w).Encode("Tournament doesn't exist!")
+		return
+	}
+
+	var tournament models.Tournament
+	tournament = getATournament(id)
+
+	json.NewEncoder(w).Encode(tournament)
+}
+
+
+
+
+
 // get all teams of a tournament
 func getAllTeamsOfATournament(tournamentId string) []models.Team {
 	var team models.Team
