@@ -1189,3 +1189,41 @@ func GetAPlayer(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(player)
 }
+
+
+
+
+
+// get all referees
+func getAllReferees() []models.Referee {
+	var referee models.Referee
+	var referees []models.Referee
+
+	result, err := db.Query("SELECT * FROM tblreferee")
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for result.Next() {
+		err = result.Scan(&referee.RefereeID, &referee.RefereeName, &referee.RefereeInstitute)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		referees = append(referees, referee)
+	}
+
+	return referees
+}
+
+// controller function to get all referees
+func GetAllReferees(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	var referees []models.Referee
+	referees = getAllReferees()
+
+	json.NewEncoder(w).Encode(referees)
+}
