@@ -966,3 +966,54 @@ func GetPlayersOfADept(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(players)
 }
+
+
+
+
+
+// get a team of a tournament
+func getATeamOfATournament(tournamentId int, deptCode int) models.Team {
+	var team models.Team
+
+	err := db.QueryRow("SELECT * FROM tblteam WHERE tournamentId = ? AND deptCode = ?", tournamentId, deptCode).Scan(&team.TournamentId, &team.TeamSubmissionDate, &team.DeptCode, &team.DeptHeadName, &team.TeamManager, &team.TeamCaptainRegID, &team.Player1RegNo, &team.Player2RegNo, &team.Player3RegNo, &team.Player4RegNo, &team.Player5RegNo, &team.Player6RegNo, &team.Player7RegNo, &team.Player8RegNo, &team.Player9RegNo, &team.Player10RegNo, &team.Player11RegNo, &team.Player12RegNo, &team.Player13RegNo, &team.Player14RegNo, &team.Player15RegNo, &team.Player16RegNo, &team.Player17RegNo, &team.Player18RegNo, &team.Player19RegNo, &team.Player20RegNo)
+
+	if err != nil {
+		//panic(err.Error())
+		return models.Team{}
+	}
+
+	return team
+}
+
+// controller function to get a team of a tournament
+func GetATeamOfATournament(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
+
+	// router.HandleFunc("/api/tournament/team/{tournamentId}/{deptCode}", controller.GetATeamOfATournament).Methods("GET")
+	// get id from url
+	params := mux.Vars(r)
+
+	// convert id from string to int
+	tournamentId, err := strconv.Atoi(params["tournamentId"])
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	deptCode, err := strconv.Atoi(params["deptCode"])
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	// team exists or not
+	if !teamExists(tournamentId, deptCode) {
+		json.NewEncoder(w).Encode("Team doesn't exist!")
+		return
+	}
+
+	var team models.Team
+	team = getATeamOfATournament(tournamentId, deptCode)
+
+	json.NewEncoder(w).Encode(team)
+}
