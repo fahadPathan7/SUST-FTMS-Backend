@@ -3,22 +3,22 @@ package models
 type Dept struct {
 	DeptCode      int    `json:"deptCode"`
 	DeptName      string `json:"deptName"`
+	DeptHeadName  string `json:"deptHeadName"`
 	DeptShortName string `json:"deptShortName"`
 }
 
 type Player struct {
 	PlayerRegNo    int    `json:"playerRegNo"`
+	PlayerSession  string `json:"playerSession"`
+	PlayerSemester string `json:"playerSemester"`
 	PlayerName     string `json:"playerName"`
 	PlayerDeptCode int    `json:"playerDeptCode"`
-	PlayerSession  string `json:"playerSession"`
-	PlayerSemester int    `json:"playerSemester"`
 }
 
 type Team struct {
-	TournamentId       int    `json:"tournamentId"`
+	TournamentId       string `json:"tournamentId"`
 	TeamSubmissionDate string `json:"teamSubmissionDate"`
 	DeptCode           int    `json:"deptCode"`
-	DeptHeadName       string `json:"deptHeadName"`
 	TeamManager        string `json:"teamManager"`
 	TeamCaptainRegID   int    `json:"teamCaptainRegID"`
 	Player1RegNo       int    `json:"player1RegNo"`
@@ -44,39 +44,39 @@ type Team struct {
 }
 
 type IndividualPunishment struct {
-	TournamentId   int    `json:"tournamentId"`
-	MatchId        int    `json:"matchId"`
+	TournamentId   string `json:"tournamentId"`
+	MatchId        string `json:"matchId"`
 	PlayerRegNo    int    `json:"playerRegNo"`
 	TeamDeptCode   int    `json:"teamDeptCode"`
 	PunishmentType string `json:"punishmentType"`
 }
 
 type IndividualScore struct {
-	TournamentId int `json:"tournamentId"`
-	MatchId      int `json:"matchId"`
-	PlayerRegNo  int `json:"playerRegNo"`
-	TeamDeptCode int `json:"teamDeptCode"`
-	Goals        int `json:"goals"`
+	TournamentId string `json:"tournamentId"`
+	MatchId      string `json:"matchId"`
+	PlayerRegNo  int    `json:"playerRegNo"`
+	TeamDeptCode int    `json:"teamDeptCode"`
+	Goals        int    `json:"goals"`
 }
 
 type Tournament struct {
-	TournamentId   int    `json:"tournamentId"`
+	TournamentId   string `json:"tournamentId"`
 	TournamentName string `json:"tournamentName"`
 	TournamentYear string `json:"tournamentYear"`
 }
 
 type Tiebreaker struct {
-	TournamentId         int `json:"tournamentId"`
-	MatchId              int `json:"matchId"`
-	Team1DeptCode        int `json:"team1DeptCode"`
-	Team2DeptCode        int `json:"team2DeptCode"`
-	Team1TieBreakerScore int `json:"team1TieBreakerScore"`
-	Team2TieBreakerScore int `json:"team2TieBreakerScore"`
+	TournamentId         string `json:"tournamentId"`
+	MatchId              string `json:"matchId"`
+	Team1DeptCode        int    `json:"team1DeptCode"`
+	Team2DeptCode        int    `json:"team2DeptCode"`
+	Team1TieBreakerScore int    `json:"team1TieBreakerScore"`
+	Team2TieBreakerScore int    `json:"team2TieBreakerScore"`
 }
 
 type Match struct {
-	TournamentId         int    `json:"tournamentId"`
-	MatchId              int    `json:"matchId"`
+	TournamentId         string `json:"tournamentId"`
+	MatchId              string `json:"matchId"`
 	MatchDate            string `json:"matchDate"`
 	Team1DeptCode        int    `json:"team1DeptCode"`
 	Team2DeptCode        int    `json:"team2DeptCode"`

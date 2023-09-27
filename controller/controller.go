@@ -50,9 +50,9 @@ func playerExists(playerRegNo int) bool {
 }
 
 // check if team exists in database
-func teamExists(tournamentId int, deptCode int) bool {
+func teamExists(tournamentId string, deptCode int) bool {
 	var team models.Team
-	err := db.QueryRow("SELECT * FROM tblteam WHERE tournamentId = ? AND deptCode = ?", tournamentId, deptCode).Scan(&team.TournamentId, &team.TeamSubmissionDate, &team.DeptCode, &team.DeptHeadName, &team.TeamManager, &team.TeamCaptainRegID, &team.Player1RegNo, &team.Player2RegNo, &team.Player3RegNo, &team.Player4RegNo, &team.Player5RegNo, &team.Player6RegNo, &team.Player7RegNo, &team.Player8RegNo, &team.Player9RegNo, &team.Player10RegNo, &team.Player11RegNo, &team.Player12RegNo, &team.Player13RegNo, &team.Player14RegNo, &team.Player15RegNo, &team.Player16RegNo, &team.Player17RegNo, &team.Player18RegNo, &team.Player19RegNo, &team.Player20RegNo)
+	err := db.QueryRow("SELECT * FROM tblteam WHERE tournamentId = ? AND deptCode = ?", tournamentId, deptCode).Scan(&team.TournamentId, &team.TeamSubmissionDate, &team.DeptCode, &team.TeamManager, &team.TeamCaptainRegID, &team.Player1RegNo, &team.Player2RegNo, &team.Player3RegNo, &team.Player4RegNo, &team.Player5RegNo, &team.Player6RegNo, &team.Player7RegNo, &team.Player8RegNo, &team.Player9RegNo, &team.Player10RegNo, &team.Player11RegNo, &team.Player12RegNo, &team.Player13RegNo, &team.Player14RegNo, &team.Player15RegNo, &team.Player16RegNo, &team.Player17RegNo, &team.Player18RegNo, &team.Player19RegNo, &team.Player20RegNo)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -66,7 +66,7 @@ func teamExists(tournamentId int, deptCode int) bool {
 }
 
 // check if tournament exists in database
-func tournamentExists(tournamentId int) bool {
+func tournamentExists(tournamentId string) bool {
 	var tournament models.Tournament
 	err := db.QueryRow("SELECT * FROM tbltournament WHERE tournamentId = ?", tournamentId).Scan(&tournament.TournamentId, &tournament.TournamentName, &tournament.TournamentYear)
 
@@ -84,7 +84,7 @@ func tournamentExists(tournamentId int) bool {
 // check if dept exists in database
 func deptExists(deptCode int) bool {
 	var dept models.Dept
-	err := db.QueryRow("SELECT * FROM tbldept WHERE deptCode = ?", deptCode).Scan(&dept.DeptCode, &dept.DeptName, &dept.DeptShortName)
+	err := db.QueryRow("SELECT * FROM tbldept WHERE deptCode = ?", deptCode).Scan(&dept.DeptCode, &dept.DeptName, &dept.DeptHeadName, &dept.DeptShortName)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -114,7 +114,7 @@ func refereeExists(refereeID int) bool {
 }
 
 // check if match exists in database
-func matchExists(tournamentId int, matchId int) bool {
+func matchExists(tournamentId string, matchId string) bool {
 	var match models.Match
 	err := db.QueryRow("SELECT * FROM tblmatch WHERE tournamentId = ? AND matchId = ?", tournamentId, matchId).Scan(&match.TournamentId, &match.MatchId, &match.MatchDate, &match.Team1DeptCode, &match.Team2DeptCode, &match.Team1Score, &match.Team2Score, &match.WinnerTeamDeptCode, &match.MatchRefereeID, &match.MatchLinesman1ID, &match.MatchLinesman2ID, &match.MatchFourthRefereeID)
 
@@ -136,7 +136,7 @@ func matchExists(tournamentId int, matchId int) bool {
 // insert dept info into database
 func insertNewDept(dept models.Dept) {
 	// dept.DeptCode is int type. and it is primary key.
-	insert, err := db.Query("INSERT INTO tbldept VALUES (?, ?, ?)", dept.DeptCode, dept.DeptName, dept.DeptShortName)
+	insert, err := db.Query("INSERT INTO tbldept VALUES (?, ?, ?, ?)", dept.DeptCode, dept.DeptName, dept.DeptHeadName, dept.DeptShortName)
 
 	if err != nil {
 		panic(err.Error())
@@ -209,7 +209,7 @@ func InsertNewPlayer(w http.ResponseWriter, r *http.Request) {
 // insert team info into database
 func insertNewTeam(team models.Team) {
 	// team.TournamentId is int type. and team.deptCode is int type. and both are primary key.
-	insert, err := db.Query("INSERT INTO tblteam VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", team.TournamentId, team.TeamSubmissionDate, team.DeptCode, team.DeptHeadName, team.TeamManager, team.TeamCaptainRegID, team.Player1RegNo, team.Player2RegNo, team.Player3RegNo, team.Player4RegNo, team.Player5RegNo, team.Player6RegNo, team.Player7RegNo, team.Player8RegNo, team.Player9RegNo, team.Player10RegNo, team.Player11RegNo, team.Player12RegNo, team.Player13RegNo, team.Player14RegNo, team.Player15RegNo, team.Player16RegNo, team.Player17RegNo, team.Player18RegNo, team.Player19RegNo, team.Player20RegNo)
+	insert, err := db.Query("INSERT INTO tblteam VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", team.TournamentId, team.TeamSubmissionDate, team.DeptCode, team.TeamManager, team.TeamCaptainRegID, team.Player1RegNo, team.Player2RegNo, team.Player3RegNo, team.Player4RegNo, team.Player5RegNo, team.Player6RegNo, team.Player7RegNo, team.Player8RegNo, team.Player9RegNo, team.Player10RegNo, team.Player11RegNo, team.Player12RegNo, team.Player13RegNo, team.Player14RegNo, team.Player15RegNo, team.Player16RegNo, team.Player17RegNo, team.Player18RegNo, team.Player19RegNo, team.Player20RegNo)
 
 	if err != nil {
 		panic(err.Error())
@@ -752,7 +752,7 @@ func getAllDepts() []models.Dept {
 	}
 
 	for result.Next() {
-		err = result.Scan(&dept.DeptCode, &dept.DeptName, &dept.DeptShortName)
+		err = result.Scan(&dept.DeptCode, &dept.DeptName, &dept.DeptHeadName, &dept.DeptShortName)
 
 		if err != nil {
 			panic(err.Error())
@@ -782,7 +782,7 @@ func GetAllDepts(w http.ResponseWriter, r *http.Request) {
 func getADept(deptCode int) models.Dept {
 	var dept models.Dept
 
-	err := db.QueryRow("SELECT * FROM tbldept WHERE deptCode = ?", deptCode).Scan(&dept.DeptCode, &dept.DeptName, &dept.DeptShortName)
+	err := db.QueryRow("SELECT * FROM tbldept WHERE deptCode = ?", deptCode).Scan(&dept.DeptCode, &dept.DeptName, &dept.DeptHeadName, &dept.DeptShortName)
 
 	if err != nil {
 		//panic(err.Error())
@@ -862,7 +862,7 @@ func GetAllTournaments(w http.ResponseWriter, r *http.Request) {
 
 
 // get all teams of a tournament
-func getAllTeamsOfATournament(tournamentId int) []models.Team {
+func getAllTeamsOfATournament(tournamentId string) []models.Team {
 	var team models.Team
 	var teams []models.Team
 
@@ -873,7 +873,7 @@ func getAllTeamsOfATournament(tournamentId int) []models.Team {
 	}
 
 	for result.Next() {
-		err = result.Scan(&team.TournamentId, &team.TeamSubmissionDate, &team.DeptCode, &team.DeptHeadName, &team.TeamManager, &team.TeamCaptainRegID, &team.Player1RegNo, &team.Player2RegNo, &team.Player3RegNo, &team.Player4RegNo, &team.Player5RegNo, &team.Player6RegNo, &team.Player7RegNo, &team.Player8RegNo, &team.Player9RegNo, &team.Player10RegNo, &team.Player11RegNo, &team.Player12RegNo, &team.Player13RegNo, &team.Player14RegNo, &team.Player15RegNo, &team.Player16RegNo, &team.Player17RegNo, &team.Player18RegNo, &team.Player19RegNo, &team.Player20RegNo)
+		err = result.Scan(&team.TournamentId, &team.TeamSubmissionDate, &team.DeptCode, &team.TeamManager, &team.TeamCaptainRegID, &team.Player1RegNo, &team.Player2RegNo, &team.Player3RegNo, &team.Player4RegNo, &team.Player5RegNo, &team.Player6RegNo, &team.Player7RegNo, &team.Player8RegNo, &team.Player9RegNo, &team.Player10RegNo, &team.Player11RegNo, &team.Player12RegNo, &team.Player13RegNo, &team.Player14RegNo, &team.Player15RegNo, &team.Player16RegNo, &team.Player17RegNo, &team.Player18RegNo, &team.Player19RegNo, &team.Player20RegNo)
 
 		if err != nil {
 			panic(err.Error())
@@ -893,12 +893,8 @@ func GetAllTeamsOfATournament(w http.ResponseWriter, r *http.Request) {
 	// get id from url
 	params := mux.Vars(r)
 
-	// convert id from string to int
-	id, err := strconv.Atoi(params["tournamentId"])
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-	}
+	id, _ := params["tournamentId"]
+	// id is string type
 
 	// tournament exists or not
 	if !tournamentExists(id) {
@@ -972,10 +968,10 @@ func GetPlayersOfADept(w http.ResponseWriter, r *http.Request) {
 
 
 // get a team of a tournament
-func getATeamOfATournament(tournamentId int, deptCode int) models.Team {
+func getATeamOfATournament(tournamentId string, deptCode int) models.Team {
 	var team models.Team
 
-	err := db.QueryRow("SELECT * FROM tblteam WHERE tournamentId = ? AND deptCode = ?", tournamentId, deptCode).Scan(&team.TournamentId, &team.TeamSubmissionDate, &team.DeptCode, &team.DeptHeadName, &team.TeamManager, &team.TeamCaptainRegID, &team.Player1RegNo, &team.Player2RegNo, &team.Player3RegNo, &team.Player4RegNo, &team.Player5RegNo, &team.Player6RegNo, &team.Player7RegNo, &team.Player8RegNo, &team.Player9RegNo, &team.Player10RegNo, &team.Player11RegNo, &team.Player12RegNo, &team.Player13RegNo, &team.Player14RegNo, &team.Player15RegNo, &team.Player16RegNo, &team.Player17RegNo, &team.Player18RegNo, &team.Player19RegNo, &team.Player20RegNo)
+	err := db.QueryRow("SELECT * FROM tblteam WHERE tournamentId = ? AND deptCode = ?", tournamentId, deptCode).Scan(&team.TournamentId, &team.TeamSubmissionDate, &team.DeptCode, &team.TeamManager, &team.TeamCaptainRegID, &team.Player1RegNo, &team.Player2RegNo, &team.Player3RegNo, &team.Player4RegNo, &team.Player5RegNo, &team.Player6RegNo, &team.Player7RegNo, &team.Player8RegNo, &team.Player9RegNo, &team.Player10RegNo, &team.Player11RegNo, &team.Player12RegNo, &team.Player13RegNo, &team.Player14RegNo, &team.Player15RegNo, &team.Player16RegNo, &team.Player17RegNo, &team.Player18RegNo, &team.Player19RegNo, &team.Player20RegNo)
 
 	if err != nil {
 		//panic(err.Error())
@@ -994,11 +990,7 @@ func GetATeamOfATournament(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
 	// convert id from string to int
-	tournamentId, err := strconv.Atoi(params["tournamentId"])
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-	}
+	tournamentId, _ := params["tournamentId"]
 
 	deptCode, err := strconv.Atoi(params["deptCode"])
 
