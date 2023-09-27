@@ -1652,3 +1652,68 @@ func GetAllIndividualPunishmentsOfAMatch(w http.ResponseWriter, r *http.Request)
 
 	json.NewEncoder(w).Encode(individualPunishments)
 }
+
+
+
+
+
+// get all individual punishments of a player in a tournament
+func getAllIndividualPunishmentsOfAPlayerInATournament(tournamentId string, playerRegNo int) []models.IndividualPunishment {
+	var individualPunishment models.IndividualPunishment
+	var individualPunishments []models.IndividualPunishment
+
+	result, err := db.Query("SELECT * FROM tblindividualpunishment WHERE tournamentId = ? AND playerRegNo = ?", tournamentId, playerRegNo)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for result.Next() {
+		err = result.Scan(&individualPunishment.TournamentId, &individualPunishment.MatchId, &individualPunishment.PlayerRegNo, &individualPunishment.TeamDeptCode, &individualPunishment.PunishmentType)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		individualPunishments = append(individualPunishments, individualPunishment)
+	}
+
+	return individualPunishments
+}
+
+// controller function to get all individual punishments of a player in a tournament
+func GetAllIndividualPunishmentsOfAPlayerInATournament(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/tournament/player/individualpunishments/{tournamentId}/{playerRegNo}", controller.GetAllIndividualPunishmentsOfAPlayerInATournament).Methods("GET")
+	// get id from url
+	params := mux.Vars(r)
+
+	// get tournamentId and playerRegNo from url
+	tournamentId, _ := params["tournamentId"]
+	playerRegNo, _ := params["playerRegNo"]
+
+	// convert playerRegNo from string to int
+	playerRegNoInt, err := strconv.Atoi(playerRegNo)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	// tournament exists or not
+	if !tournamentExists(tournamentId) {
+		json.NewEncoder(w).Encode("Tournament doesn't exist!")
+		return
+	}
+
+	// player exists or not
+	if !playerExists(playerRegNoInt) {
+		json.NewEncoder(w).Encode("Player doesn't exist!")
+		return
+	}
+
+	var individualPunishments []models.IndividualPunishment
+	individualPunishments = getAllIndividualPunishmentsOfAPlayerInATournament(tournamentId, playerRegNoInt)
+
+	json.NewEncoder(w).Encode(individualPunishments)
+}
