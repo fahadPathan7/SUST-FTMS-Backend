@@ -1681,3 +1681,46 @@ func UpdateAPlayer(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(player)
 }
+
+
+
+
+
+// update a dept
+func updateADept(deptCode int, dept models.Dept) {
+	_, err := db.Query("UPDATE tbldept SET deptName = ?, deptShortName = ?, deptHeadName = ?, WHERE deptCode = ?", dept.DeptName, dept.DeptShortName, dept.DeptHeadName, deptCode)
+
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
+// controller function to update a dept
+func UpdateADept(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/dept/{deptCode}", controller.UpdateADept).Methods("PUT")
+	// get id from url
+	params := mux.Vars(r)
+
+	// convert id from string to int
+	id, err := strconv.Atoi(params["deptCode"])
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	// dept exists or not
+	if !deptExists(id) {
+		json.NewEncoder(w).Encode("Dept doesn't exist!")
+		return
+	}
+
+	// get dept from body
+	var dept models.Dept
+	_ = json.NewDecoder(r.Body).Decode(&dept)
+
+	updateADept(id, dept)
+
+	json.NewEncoder(w).Encode(dept)
+}
