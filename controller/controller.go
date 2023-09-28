@@ -521,6 +521,22 @@ func InsertNewMatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// check if team1 and team2 are different
+	if match.Team1DeptCode == match.Team2DeptCode {
+		json.NewEncoder(w).Encode("Team1 and Team2 are same!")
+		return
+	}
+
+	// check if team1 and team2 are playing in the tournament or not
+	if !teamExistsInATournament(match.TournamentId, match.Team1DeptCode) {
+		json.NewEncoder(w).Encode("Team1 is not playing in the tournament!")
+		return
+	}
+	if !teamExistsInATournament(match.TournamentId, match.Team2DeptCode) {
+		json.NewEncoder(w).Encode("Team2 is not playing in the tournament!")
+		return
+	}
+
 	// check if referee exists
 	if !refereeExists(match.MatchRefereeID) {
 		json.NewEncoder(w).Encode("Referee doesn't exist!")
@@ -608,11 +624,30 @@ func InsertNewTiebreaker(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// check if team1 and team2 are different
+	if tiebreaker.Team1DeptCode == tiebreaker.Team2DeptCode {
+		json.NewEncoder(w).Encode("Team1 and Team2 are same!")
+		return
+	}
+
 	// check if team1 matches with the team1 of the match
 	var team1DeptCode int
 	err := db.QueryRow("SELECT team1_deptCode FROM tblmatch WHERE tournamentId = ? AND matchID = ?", tiebreaker.TournamentId, tiebreaker.MatchId).Scan(&team1DeptCode)
 	if err != nil || tiebreaker.Team1DeptCode != team1DeptCode {
 		json.NewEncoder(w).Encode("Team1 and Team2 are misplaced!")
+		return
+	}
+
+	// check tie breaker eligibility
+	var team1Score int
+	var team2Score int
+	err = db.QueryRow("SELECT team1_goal_number, team2_goal_number FROM tblmatch WHERE tournamentId = ? AND matchID = ?", tiebreaker.TournamentId, tiebreaker.MatchId).Scan(&team1Score, &team2Score)
+	if err != nil {
+		json.NewEncoder(w).Encode("Error in getting match score!")
+		return
+	}
+	if team1Score != team2Score {
+		json.NewEncoder(w).Encode("Tie breaker is not eligible for this match!")
 		return
 	}
 
@@ -661,6 +696,12 @@ func InsertNewIndividualScore(w http.ResponseWriter, r *http.Request) {
 	// check if team exists
 	if !teamExists(individualScore.TournamentId, individualScore.TeamDeptCode) {
 		json.NewEncoder(w).Encode("Team doesn't exist!")
+		return
+	}
+
+	// check if the team is playing in the match or not
+	if !teamIsPlayingInAMatchOfATournament(individualScore.TournamentId, individualScore.MatchId, individualScore.TeamDeptCode) {
+		json.NewEncoder(w).Encode("Team is not playing in the match!")
 		return
 	}
 
@@ -714,6 +755,12 @@ func InsertNewIndividualPunishment(w http.ResponseWriter, r *http.Request) {
 	// check if team exists
 	if !teamExists(individualPunishment.TournamentId, individualPunishment.TeamDeptCode) {
 		json.NewEncoder(w).Encode("Team doesn't exist!")
+		return
+	}
+
+	// check if the team is playing in the match or not
+	if !teamIsPlayingInAMatchOfATournament(individualPunishment.TournamentId, individualPunishment.MatchId, individualPunishment.TeamDeptCode) {
+		json.NewEncoder(w).Encode("Team is not playing in the match!")
 		return
 	}
 
@@ -1825,6 +1872,18 @@ func UpdateAPlayer(w http.ResponseWriter, r *http.Request) {
 	var player models.Player
 	_ = json.NewDecoder(r.Body).Decode(&player)
 
+	// check if the playerRegNo is changed
+	if id != player.PlayerRegNo {
+		json.NewEncoder(w).Encode("PlayerRegNo can't be changed!")
+		return
+	}
+
+	// check if dept exists
+	if !deptExists(player.PlayerDeptCode) {
+		json.NewEncoder(w).Encode("Dept doesn't exist!")
+		return
+	}
+
 	updateAPlayer(id, player)
 
 	json.NewEncoder(w).Encode(player)
@@ -1867,6 +1926,12 @@ func UpdateADept(w http.ResponseWriter, r *http.Request) {
 	// get dept from body
 	var dept models.Dept
 	_ = json.NewDecoder(r.Body).Decode(&dept)
+
+	// check if the deptCode is changed
+	if id != dept.DeptCode {
+		json.NewEncoder(w).Encode("DeptCode can't be changed!")
+		return
+	}
 
 	updateADept(id, dept)
 

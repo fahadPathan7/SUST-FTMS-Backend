@@ -10,18 +10,18 @@ type Dept struct {
 type Player struct {
 	PlayerRegNo    int    `json:"playerRegNo"`
 	PlayerSession  string `json:"playerSession"`
-	PlayerSemester int	  `json:"playerSemester"`
+	PlayerSemester int    `json:"playerSemester"`
 	PlayerName     string `json:"playerName"`
 	PlayerDeptCode int    `json:"playerDeptCode"`
 }
 
 type Team struct {
-	TournamentId       string `json:"tournamentId"`
-	TeamSubmissionDate string `json:"teamSubmissionDate"`
-	DeptCode           int    `json:"deptCode"`
-	TeamManager        string `json:"teamManager"`
-	TeamCaptainRegID   int    `json:"teamCaptainRegID"`
-	PlayerRegNo        []int  `json:"playerRegNo"`
+	TournamentId       string  `json:"tournamentId"`
+	TeamSubmissionDate string  `json:"teamSubmissionDate"`
+	DeptCode           int     `json:"deptCode"`
+	TeamManager        string  `json:"teamManager"`
+	TeamCaptainRegID   int     `json:"teamCaptainRegID"`
+	PlayerRegNo        [20]int `json:"playerRegNo"`
 }
 
 type IndividualPunishment struct {
