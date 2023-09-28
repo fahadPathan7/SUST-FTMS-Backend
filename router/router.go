@@ -46,6 +46,7 @@ func Router() *mux.Router {
 	router.HandleFunc("/api/player/{playerRegNo}", controller.UpdateAPlayer).Methods("PUT") // to update a player
 	router.HandleFunc("/api/dept/{deptCode}", controller.UpdateADept).Methods("PUT") // to update a dept
 	router.HandleFunc("/api/tournament/{tournamentId}", controller.UpdateATournament).Methods("PUT") // to update a tournament
+	router.HandleFunc("/api/tournament/team/{tournamentId}/{deptCode}", controller.UpdateATeam).Methods("PUT") // to update a team
 
 	return router
 }

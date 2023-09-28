@@ -1724,3 +1724,98 @@ func UpdateADept(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(dept)
 }
+
+
+
+
+
+// update a team
+func updateATeam(tournamentId string, deptCode int, team models.Team) {
+	_, err := db.Query("UPDATE tblteam SET teamSubmissionDate = ?, teamManager = ?, teamCaptainRegID = ?, playerRegNo1 = ?, playerRegNo2 = ?, playerRegNo3 = ?, playerRegNo4 = ?, playerRegNo5 = ?, playerRegNo6 = ?, playerRegNo7 = ?, playerRegNo8 = ?, playerRegNo9 = ?, playerRegNo10 = ?, playerRegNo11 = ?, playerRegNo12 = ?, playerRegNo13 = ?, playerRegNo14 = ?, playerRegNo15 = ?, playerRegNo16 = ?, playerRegNo17 = ?, playerRegNo18 = ?, playerRegNo19 = ? WHERE tournamentId = ? AND deptCode = ?", team.TeamSubmissionDate, team.TeamManager, team.TeamCaptainRegID, team.PlayerRegNo[0], team.PlayerRegNo[1], team.PlayerRegNo[2], team.PlayerRegNo[3], team.PlayerRegNo[4], team.PlayerRegNo[5], team.PlayerRegNo[6], team.PlayerRegNo[7], team.PlayerRegNo[8], team.PlayerRegNo[9], team.PlayerRegNo[10], team.PlayerRegNo[11], team.PlayerRegNo[12], team.PlayerRegNo[13], team.PlayerRegNo[14], team.PlayerRegNo[15], team.PlayerRegNo[16], team.PlayerRegNo[17], team.PlayerRegNo[18], team.PlayerRegNo[19], tournamentId, deptCode)
+
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
+// controller function to update a team
+func UpdateATeam(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/tournament/team/{tournamentId}/{deptCode}", controller.UpdateATeam).Methods("PUT")
+	// get id from url
+	params := mux.Vars(r)
+
+	// get tournamentId and deptCode from url
+	tournamentId, _ := params["tournamentId"]
+	deptCode, _ := params["deptCode"]
+
+	// convert deptCode from string to int
+	deptCodeInt, err := strconv.Atoi(deptCode)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	// team exists or not
+	if !teamExists(tournamentId, deptCodeInt) {
+		json.NewEncoder(w).Encode("Team doesn't exist!")
+		return
+	}
+
+	// get team from body
+	var team models.Team
+	_ = json.NewDecoder(r.Body).Decode(&team)
+
+	
+	// check if all players exist
+	if !playerExists(team.TeamCaptainRegID) {
+		json.NewEncoder(w).Encode("Team captain doesn't exist!")
+		return
+	}
+	for i := 0; i < 20; i++ {
+		if !playerExists(team.PlayerRegNo[i]) {
+			json.NewEncoder(w).Encode("Player" + strconv.Itoa(i+1) + " doesn't exist!")
+			return
+		}
+	}
+
+	// check if all players are from same dept.
+	if getPlayerDeptCode(team.TeamCaptainRegID) != team.DeptCode {
+		json.NewEncoder(w).Encode("Team captain is not from this dept!")
+		return
+	}
+	for i := 0; i < 20; i++ {
+		if getPlayerDeptCode(team.PlayerRegNo[i]) != team.DeptCode {
+			json.NewEncoder(w).Encode("Player" + strconv.Itoa(i+1) + " is not from this dept!")
+			return
+		}
+	}
+
+	// check if team captain is in player list or not
+	var captainFound bool = false
+	for i := 0; i < 20; i++ {
+		if team.PlayerRegNo[i] == team.TeamCaptainRegID {
+			captainFound = true
+			break
+		}
+	}
+	if !captainFound {
+		json.NewEncoder(w).Encode("Team captain is not in player list!")
+		return
+	}
+
+	// check if player list has duplicate players
+	for i := 0; i < 20 - 1; i++ {
+		for j := i + 1; j < 20; j++ {
+			if team.PlayerRegNo[i] == team.PlayerRegNo[j] {
+				json.NewEncoder(w).Encode("Player" + strconv.Itoa(i+1) + " and Player" + strconv.Itoa(j+1) + " are same!")
+				return
+			}
+		}
+	}
+
+	updateATeam(tournamentId, deptCodeInt, team)
+
+	json.NewEncoder(w).Encode(team)
+}
