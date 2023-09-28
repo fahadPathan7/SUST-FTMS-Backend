@@ -1915,3 +1915,46 @@ func UpdateAMatch(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(match)
 }
+
+
+
+
+
+// update a referee
+func updateAReferee(refereeId int, referee models.Referee) {
+	_, err := db.Query("UPDATE tblreferee SET refName = ?, refInstitute = ? WHERE refereeID = ?", referee.RefereeName, referee.RefereeInstitute, refereeId)
+
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
+// controller function to update a referee
+func UpdateAReferee(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/referee/{refereeId}", controller.UpdateAReferee).Methods("PUT")
+	// get id from url
+	params := mux.Vars(r)
+
+	// convert id from string to int
+	id, err := strconv.Atoi(params["refereeId"])
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	// referee exists or not
+	if !refereeExists(id) {
+		json.NewEncoder(w).Encode("Referee doesn't exist!")
+		return
+	}
+
+	// get referee from body
+	var referee models.Referee
+	_ = json.NewDecoder(r.Body).Decode(&referee)
+
+	updateAReferee(id, referee)
+
+	json.NewEncoder(w).Encode(referee)
+}
