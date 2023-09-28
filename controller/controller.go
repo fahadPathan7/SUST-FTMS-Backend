@@ -169,6 +169,61 @@ func teamIsPlayingInAMatchOfATournament(tournamentId string, matchId string, dep
 	return true
 }
 
+// check player is playing in a match of a tournament or not
+func playerIsPlayingInAMatchOfATournament(tournamentId string, matchId string, playerRegNo int) bool {
+	var team1DeptCode int
+	var team2DeptCode int
+
+	// get team1DeptCode and team2DeptCode from match
+	result, err := db.Query("SELECT team1_deptCode, team2_deptCode FROM tblmatch WHERE tournamentId = ? AND matchID = ?", tournamentId, matchId)
+
+	if err != nil {
+		return false
+	}
+
+	for result.Next() {
+		err = result.Scan(&team1DeptCode, &team2DeptCode)
+
+		if err != nil {
+			return false
+		}
+	}
+
+	// check if player is in team1 or team2
+	if playerIsInATeamOfATournament(tournamentId, team1DeptCode, playerRegNo) || playerIsInATeamOfATournament(tournamentId, team2DeptCode, playerRegNo) {
+		return true
+	}
+
+	return false
+}
+
+// check player is in a team of a tournament or not
+func playerIsInATeamOfATournament(tournamentId string, deptCode int, playerRegNo int) bool {
+	var playerRegNoFromDB []int
+
+	// get playerRegNo from team
+	result, err := db.Query("SELECT player1RegNo, player2RegNo, player3RegNo, player4RegNo, player5RegNo, player6RegNo, player7RegNo, player8RegNo, player9RegNo, player10RegNo, player11RegNo, player12RegNo, player13RegNo, player14RegNo, player15RegNo, player16RegNo, player17RegNo, player18RegNo, player19RegNo, player20RegNo FROM tblteam WHERE tournamentId = ? AND deptCode = ?", tournamentId, deptCode)
+
+	if err != nil {
+		return false
+	}
+
+	err = result.Scan(&playerRegNoFromDB[0], &playerRegNoFromDB[1], &playerRegNoFromDB[2], &playerRegNoFromDB[3], &playerRegNoFromDB[4], &playerRegNoFromDB[5], &playerRegNoFromDB[6], &playerRegNoFromDB[7], &playerRegNoFromDB[8], &playerRegNoFromDB[9], &playerRegNoFromDB[10], &playerRegNoFromDB[11], &playerRegNoFromDB[12], &playerRegNoFromDB[13], &playerRegNoFromDB[14], &playerRegNoFromDB[15], &playerRegNoFromDB[16], &playerRegNoFromDB[17], &playerRegNoFromDB[18], &playerRegNoFromDB[19])
+
+	if err != nil {
+		return false
+	}
+
+	// check if playerRegNo is in playerRegNoFromDB
+	for i := 0; i < 20; i++ {
+		if playerRegNo == playerRegNoFromDB[i] {
+			return true
+		}
+	}
+
+	return false
+}
+
 
 
 
@@ -2049,4 +2104,57 @@ func UpdateATiebreaker(w http.ResponseWriter, r *http.Request) {
 	updateATiebreaker(tournamentId, matchId, tiebreaker)
 
 	json.NewEncoder(w).Encode(tiebreaker)
+}
+
+
+
+
+// update an individual score
+func updateAnIndividualScore(tournamentId string, matchId string, playerRegNo int, individualScore models.IndividualScore) {
+	_, err := db.Query("UPDATE tblindividualscore SET teamDeptCode = ?, goals = ? WHERE tournamentId = ? AND matchID = ? AND playerRegNo = ?", individualScore.TeamDeptCode, individualScore.Goals, tournamentId, matchId, playerRegNo)
+
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
+// controller function to update an individual score
+func UpdateAnIndividualScore(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/match/individualscore/{tournamentId}/{matchId}/{playerRegNo}", controller.UpdateAnIndividualScore).Methods("PUT")
+	// get id from url
+	params := mux.Vars(r)
+
+	// get tournamentId, matchId and playerRegNo from url
+	tournamentId, _ := params["tournamentId"]
+	matchId, _ := params["matchId"]
+	playerRegNo, _ := params["playerRegNo"]
+
+	// convert playerRegNo from string to int
+	playerRegNoInt, err := strconv.Atoi(playerRegNo)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	// match exists or not
+	if !matchExists(tournamentId, matchId) {
+		json.NewEncoder(w).Encode("Match doesn't exist!")
+		return
+	}
+
+	// player playing in the match or not
+	if !playerIsPlayingInAMatchOfATournament(tournamentId, matchId, playerRegNoInt) {
+		json.NewEncoder(w).Encode("Player is not playing in the match!")
+		return
+	}
+
+	// get individualScore from body
+	var individualScore models.IndividualScore
+	_ = json.NewDecoder(r.Body).Decode(&individualScore)
+
+	updateAnIndividualScore(tournamentId, matchId, playerRegNoInt, individualScore)
+
+	json.NewEncoder(w).Encode(individualScore)
 }
