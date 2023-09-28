@@ -1638,3 +1638,46 @@ func UpdateATournament(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(tournament)
 }
+
+
+
+
+
+// update a player
+func updateAPlayer(playerRegNo int, player models.Player) {
+	_, err := db.Query("UPDATE tblplayer SET playerSession = ?, playerSemester = ?, playerName = ?, playerDeptCode = ? WHERE playerRegNo = ?", player.PlayerSession, player.PlayerSemester, player.PlayerName, player.PlayerDeptCode, playerRegNo)
+
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
+// controller function to update a player
+func UpdateAPlayer(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/player/{playerRegNo}", controller.UpdateAPlayer).Methods("PUT")
+	// get id from url
+	params := mux.Vars(r)
+
+	// convert id from string to int
+	id, err := strconv.Atoi(params["playerRegNo"])
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	// player exists or not
+	if !playerExists(id) {
+		json.NewEncoder(w).Encode("Player doesn't exist!")
+		return
+	}
+
+	// get player from body
+	var player models.Player
+	_ = json.NewDecoder(r.Body).Decode(&player)
+
+	updateAPlayer(id, player)
+
+	json.NewEncoder(w).Encode(player)
+}

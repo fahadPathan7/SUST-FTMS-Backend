@@ -43,6 +43,7 @@ func Router() *mux.Router {
 	router.HandleFunc("/api/tournament/player/individualpunishments/{tournamentId}/{playerRegNo}", controller.GetAllIndividualPunishmentsOfAPlayerInATournament).Methods("GET") // to get all individual punishments of a player in a tournament
 
 	// PUT operations
+	router.HandleFunc("/api/player/{playerRegNo}", controller.UpdateAPlayer).Methods("PUT") // to update a player
 	router.HandleFunc("/api/tournament/{tournamentId}", controller.UpdateATournament).Methods("PUT") // to update a tournament
 
 	return router
