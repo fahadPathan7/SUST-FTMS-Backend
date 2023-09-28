@@ -18,7 +18,7 @@ var db *sql.DB
 // connecting to mysql database
 func CreateDbConnection() {
 	var err error
-	db, err = sql.Open("mysql", "fahadftms:fahadftms@tcp(localhost:3306)/ftms")
+	db, err = sql.Open("mysql", "root:@tcp(localhost:3306)/ftms")
 	// port 3306 is the default port for mysql in xampp
 	// here ftms is the database name
 
@@ -145,9 +145,25 @@ func tiebreakerExists(tournamentId string, matchId string) bool {
 	return true
 }
 
+// check a team exists in a tournament or not
+func teamExistsInATournament(tournamentId string, deptCode int) bool {
+	var team models.Team
+	err := db.QueryRow("SELECT * FROM tblteam WHERE tournamentId = ? AND deptCode = ?", tournamentId, deptCode).Scan(&team.TournamentId, &team.DeptCode, &team.TeamSubmissionDate, &team.TeamManager, &team.TeamCaptainRegID, &team.PlayerRegNo[0], &team.PlayerRegNo[1], &team.PlayerRegNo[2], &team.PlayerRegNo[3], &team.PlayerRegNo[4], &team.PlayerRegNo[5], &team.PlayerRegNo[6], &team.PlayerRegNo[7], &team.PlayerRegNo[8], &team.PlayerRegNo[9], &team.PlayerRegNo[10], &team.PlayerRegNo[11], &team.PlayerRegNo[12], &team.PlayerRegNo[13], &team.PlayerRegNo[14], &team.PlayerRegNo[15], &team.PlayerRegNo[16], &team.PlayerRegNo[17], &team.PlayerRegNo[18], &team.PlayerRegNo[19])
+
+	if err != nil {
+		return false
+	}
+
+	return true
+}
 
 
 
+
+
+
+
+// insert operations
 
 // insert dept info into database
 func insertNewDept(dept models.Dept) {
@@ -453,6 +469,12 @@ func InsertNewMatch(w http.ResponseWriter, r *http.Request) {
 	}
 	if !refereeExists(match.MatchFourthRefereeID) {
 		json.NewEncoder(w).Encode("Fourth referee doesn't exist!")
+		return
+	}
+
+	// check if the winner team is one of the two teams
+	if match.WinnerTeamDeptCode != match.Team1DeptCode && match.WinnerTeamDeptCode != match.Team2DeptCode {
+		json.NewEncoder(w).Encode("Winner team is not one of the two teams!")
 		return
 	}
 
@@ -1731,8 +1753,7 @@ func UpdateADept(w http.ResponseWriter, r *http.Request) {
 
 // update a team
 func updateATeam(tournamentId string, deptCode int, team models.Team) {
-	_, err := db.Query("UPDATE tblteam SET teamSubmissionDate = ?, teamManager = ?, teamCaptainRegID = ?, playerRegNo1 = ?, playerRegNo2 = ?, playerRegNo3 = ?, playerRegNo4 = ?, playerRegNo5 = ?, playerRegNo6 = ?, playerRegNo7 = ?, playerRegNo8 = ?, playerRegNo9 = ?, playerRegNo10 = ?, playerRegNo11 = ?, playerRegNo12 = ?, playerRegNo13 = ?, playerRegNo14 = ?, playerRegNo15 = ?, playerRegNo16 = ?, playerRegNo17 = ?, playerRegNo18 = ?, playerRegNo19 = ? WHERE tournamentId = ? AND deptCode = ?", team.TeamSubmissionDate, team.TeamManager, team.TeamCaptainRegID, team.PlayerRegNo[0], team.PlayerRegNo[1], team.PlayerRegNo[2], team.PlayerRegNo[3], team.PlayerRegNo[4], team.PlayerRegNo[5], team.PlayerRegNo[6], team.PlayerRegNo[7], team.PlayerRegNo[8], team.PlayerRegNo[9], team.PlayerRegNo[10], team.PlayerRegNo[11], team.PlayerRegNo[12], team.PlayerRegNo[13], team.PlayerRegNo[14], team.PlayerRegNo[15], team.PlayerRegNo[16], team.PlayerRegNo[17], team.PlayerRegNo[18], team.PlayerRegNo[19], tournamentId, deptCode)
-
+	_, err := db.Query("UPDATE tblteam SET teamSubmissionDate = ?, teamManager = ?, teamCaptainRegID = ?, player1RegNo = ?, player2RegNo, player3RegNo = ?, player4RegNo = ?, player5RegNo = ?, player6RegNo = ?, player7RegNo = ?, player8RegNo = ?, player9RegNo = ?, player10RegNo = ?, player11RegNo = ?, player12RegNo = ?, player13RegNo = ?, player14RegNo = ?, player15RegNo = ?, player16RegNo = ?, player17RegNo = ?, player18RegNo = ?, player19RegNo = ?, player20RegNo = ? WHERE tournamentId = ? AND deptCode = ?", team.TeamSubmissionDate, team.TeamManager, team.TeamCaptainRegID, team.PlayerRegNo[0], team.PlayerRegNo[1], team.PlayerRegNo[2], team.PlayerRegNo[3], team.PlayerRegNo[4], team.PlayerRegNo[5], team.PlayerRegNo[6], team.PlayerRegNo[7], team.PlayerRegNo[8], team.PlayerRegNo[9], team.PlayerRegNo[10], team.PlayerRegNo[11], team.PlayerRegNo[12], team.PlayerRegNo[13], team.PlayerRegNo[14], team.PlayerRegNo[15], team.PlayerRegNo[16], team.PlayerRegNo[17], team.PlayerRegNo[18], team.PlayerRegNo[19], tournamentId, deptCode)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -1767,7 +1788,7 @@ func UpdateATeam(w http.ResponseWriter, r *http.Request) {
 	var team models.Team
 	_ = json.NewDecoder(r.Body).Decode(&team)
 
-	
+
 	// check if all players exist
 	if !playerExists(team.TeamCaptainRegID) {
 		json.NewEncoder(w).Encode("Team captain doesn't exist!")
@@ -1818,4 +1839,79 @@ func UpdateATeam(w http.ResponseWriter, r *http.Request) {
 	updateATeam(tournamentId, deptCodeInt, team)
 
 	json.NewEncoder(w).Encode(team)
+}
+
+
+
+
+
+// update a match
+func updateAMatch(tournamentId string, matchId string, match models.Match) {
+	_, err := db.Query("UPDATE tblmatch SET matchDate = ?, team1_deptCode = ?, team2_deptCode = ?, team1_goal_number = ?, team2_goal_number = ?, winner_team = ?, matchRefereeID = ?, matchLineman1ID = ?, matchLineman2ID = ?, matchFourthRefereeID = ? WHERE tournamentId = ? AND matchID = ?", match.MatchDate, match.Team1DeptCode, match.Team2DeptCode, match.Team1Score, match.Team2Score, match.WinnerTeamDeptCode, match.MatchRefereeID, match.MatchLinesman1ID, match.MatchLinesman2ID, match.MatchFourthRefereeID, tournamentId, matchId)
+
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
+// controller function to update a match
+func UpdateAMatch(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/tournament/match/{tournamentId}/{matchId}", controller.UpdateAMatch).Methods("PUT")
+	// get id from url
+	params := mux.Vars(r)
+
+	// get tournamentId and matchId from url
+	tournamentId, _ := params["tournamentId"]
+	matchId, _ := params["matchId"]
+
+	// match exists or not
+	if !matchExists(tournamentId, matchId) {
+		json.NewEncoder(w).Encode("Match doesn't exist!")
+		return
+	}
+
+	// get match from body
+	var match models.Match
+	_ = json.NewDecoder(r.Body).Decode(&match)
+
+
+	// check both teams participates in this tournament or not
+	if !teamExistsInATournament(tournamentId, match.Team1DeptCode) {
+		json.NewEncoder(w).Encode("Team1 doesn't participate!")
+		return
+	}
+	if !teamExistsInATournament(tournamentId, match.Team2DeptCode) {
+		json.NewEncoder(w).Encode("Team2 doesn't participate!")
+		return
+	}
+
+	// check if all referee exists
+	if !refereeExists(match.MatchRefereeID) {
+		json.NewEncoder(w).Encode("Match referee doesn't exist!")
+		return
+	}
+	if !refereeExists(match.MatchLinesman1ID) {
+		json.NewEncoder(w).Encode("Match linesman1 doesn't exist!")
+		return
+	}
+	if !refereeExists(match.MatchLinesman2ID) {
+		json.NewEncoder(w).Encode("Match linesman2 doesn't exist!")
+		return
+	}
+	if !refereeExists(match.MatchFourthRefereeID) {
+		json.NewEncoder(w).Encode("Match fourth referee doesn't exist!")
+		return
+	}
+
+	// check if the winner team is one of the two teams
+	if match.WinnerTeamDeptCode != match.Team1DeptCode && match.WinnerTeamDeptCode != match.Team2DeptCode {
+		json.NewEncoder(w).Encode("Winner team is not one of the two teams!")
+		return
+	}
+
+	updateAMatch(tournamentId, matchId, match)
+
+	json.NewEncoder(w).Encode(match)
 }
