@@ -10,7 +10,7 @@ type Dept struct {
 type Player struct {
 	PlayerRegNo    int    `json:"playerRegNo"`
 	PlayerSession  string `json:"playerSession"`
-	PlayerSemester string `json:"playerSemester"`
+	PlayerSemester int	  `json:"playerSemester"`
 	PlayerName     string `json:"playerName"`
 	PlayerDeptCode int    `json:"playerDeptCode"`
 }
