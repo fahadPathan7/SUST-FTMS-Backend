@@ -37,7 +37,7 @@ func Router() *mux.Router {
 	router.HandleFunc("/api/tournament/tiebreaker/{tournamentId}/{matchId}", controller.GetATiebreakerOfATournament).Methods("GET") // to get a tiebreaker of a tournament
 	router.HandleFunc("/api/tournament/individualscores/{tournamentId}", controller.GetAllIndividualScoresOfATournament).Methods("GET") // to get all individualscores (all players) of a tournament
 	router.HandleFunc("/api/tournament/player/individualscores/{tournamentId}/{playerRegNo}", controller.GetAllIndividualScoresOfAPlayerInATournament).Methods("GET") // to get all individualscores of a player in a tournament
-	router.HandleFunc("/api/tournament/match/individualscores/{tournamentId}/{matchId}", controller.GetAllIndividualScoresOfAMatch).Methods("GET") // to get all individualscores of a match
+	router.HandleFunc("/api/tournament/match/team/individualscores/{tournamentId}/{matchId}/{teamDeptCode}", controller.GetAllIndividualScoresOfAMatchByATeam).Methods("GET") // to get all individual scores of a match by a team
 	router.HandleFunc("/api/tournament/individualpunishments/{tournamentId}", controller.GetAllIndividualPunishmentsOfATournament).Methods("GET") // to get all individualpunishments (all players) of a tournament
 	router.HandleFunc("/api/tournament/match/individualpunishments/{tournamentId}/{matchId}", controller.GetAllIndividualPunishmentsOfAMatch).Methods("GET") // to get all individualpunishments of a match
 	router.HandleFunc("/api/tournament/player/individualpunishments/{tournamentId}/{playerRegNo}", controller.GetAllIndividualPunishmentsOfAPlayerInATournament).Methods("GET") // to get all individual punishments of a player in a tournament

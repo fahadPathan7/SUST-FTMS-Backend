@@ -116,7 +116,7 @@ func refereeExists(refereeID int) bool {
 // check if match exists in database
 func matchExists(tournamentId string, matchId string) bool {
 	var match models.Match
-	err := db.QueryRow("SELECT * FROM tblmatch WHERE tournamentId = ? AND matchId = ?", tournamentId, matchId).Scan(&match.TournamentId, &match.MatchId, &match.MatchDate, &match.Team1DeptCode, &match.Team2DeptCode, &match.Team1Score, &match.Team2Score, &match.WinnerTeamDeptCode, &match.MatchRefereeID, &match.MatchLinesman1ID, &match.MatchLinesman2ID, &match.MatchFourthRefereeID)
+	err := db.QueryRow("SELECT * FROM tblmatch WHERE tournamentId = ? AND matchID = ?", tournamentId, matchId).Scan(&match.TournamentId, &match.MatchId, &match.MatchDate, &match.Team1DeptCode, &match.Team2DeptCode, &match.Team1Score, &match.Team2Score, &match.WinnerTeamDeptCode, &match.MatchRefereeID, &match.MatchLinesman1ID, &match.MatchLinesman2ID, &match.MatchFourthRefereeID)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -132,7 +132,7 @@ func matchExists(tournamentId string, matchId string) bool {
 // check if tiebreaker exists in database
 func tiebreakerExists(tournamentId string, matchId string) bool {
 	var tiebreaker models.Tiebreaker
-	err := db.QueryRow("SELECT * FROM tbltiebreaker WHERE tournamentId = ? AND matchId = ?", tournamentId, matchId).Scan(&tiebreaker.TournamentId, &tiebreaker.MatchId, &tiebreaker.Team1DeptCode, &tiebreaker.Team2DeptCode, &tiebreaker.Team1TieBreakerScore, &tiebreaker.Team2TieBreakerScore)
+	err := db.QueryRow("SELECT * FROM tbltiebreaker WHERE tournamentId = ? AND matchID = ?", tournamentId, matchId).Scan(&tiebreaker.TournamentId, &tiebreaker.MatchId, &tiebreaker.Team1DeptCode, &tiebreaker.Team2DeptCode, &tiebreaker.Team1TieBreakerScore, &tiebreaker.Team2TieBreakerScore)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -149,6 +149,18 @@ func tiebreakerExists(tournamentId string, matchId string) bool {
 func teamExistsInATournament(tournamentId string, deptCode int) bool {
 	var team models.Team
 	err := db.QueryRow("SELECT * FROM tblteam WHERE tournamentId = ? AND deptCode = ?", tournamentId, deptCode).Scan(&team.TournamentId, &team.DeptCode, &team.TeamSubmissionDate, &team.TeamManager, &team.TeamCaptainRegID, &team.PlayerRegNo[0], &team.PlayerRegNo[1], &team.PlayerRegNo[2], &team.PlayerRegNo[3], &team.PlayerRegNo[4], &team.PlayerRegNo[5], &team.PlayerRegNo[6], &team.PlayerRegNo[7], &team.PlayerRegNo[8], &team.PlayerRegNo[9], &team.PlayerRegNo[10], &team.PlayerRegNo[11], &team.PlayerRegNo[12], &team.PlayerRegNo[13], &team.PlayerRegNo[14], &team.PlayerRegNo[15], &team.PlayerRegNo[16], &team.PlayerRegNo[17], &team.PlayerRegNo[18], &team.PlayerRegNo[19])
+
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+// check if the team is playing in a match or not
+func teamIsPlayingInAMatchOfATournament(tournamentId string, matchId string, deptCode int) bool {
+	var match models.Match
+	err := db.QueryRow("SELECT * FROM tblmatch WHERE tournamentId = ? AND matchID = ? AND (team1_deptCode = ? OR team2_deptCode = ?)", tournamentId, matchId, deptCode, deptCode).Scan(&match.TournamentId, &match.MatchId, &match.MatchDate, &match.Team1DeptCode, &match.Team2DeptCode, &match.Team1Score, &match.Team2Score, &match.WinnerTeamDeptCode, &match.MatchRefereeID, &match.MatchLinesman1ID, &match.MatchLinesman2ID, &match.MatchFourthRefereeID)
 
 	if err != nil {
 		return false
@@ -658,7 +670,7 @@ func getAllDepts() []models.Dept {
 	var dept models.Dept
 	var depts []models.Dept
 
-	result, err := db.Query("SELECT * FROM tbldept")
+	result, err := db.Query("SELECT * FROM tbldept ORDER BY deptCode ASC")
 
 	if err != nil {
 		panic(err.Error())
@@ -741,7 +753,8 @@ func getAllTournaments() []models.Tournament {
 	var tournament models.Tournament
 	var tournaments []models.Tournament
 
-	result, err := db.Query("SELECT * FROM tbltournament")
+	// sort descending order of tournamentYear
+	result, err := db.Query("SELECT * FROM tbltournament ORDER BY tournamentYear DESC")
 
 	if err != nil {
 		panic(err.Error())
@@ -820,7 +833,8 @@ func getAllTeamsOfATournament(tournamentId string) []models.Team {
 	var team models.Team
 	var teams []models.Team
 
-	result, err := db.Query("SELECT * FROM tblteam WHERE tournamentId = ?", tournamentId)
+	// ascending order by deptCode
+	result, err := db.Query("SELECT * FROM tblteam WHERE tournamentId = ? ORDER BY deptCode ASC", tournamentId)
 
 	if err != nil {
 		panic(err.Error())
@@ -871,7 +885,7 @@ func getPlayersOfADept(deptCode int) []models.Player {
 	var player models.Player
 	var players []models.Player
 
-	result, err := db.Query("SELECT * FROM tblplayer WHERE playerDeptCode = ?", deptCode)
+	result, err := db.Query("SELECT * FROM tblplayer WHERE playerDeptCode = ? ORDER BY playerRegNo DESC", deptCode)
 
 	if err != nil {
 		panic(err.Error())
@@ -973,7 +987,8 @@ func getAllMatchesOfATournament(tournamentId string) []models.Match {
 	var match models.Match
 	var matches []models.Match
 
-	result, err := db.Query("SELECT * FROM tblmatch WHERE tournamentId = ?", tournamentId)
+	// order by matchId ascending
+	result, err := db.Query("SELECT * FROM tblmatch WHERE tournamentId = ? ORDER BY matchID ASC", tournamentId)
 
 	if err != nil {
 		panic(err.Error())
@@ -1112,7 +1127,8 @@ func getAllReferees() []models.Referee {
 	var referee models.Referee
 	var referees []models.Referee
 
-	result, err := db.Query("SELECT * FROM tblreferee")
+	// order by refereeID ascending
+	result, err := db.Query("SELECT * FROM tblreferee ORDER BY refereeID ASC")
 
 	if err != nil {
 		panic(err.Error())
@@ -1195,7 +1211,8 @@ func getAllTiebreakersOfATournament(tournamentId string) []models.Tiebreaker {
 	var tiebreaker models.Tiebreaker
 	var tiebreakers []models.Tiebreaker
 
-	result, err := db.Query("SELECT * FROM tbltiebreaker WHERE tournamentId = ?", tournamentId)
+	// order by matchID ascending
+	result, err := db.Query("SELECT * FROM tbltiebreaker WHERE tournamentId = ? ORDER BY matchID ASC", tournamentId)
 
 	if err != nil {
 		panic(err.Error())
@@ -1288,7 +1305,8 @@ func getAllIndividualScoresOfATournament(tournamentId string) []models.Individua
 	var individualScore models.IndividualScore
 	var individualScores []models.IndividualScore
 
-	result, err := db.Query("SELECT * FROM tblindividualscore WHERE tournamentId = ?", tournamentId)
+	// order by playerRegNo descending
+	result, err := db.Query("SELECT * FROM tblindividualscore WHERE tournamentId = ? ORDER BY playerRegNo DESC", tournamentId)
 
 	if err != nil {
 		panic(err.Error())
@@ -1334,12 +1352,13 @@ func GetAllIndividualScoresOfATournament(w http.ResponseWriter, r *http.Request)
 
 
 
-// get all individual scores of a match
-func getAllIndividualScoresOfAMatch(tournamentId string, matchId string) []models.IndividualScore {
+// get all individual scores of a match by a team
+func getAllIndividualScoresOfAMatchByATeam(tournamentId string, matchId string, teamDeptCode int) []models.IndividualScore {
 	var individualScore models.IndividualScore
 	var individualScores []models.IndividualScore
 
-	result, err := db.Query("SELECT * FROM tblindividualscore WHERE tournamentId = ? AND matchId = ?", tournamentId, matchId)
+	// order by playerRegNo descending
+	result, err := db.Query("SELECT * FROM tblindividualscore WHERE tournamentId = ? AND matchID = ? AND teamDeptCode = ? ORDER BY playerRegNo DESC", tournamentId, matchId, teamDeptCode)
 
 	if err != nil {
 		panic(err.Error())
@@ -1358,17 +1377,25 @@ func getAllIndividualScoresOfAMatch(tournamentId string, matchId string) []model
 	return individualScores
 }
 
-// controller function to get all individual scores of a match
-func GetAllIndividualScoresOfAMatch(w http.ResponseWriter, r *http.Request) {
+// controller function to get all individual scores of a match by a team
+func GetAllIndividualScoresOfAMatchByATeam(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// router.HandleFunc("/api/tournament/match/individualscores/{tournamentId}/{matchId}", controller.GetAllIndividualScoresOfAMatch).Methods("GET")
+	// router.HandleFunc("/api/tournament/match/team/individualscores/{tournamentId}/{matchId}/{teamDeptCode}", controller.GetAllIndividualScoresOfAMatchByATeam).Methods("GET")
 	// get id from url
 	params := mux.Vars(r)
 
-	// get tournamentId and matchId from url
+	// get tournamentId, matchId and teamDeptCode from url
 	tournamentId, _ := params["tournamentId"]
 	matchId, _ := params["matchId"]
+	teamDeptCode, _ := params["teamDeptCode"]
+
+	// convert teamDeptCode from string to int
+	teamDeptCodeInt, err := strconv.Atoi(teamDeptCode)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
 
 	// match exists or not
 	if !matchExists(tournamentId, matchId) {
@@ -1376,11 +1403,18 @@ func GetAllIndividualScoresOfAMatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// check if the team is playing in the match
+	if !teamIsPlayingInAMatchOfATournament(tournamentId, matchId, teamDeptCodeInt) {
+		json.NewEncoder(w).Encode("Team is not playing in the match!")
+		return
+	}
+
 	var individualScores []models.IndividualScore
-	individualScores = getAllIndividualScoresOfAMatch(tournamentId, matchId)
+	individualScores = getAllIndividualScoresOfAMatchByATeam(tournamentId, matchId, teamDeptCodeInt)
 
 	json.NewEncoder(w).Encode(individualScores)
 }
+
 
 
 
@@ -1391,7 +1425,8 @@ func getAllIndividualScoresOfAPlayerInATournament(tournamentId string, playerReg
 	var individualScore models.IndividualScore
 	var individualScores []models.IndividualScore
 
-	result, err := db.Query("SELECT * FROM tblindividualscore WHERE tournamentId = ? AND playerRegNo = ?", tournamentId, playerRegNo)
+	// order by matchID ascending
+	result, err := db.Query("SELECT * FROM tblindividualscore WHERE tournamentId = ? AND playerRegNo = ? ORDER BY matchID ASC", tournamentId, playerRegNo)
 
 	if err != nil {
 		panic(err.Error())
