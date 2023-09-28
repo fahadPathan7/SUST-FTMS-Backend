@@ -598,6 +598,25 @@ func InsertNewTiebreaker(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// check if team1 and team2 are playing in the match or not
+	if !teamIsPlayingInAMatchOfATournament(tiebreaker.TournamentId, tiebreaker.MatchId, tiebreaker.Team1DeptCode) {
+		json.NewEncoder(w).Encode("Team1 is not playing in the match!")
+		return
+	}
+	if !teamIsPlayingInAMatchOfATournament(tiebreaker.TournamentId, tiebreaker.MatchId, tiebreaker.Team2DeptCode) {
+		json.NewEncoder(w).Encode("Team2 is not playing in the match!")
+		return
+	}
+
+	// check if team1 matches with the team1 of the match
+	var team1DeptCode int
+	err := db.QueryRow("SELECT team1_deptCode FROM tblmatch WHERE tournamentId = ? AND matchID = ?", tiebreaker.TournamentId, tiebreaker.MatchId).Scan(&team1DeptCode)
+	if err != nil || tiebreaker.Team1DeptCode != team1DeptCode {
+		json.NewEncoder(w).Encode("Team1 and Team2 are misplaced!")
+		return
+	}
+
+
 	// insert new tiebreaker
 	insertNewTiebreaker(tiebreaker)
 	json.NewEncoder(w).Encode(tiebreaker)
@@ -645,9 +664,9 @@ func InsertNewIndividualScore(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// check if player exists
-	if !playerExists(individualScore.PlayerRegNo) {
-		json.NewEncoder(w).Encode("Player doesn't exist!")
+	// check if player is playing in the match or not
+	if !playerIsPlayingInAMatchOfATournament(individualScore.TournamentId, individualScore.MatchId, individualScore.PlayerRegNo) {
+		json.NewEncoder(w).Encode("Player is not playing in the match!")
 		return
 	}
 
@@ -698,9 +717,9 @@ func InsertNewIndividualPunishment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// check if player exists
-	if !playerExists(individualPunishment.PlayerRegNo) {
-		json.NewEncoder(w).Encode("Player doesn't exist!")
+	// check if player is playing in the match or not
+	if !playerIsPlayingInAMatchOfATournament(individualPunishment.TournamentId, individualPunishment.MatchId, individualPunishment.PlayerRegNo) {
+		json.NewEncoder(w).Encode("Player is not playing in the match!")
 		return
 	}
 
@@ -2101,6 +2120,25 @@ func UpdateATiebreaker(w http.ResponseWriter, r *http.Request) {
 	var tiebreaker models.Tiebreaker
 	_ = json.NewDecoder(r.Body).Decode(&tiebreaker)
 
+
+	// check if both teams are playing in the match
+	if !teamIsPlayingInAMatchOfATournament(tournamentId, matchId, tiebreaker.Team1DeptCode) {
+		json.NewEncoder(w).Encode("Team1 is not playing in the match!")
+		return
+	}
+	if !teamIsPlayingInAMatchOfATournament(tournamentId, matchId, tiebreaker.Team2DeptCode) {
+		json.NewEncoder(w).Encode("Team2 is not playing in the match!")
+		return
+	}
+
+	// check if team1 matches with the team1 of the match
+	var team1DeptCode int
+	err := db.QueryRow("SELECT team1_deptCode FROM tblmatch WHERE tournamentId = ? AND matchID = ?", tiebreaker.TournamentId, tiebreaker.MatchId).Scan(&team1DeptCode)
+	if err != nil || tiebreaker.Team1DeptCode != team1DeptCode {
+		json.NewEncoder(w).Encode("Team1 and Team2 are misplaced!")
+		return
+	}
+
 	updateATiebreaker(tournamentId, matchId, tiebreaker)
 
 	json.NewEncoder(w).Encode(tiebreaker)
@@ -2157,4 +2195,58 @@ func UpdateAnIndividualScore(w http.ResponseWriter, r *http.Request) {
 	updateAnIndividualScore(tournamentId, matchId, playerRegNoInt, individualScore)
 
 	json.NewEncoder(w).Encode(individualScore)
+}
+
+
+
+
+
+// update an individual punishment
+func updateAnIndividualPunishment(tournamentId string, matchId string, playerRegNo int, individualPunishment models.IndividualPunishment) {
+	_, err := db.Query("UPDATE tblindividualpunishment SET teamDeptCode = ?, punishmentType = ? WHERE tournamentId = ? AND matchID = ? AND playerRegNo = ?", individualPunishment.TeamDeptCode, individualPunishment.PunishmentType, tournamentId, matchId, playerRegNo)
+
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
+// controller function to update an individual punishment
+func UpdateAnIndividualPunishment(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/match/individualpunishment/{tournamentId}/{matchId}/{playerRegNo}", controller.UpdateAnIndividualPunishment).Methods("PUT")
+	// get id from url
+	params := mux.Vars(r)
+
+	// get tournamentId, matchId and playerRegNo from url
+	tournamentId, _ := params["tournamentId"]
+	matchId, _ := params["matchId"]
+	playerRegNo, _ := params["playerRegNo"]
+
+	// convert playerRegNo from string to int
+	playerRegNoInt, err := strconv.Atoi(playerRegNo)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	// match exists or not
+	if !matchExists(tournamentId, matchId) {
+		json.NewEncoder(w).Encode("Match doesn't exist!")
+		return
+	}
+
+	// player playing in the match or not
+	if !playerIsPlayingInAMatchOfATournament(tournamentId, matchId, playerRegNoInt) {
+		json.NewEncoder(w).Encode("Player is not playing in the match!")
+		return
+	}
+
+	// get individualPunishment from body
+	var individualPunishment models.IndividualPunishment
+	_ = json.NewDecoder(r.Body).Decode(&individualPunishment)
+
+	updateAnIndividualPunishment(tournamentId, matchId, playerRegNoInt, individualPunishment)
+
+	json.NewEncoder(w).Encode(individualPunishment)
 }

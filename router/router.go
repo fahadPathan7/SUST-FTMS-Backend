@@ -51,6 +51,7 @@ func Router() *mux.Router {
 	router.HandleFunc("/api/referee/{refereeId}", controller.UpdateAReferee).Methods("PUT") // to update a referee
 	router.HandleFunc("/api/match/tiebreaker/{tournamentId}/{matchId}", controller.UpdateATiebreaker).Methods("PUT") // to update a tiebreaker of a match
 	router.HandleFunc("/api/match/individualscore/{tournamentId}/{matchId}/{playerRegNo}", controller.UpdateAnIndividualScore).Methods("PUT") // to update an individual score of a match
+	router.HandleFunc("/api/match/individualpunishment/{tournamentId}/{matchId}/{playerRegNo}", controller.UpdateAnIndividualPunishment).Methods("PUT") // to update an individual punishment of a match
 
 	return router
 }
