@@ -34,7 +34,7 @@ func Router() *mux.Router {
 	router.HandleFunc("/api/referees", controller.GetAllReferees).Methods("GET") // to get all referees
 	router.HandleFunc("/api/referee/{refereeId}", controller.GetAReferee).Methods("GET") // to get a specific referee
 	router.HandleFunc("/api/tournament/tiebreakers/{tournamentId}", controller.GetAllTiebreakersOfATournament).Methods("GET") // to get all tiebreakers of a tournament
-	router.HandleFunc("/api/tournament/tiebreaker/{tournamentId}/{matchId}", controller.GetATiebreakerOfATournament).Methods("GET") // to get a tiebreaker of a tournament
+	router.HandleFunc("/api/tournament/tiebreaker/{tournamentId}/{matchId}", controller.GetATiebreakerOfATournament).Methods("GET") // to get a tiebreaker (a match) of a tournament
 	router.HandleFunc("/api/tournament/individualscores/{tournamentId}", controller.GetAllIndividualScoresOfATournament).Methods("GET") // to get all individualscores (all players) of a tournament
 	router.HandleFunc("/api/tournament/player/individualscores/{tournamentId}/{playerRegNo}", controller.GetAllIndividualScoresOfAPlayerInATournament).Methods("GET") // to get all individualscores of a player in a tournament
 	router.HandleFunc("/api/tournament/match/team/individualscores/{tournamentId}/{matchId}/{teamDeptCode}", controller.GetAllIndividualScoresOfAMatchByATeam).Methods("GET") // to get all individual scores of a match by a team
@@ -49,6 +49,7 @@ func Router() *mux.Router {
 	router.HandleFunc("/api/tournament/team/{tournamentId}/{deptCode}", controller.UpdateATeam).Methods("PUT") // to update a team
 	router.HandleFunc("/api/tournament/match/{tournamentId}/{matchId}", controller.UpdateAMatch).Methods("PUT") // to update a match
 	router.HandleFunc("/api/referee/{refereeId}", controller.UpdateAReferee).Methods("PUT") // to update a referee
+	router.HandleFunc("/api/match/tiebreaker/{tournamentId}/{matchId}", controller.UpdateATiebreaker).Methods("PUT") // to update a tiebreaker of a match
 
 	return router
 }

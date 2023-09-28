@@ -2010,3 +2010,43 @@ func UpdateAReferee(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(referee)
 }
+
+
+
+
+
+// update a tiebreaker
+func updateATiebreaker(tournamentId string, matchId string, tiebreaker models.Tiebreaker) {
+	_, err := db.Query("UPDATE tbltiebreaker SET team1DeptCode = ?, team2DeptCode = ?, team1TieBreakerScore = ?, team2TieBreakerScore = ? WHERE tournamentId = ? AND matchID = ?", tiebreaker.Team1DeptCode, tiebreaker.Team2DeptCode, tiebreaker.Team1TieBreakerScore, tiebreaker.Team2TieBreakerScore, tournamentId, matchId)
+
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
+// controller function to update a tiebreaker
+func UpdateATiebreaker(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/match/tiebreaker/{tournamentId}/{matchId}", controller.UpdateATiebreaker).Methods("PUT")
+	// get id from url
+	params := mux.Vars(r)
+
+	// get tournamentId and matchId from url
+	tournamentId, _ := params["tournamentId"]
+	matchId, _ := params["matchId"]
+
+	// match exists or not
+	if !matchExists(tournamentId, matchId) {
+		json.NewEncoder(w).Encode("Match doesn't exist!")
+		return
+	}
+
+	// get tiebreaker from body
+	var tiebreaker models.Tiebreaker
+	_ = json.NewDecoder(r.Body).Decode(&tiebreaker)
+
+	updateATiebreaker(tournamentId, matchId, tiebreaker)
+
+	json.NewEncoder(w).Encode(tiebreaker)
+}
