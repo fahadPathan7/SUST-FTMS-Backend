@@ -1592,3 +1592,49 @@ func GetAllIndividualPunishmentsOfAPlayerInATournament(w http.ResponseWriter, r 
 
 	json.NewEncoder(w).Encode(individualPunishments)
 }
+
+
+
+
+
+
+
+
+
+
+// put operations
+
+// update a tournament
+func updateATournament(tournamentId string, tournament models.Tournament) {
+	_, err := db.Query("UPDATE tbltournament SET tournamentName = ?, tournamentYear = ? WHERE tournamentId = ?", tournament.TournamentName, tournament.TournamentYear, tournamentId)
+
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
+// controller function to update a tournament
+func UpdateATournament(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/tournament/{tournamentId}", controller.UpdateATournament).Methods("PUT")
+	// get id from url
+	params := mux.Vars(r)
+
+	id, _ := params["tournamentId"]
+	// id is string type
+
+	// tournament exists or not
+	if !tournamentExists(id) {
+		json.NewEncoder(w).Encode("Tournament doesn't exist!")
+		return
+	}
+
+	// get tournament from body
+	var tournament models.Tournament
+	_ = json.NewDecoder(r.Body).Decode(&tournament)
+
+	updateATournament(id, tournament)
+
+	json.NewEncoder(w).Encode(tournament)
+}

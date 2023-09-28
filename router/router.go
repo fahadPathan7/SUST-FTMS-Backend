@@ -42,5 +42,8 @@ func Router() *mux.Router {
 	router.HandleFunc("/api/tournament/match/individualpunishments/{tournamentId}/{matchId}", controller.GetAllIndividualPunishmentsOfAMatch).Methods("GET") // to get all individualpunishments of a match
 	router.HandleFunc("/api/tournament/player/individualpunishments/{tournamentId}/{playerRegNo}", controller.GetAllIndividualPunishmentsOfAPlayerInATournament).Methods("GET") // to get all individual punishments of a player in a tournament
 
+	// PUT operations
+	router.HandleFunc("/api/tournament/{tournamentId}", controller.UpdateATournament).Methods("PUT") // to update a tournament
+
 	return router
 }
