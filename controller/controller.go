@@ -1491,7 +1491,8 @@ func getAllIndividualPunishmentsOfATournament(tournamentId string) []models.Indi
 	var individualPunishment models.IndividualPunishment
 	var individualPunishments []models.IndividualPunishment
 
-	result, err := db.Query("SELECT * FROM tblindividualpunishment WHERE tournamentId = ?", tournamentId)
+	// order by teamDeptCode ascending and playerRegNo descending
+	result, err := db.Query("SELECT * FROM tblindividualpunishment WHERE tournamentId = ? ORDER BY teamDeptCode ASC, playerRegNo DESC", tournamentId)
 
 	if err != nil {
 		panic(err.Error())
@@ -1537,12 +1538,13 @@ func GetAllIndividualPunishmentsOfATournament(w http.ResponseWriter, r *http.Req
 
 
 
-// get all individual punishments of a match
-func getAllIndividualPunishmentsOfAMatch(tournamentId string, matchId string) []models.IndividualPunishment {
+// get all individual punishments of a match by a team
+func getAllIndividualPunishmentsOfAMatchByATeam(tournamentId string, matchId string, teamDeptCode int) []models.IndividualPunishment {
 	var individualPunishment models.IndividualPunishment
 	var individualPunishments []models.IndividualPunishment
 
-	result, err := db.Query("SELECT * FROM tblindividualpunishment WHERE tournamentId = ? AND matchId = ?", tournamentId, matchId)
+	// order by playerRegNo descending
+	result, err := db.Query("SELECT * FROM tblindividualpunishment WHERE tournamentId = ? AND matchID = ? AND teamDeptCode = ? ORDER BY playerRegNo DESC", tournamentId, matchId, teamDeptCode)
 
 	if err != nil {
 		panic(err.Error())
@@ -1561,17 +1563,25 @@ func getAllIndividualPunishmentsOfAMatch(tournamentId string, matchId string) []
 	return individualPunishments
 }
 
-// controller function to get all individual punishments of a match
-func GetAllIndividualPunishmentsOfAMatch(w http.ResponseWriter, r *http.Request) {
+// controller function to get all individual punishments of a match by a team
+func GetAllIndividualPunishmentsOfAMatchByATeam(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// router.HandleFunc("/api/tournament/match/individualpunishments/{tournamentId}/{matchId}", controller.GetAllIndividualPunishmentsOfAMatch).Methods("GET")
+	// router.HandleFunc("/api/tournament/match/team/individualpunishments/{tournamentId}/{matchId}/{teamDeptCode}", controller.GetAllIndividualPunishmentsOfAMatchByATeam).Methods("GET")
 	// get id from url
 	params := mux.Vars(r)
 
-	// get tournamentId and matchId from url
+	// get tournamentId, matchId and teamDeptCode from url
 	tournamentId, _ := params["tournamentId"]
 	matchId, _ := params["matchId"]
+	teamDeptCode, _ := params["teamDeptCode"]
+
+	// convert teamDeptCode from string to int
+	teamDeptCodeInt, err := strconv.Atoi(teamDeptCode)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
 
 	// match exists or not
 	if !matchExists(tournamentId, matchId) {
@@ -1579,8 +1589,14 @@ func GetAllIndividualPunishmentsOfAMatch(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	// check if the team is playing in the match
+	if !teamIsPlayingInAMatchOfATournament(tournamentId, matchId, teamDeptCodeInt) {
+		json.NewEncoder(w).Encode("Team is not playing in the match!")
+		return
+	}
+
 	var individualPunishments []models.IndividualPunishment
-	individualPunishments = getAllIndividualPunishmentsOfAMatch(tournamentId, matchId)
+	individualPunishments = getAllIndividualPunishmentsOfAMatchByATeam(tournamentId, matchId, teamDeptCodeInt)
 
 	json.NewEncoder(w).Encode(individualPunishments)
 }
@@ -1594,7 +1610,8 @@ func getAllIndividualPunishmentsOfAPlayerInATournament(tournamentId string, play
 	var individualPunishment models.IndividualPunishment
 	var individualPunishments []models.IndividualPunishment
 
-	result, err := db.Query("SELECT * FROM tblindividualpunishment WHERE tournamentId = ? AND playerRegNo = ?", tournamentId, playerRegNo)
+	// descending order of playerRegNo
+	result, err := db.Query("SELECT * FROM tblindividualpunishment WHERE tournamentId = ? AND playerRegNo = ? ORDER BY playerRegNo DESC", tournamentId, playerRegNo)
 
 	if err != nil {
 		panic(err.Error())
