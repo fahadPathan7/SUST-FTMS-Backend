@@ -148,7 +148,7 @@ func tiebreakerExists(tournamentId string, matchId string) bool {
 // check a team exists in a tournament or not
 func teamExistsInATournament(tournamentId string, deptCode int) bool {
 	var team models.Team
-	err := db.QueryRow("SELECT * FROM tblteam WHERE tournamentId = ? AND deptCode = ?", tournamentId, deptCode).Scan(&team.TournamentId, &team.DeptCode, &team.TeamSubmissionDate, &team.TeamManager, &team.TeamCaptainRegID, &team.PlayerRegNo[0], &team.PlayerRegNo[1], &team.PlayerRegNo[2], &team.PlayerRegNo[3], &team.PlayerRegNo[4], &team.PlayerRegNo[5], &team.PlayerRegNo[6], &team.PlayerRegNo[7], &team.PlayerRegNo[8], &team.PlayerRegNo[9], &team.PlayerRegNo[10], &team.PlayerRegNo[11], &team.PlayerRegNo[12], &team.PlayerRegNo[13], &team.PlayerRegNo[14], &team.PlayerRegNo[15], &team.PlayerRegNo[16], &team.PlayerRegNo[17], &team.PlayerRegNo[18], &team.PlayerRegNo[19])
+	err := db.QueryRow("SELECT * FROM tblteam WHERE tournamentId = ? AND deptCode = ?", tournamentId, deptCode).Scan(&team.TournamentId, &team.TeamSubmissionDate, &team.DeptCode, &team.TeamManager, &team.TeamCaptainRegID, &team.PlayerRegNo[0], &team.PlayerRegNo[1], &team.PlayerRegNo[2], &team.PlayerRegNo[3], &team.PlayerRegNo[4], &team.PlayerRegNo[5], &team.PlayerRegNo[6], &team.PlayerRegNo[7], &team.PlayerRegNo[8], &team.PlayerRegNo[9], &team.PlayerRegNo[10], &team.PlayerRegNo[11], &team.PlayerRegNo[12], &team.PlayerRegNo[13], &team.PlayerRegNo[14], &team.PlayerRegNo[15], &team.PlayerRegNo[16], &team.PlayerRegNo[17], &team.PlayerRegNo[18], &team.PlayerRegNo[19])
 
 	if err != nil {
 		return false
@@ -2778,7 +2778,7 @@ func playerIsInATeam(playerRegNo int) bool {
 	for rows.Next() {
 		// get the tournamentId and deptCode and delete the team
 		var team models.Team
-		err = rows.Scan(&team.TournamentId, &team.DeptCode, &team.TeamCaptainRegID, &team.PlayerRegNo[0], &team.PlayerRegNo[1], &team.PlayerRegNo[2], &team.PlayerRegNo[3], &team.PlayerRegNo[4], &team.PlayerRegNo[5], &team.PlayerRegNo[6], &team.PlayerRegNo[7], &team.PlayerRegNo[8], &team.PlayerRegNo[9], &team.PlayerRegNo[10], &team.PlayerRegNo[11], &team.PlayerRegNo[12], &team.PlayerRegNo[13], &team.PlayerRegNo[14], &team.PlayerRegNo[15], &team.PlayerRegNo[16], &team.PlayerRegNo[17], &team.PlayerRegNo[18], &team.PlayerRegNo[19])
+		err = rows.Scan(&team.TournamentId, &team.TeamSubmissionDate, &team.DeptCode, &team.TeamManager, &team.TeamCaptainRegID, &team.PlayerRegNo[0], &team.PlayerRegNo[1], &team.PlayerRegNo[2], &team.PlayerRegNo[3], &team.PlayerRegNo[4], &team.PlayerRegNo[5], &team.PlayerRegNo[6], &team.PlayerRegNo[7], &team.PlayerRegNo[8], &team.PlayerRegNo[9], &team.PlayerRegNo[10], &team.PlayerRegNo[11], &team.PlayerRegNo[12], &team.PlayerRegNo[13], &team.PlayerRegNo[14], &team.PlayerRegNo[15], &team.PlayerRegNo[16], &team.PlayerRegNo[17], &team.PlayerRegNo[18], &team.PlayerRegNo[19])
 		if err != nil {
 			panic(err.Error())
 		}
@@ -3416,7 +3416,7 @@ func DeleteAReferee(w http.ResponseWriter, r *http.Request) {
 
 // referee exists in a match or not
 func refereeExistsInAMatch(refereeId int) bool {
-	query := "SELECT * FROM tblmatch WHERE refereeID = ? OR linesman1ID = ? OR linesman2ID = ? OR fourthRefereeID = ?"
+	query := "SELECT * FROM tblmatch WHERE matchRefereeID = ? OR matchLineman1ID = ? OR matchLineman2ID = ? OR matchFourthRefereeID = ?"
 	rows, err := db.Query(query, refereeId, refereeId, refereeId, refereeId)
 
 	if err != nil {
