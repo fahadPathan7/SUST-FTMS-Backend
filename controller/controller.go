@@ -2554,3 +2554,689 @@ func UpdateAnIndividualPunishment(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(individualPunishment)
 }
+
+
+
+
+
+
+
+
+
+
+// delete operations
+
+// delete a tournament
+func deleteATournament(tournamentId string) {
+	_, err := db.Query("DELETE FROM tbltournament WHERE tournamentId = ?", tournamentId)
+
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
+// controller function to delete a tournament
+func DeleteATournament(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/tournament/{tournamentId}", controller.DeleteATournament).Methods("DELETE")
+	// get id from url
+	params := mux.Vars(r)
+
+	id, _ := params["tournamentId"]
+	// id is string type
+
+	// tournament exists or not
+	if !tournamentExists(id) {
+		json.NewEncoder(w).Encode("Tournament doesn't exist!")
+		return
+	}
+
+	// prequisite check
+	if matchExistsInATournament(id) {
+		json.NewEncoder(w).Encode("Can't delete this tournament! Matches exist in this tournament! Please delete all matches of this tournament first!")
+		return
+	}
+	if anyTeamExistsInATournament(id) {
+		json.NewEncoder(w).Encode("Can't delete this tournament! Teams exist in this tournament! Please delete all teams of this tournament first!")
+		return
+	}
+
+	deleteATournament(id)
+
+	json.NewEncoder(w).Encode("Tournament deleted successfully!")
+}
+
+// match exists in a tournament or not
+func matchExistsInATournament(tournamentId string) bool {
+	var matchId string
+	err := db.QueryRow("SELECT matchID FROM tblmatch WHERE tournamentId = ?", tournamentId).Scan(&matchId)
+
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+// any team exists in a tournament or not
+func anyTeamExistsInATournament(tournamentId string) bool {
+	var deptCode int
+	err := db.QueryRow("SELECT deptCode FROM tblteam WHERE tournamentId = ?", tournamentId).Scan(&deptCode)
+
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+
+
+
+
+// delete a player
+func deleteAPlayer(playerRegNo int) {
+	_, err := db.Query("DELETE FROM tblplayer WHERE playerRegNo = ?", playerRegNo)
+
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
+// controller function to delete a player
+func DeleteAPlayer(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/player/{playerRegNo}", controller.DeleteAPlayer).Methods("DELETE")
+	// get id from url
+	params := mux.Vars(r)
+
+	// convert id from string to int
+	id, err := strconv.Atoi(params["playerRegNo"])
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	// player exists or not
+	if !playerExists(id) {
+		json.NewEncoder(w).Encode("Player doesn't exist!")
+		return
+	}
+
+	// prequisite check. check all tables where playerRegNo is used
+	if playerHasIndividualPunishment(id) {
+		json.NewEncoder(w).Encode("Can't delete this player! This player has individual punishment! Please delete the individual punishment first!")
+		return
+	}
+	if playerHasIndividualScore(id) {
+		json.NewEncoder(w).Encode("Can't delete this player! This player has individual score! Please delete the individual score first!")
+		return
+	}
+	if playerExistsInATeam(id) {
+		json.NewEncoder(w).Encode("Can't delete this player! This player is in a team! Please delete the team first!")
+		return
+	}
+
+
+	deleteAPlayer(id)
+
+	json.NewEncoder(w).Encode("Player deleted successfully!")
+}
+
+// player has individual punishment or not
+func playerHasIndividualPunishment(playerRegNo int) bool {
+	var tournamentId string
+	err := db.QueryRow("SELECT tournamentId FROM tblindividualpunishment WHERE playerRegNo = ?", playerRegNo).Scan(&tournamentId)
+
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+// player has individual score or not
+func playerHasIndividualScore(playerRegNo int) bool {
+	var tournamentId string
+	err := db.QueryRow("SELECT tournamentId FROM tblindividualscore WHERE playerRegNo = ?", playerRegNo).Scan(&tournamentId)
+
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+// player exists in a team or not
+func playerExistsInATeam(playerRegNo int) bool {
+	var teamDeptCode int
+	err := db.QueryRow("SELECT deptCode FROM tblteam WHERE player1RegNo = ? OR player2RegNo = ? OR player3RegNo = ? OR player4RegNo = ? OR player5RegNo = ? OR player6RegNo = ? OR player7RegNo = ? OR player8RegNo = ? OR player9RegNo = ? OR player10RegNo = ? OR player11RegNo = ? OR player12RegNo = ? OR player13RegNo = ? OR player14RegNo = ? OR player15RegNo = ? OR player16RegNo = ? OR player17RegNo = ? OR player18RegNo = ? OR player19RegNo = ? OR player20RegNo = ?", playerRegNo, playerRegNo, playerRegNo, playerRegNo,
+	playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo).Scan(&teamDeptCode)
+
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+
+
+
+
+// delete a dept
+func deleteADept(deptCode int) {
+	_, err := db.Query("DELETE FROM tbldept WHERE deptCode = ?", deptCode)
+
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
+// controller function to delete a dept
+func DeleteADept(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/dept/{deptCode}", controller.DeleteADept).Methods("DELETE")
+	// get id from url
+	params := mux.Vars(r)
+
+	// convert id from string to int
+	id, err := strconv.Atoi(params["deptCode"])
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	// dept exists or not
+	if !deptExists(id) {
+		json.NewEncoder(w).Encode("Dept doesn't exist!")
+		return
+	}
+
+	// prequisite check. check all tables where deptCode is used
+	if deptExistsInATeam(id) {
+		json.NewEncoder(w).Encode("Can't delete this dept! This dept is in a team! Please delete the team first!")
+		return
+	}
+	if deptExistsInAMatch(id) {
+		json.NewEncoder(w).Encode("Can't delete this dept! This dept is in a match! Please delete the match first!")
+		return
+	}
+	if deptExistsInATiebreaker(id) {
+		json.NewEncoder(w).Encode("Can't delete this dept! This dept is in a tiebreaker! Please delete the tiebreaker first!")
+		return
+	}
+	if deptExistsInAnIndividualScore(id) {
+		json.NewEncoder(w).Encode("Can't delete this dept! This dept is in an individual score! Please delete the individual scores first!")
+		return
+	}
+	if deptExistsInAnIndividualPunishment(id) {
+		json.NewEncoder(w).Encode("Can't delete this dept! This dept is in an individual punishment! Please delete the individual punishments first!")
+		return
+	}
+	if deptExistsInAPlayer(id) {
+		json.NewEncoder(w).Encode("Can't delete this dept! This dept is in a player! Please delete the player first!")
+		return
+	}
+
+	deleteADept(id)
+
+	json.NewEncoder(w).Encode("Dept deleted successfully!")
+}
+
+// dept exists in a tiebreaker or not
+func deptExistsInATiebreaker(deptCode int) bool {
+	var tournamentId string
+	err := db.QueryRow("SELECT tournamentId FROM tbltiebreaker WHERE team1DeptCode = ? OR team2DeptCode = ?", deptCode, deptCode).Scan(&tournamentId)
+
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+// dept exists in an individual score or not
+func deptExistsInAnIndividualScore(deptCode int) bool {
+	var tournamentId string
+	err := db.QueryRow("SELECT tournamentId FROM tblindividualscore WHERE teamDeptCode = ?", deptCode).Scan(&tournamentId)
+
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+// dept exists in an individual punishment or not
+func deptExistsInAnIndividualPunishment(deptCode int) bool {
+	var tournamentId string
+	err := db.QueryRow("SELECT tournamentId FROM tblindividualpunishment WHERE teamDeptCode = ?", deptCode).Scan(&tournamentId)
+
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+// dept exists in a player or not
+func deptExistsInAPlayer(deptCode int) bool {
+	var playerRegNo int
+	err := db.QueryRow("SELECT playerRegNo FROM tblplayer WHERE deptCode = ?", deptCode).Scan(&playerRegNo)
+
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+// dept exists in a team or not
+func deptExistsInATeam(deptCode int) bool {
+	var tournamentId string
+	err := db.QueryRow("SELECT tournamentId FROM tblteam WHERE deptCode = ?", deptCode).Scan(&tournamentId)
+
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+// dept exists in a match or not
+func deptExistsInAMatch(deptCode int) bool {
+	var tournamentId string
+	err := db.QueryRow("SELECT tournamentId FROM tblmatch WHERE team1_deptCode = ? OR team2_deptCode = ?", deptCode, deptCode).Scan(&tournamentId)
+
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+
+
+
+
+// delete a team
+func deleteATeam(tournamentId string, deptCode int) {
+	_, err := db.Query("DELETE FROM tblteam WHERE tournamentId = ? AND deptCode = ?", tournamentId, deptCode)
+
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
+// controller function to delete a team
+func DeleteATeam(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/tournament/team/{tournamentId}/{deptCode}", controller.DeleteATeam).Methods("DELETE")
+	// get id from url
+	params := mux.Vars(r)
+
+	// get tournamentId and deptCode from url
+	tournamentId, _ := params["tournamentId"]
+	deptCode, _ := params["deptCode"]
+
+	// convert deptCode from string to int
+	deptCodeInt, err := strconv.Atoi(deptCode)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	// team exists or not
+	if !teamExists(tournamentId, deptCodeInt) {
+		json.NewEncoder(w).Encode("Team doesn't exist!")
+		return
+	}
+
+	// prequisite check. check all tables where tournamentId and deptCode is used
+	if teamExistsInAMatch(tournamentId, deptCodeInt) {
+		json.NewEncoder(w).Encode("Can't delete this team! This team is in a match! Please delete the match first!")
+		return
+	}
+
+	deleteATeam(tournamentId, deptCodeInt)
+
+	json.NewEncoder(w).Encode("Team deleted successfully!")
+}
+
+// team exists in a match or not
+func teamExistsInAMatch(tournamentId string, deptCode int) bool {
+	var matchId string
+	err := db.QueryRow("SELECT matchID FROM tblmatch WHERE tournamentId = ? AND (team1_deptCode = ? OR team2_deptCode = ?)", tournamentId, deptCode, deptCode).Scan(&matchId)
+
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+
+
+
+
+// delete a match
+func deleteAMatch(tournamentId string, matchId string) {
+	_, err := db.Query("DELETE FROM tblmatch WHERE tournamentId = ? AND matchID = ?", tournamentId, matchId)
+
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
+// controller function to delete a match
+func DeleteAMatch(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/tournament/match/{tournamentId}/{matchId}", controller.DeleteAMatch).Methods("DELETE")
+	// get id from url
+	params := mux.Vars(r)
+
+	// get tournamentId and matchId from url
+	tournamentId, _ := params["tournamentId"]
+	matchId, _ := params["matchId"]
+
+	// match exists or not
+	if !matchExists(tournamentId, matchId) {
+		json.NewEncoder(w).Encode("Match doesn't exist!")
+		return
+	}
+
+	// prequisite check. check all tables where tournamentId and matchId is used
+	if matchExistsInATiebreaker(tournamentId, matchId) {
+		json.NewEncoder(w).Encode("Can't delete this match! This match is in a tiebreaker! Please delete the tiebreaker first!")
+		return
+	}
+	if matchExistsInAnIndividualScore(tournamentId, matchId) {
+		json.NewEncoder(w).Encode("Can't delete this match! This match is in an individual score! Please delete the individual scores first!")
+		return
+	}
+	if matchExistsInAnIndividualPunishment(tournamentId, matchId) {
+		json.NewEncoder(w).Encode("Can't delete this match! This match is in an individual punishment! Please delete the individual punishments first!")
+		return
+	}
+
+	deleteAMatch(tournamentId, matchId)
+
+	json.NewEncoder(w).Encode("Match deleted successfully!")
+}
+
+// match exists in a tiebreaker or not
+func matchExistsInATiebreaker(tournamentId string, matchId string) bool {
+	var matchID string
+	err := db.QueryRow("SELECT matchID FROM tbltiebreaker WHERE tournamentId = ? AND matchID = ?", tournamentId, matchId).Scan(&matchID)
+
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+// match exists in an individual score or not
+func matchExistsInAnIndividualScore(tournamentId string, matchId string) bool {
+	var matchID string
+	err := db.QueryRow("SELECT matchID FROM tblindividualscore WHERE tournamentId = ? AND matchID = ?", tournamentId, matchId).Scan(&matchID)
+
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+// match exists in an individual punishment or not
+func matchExistsInAnIndividualPunishment(tournamentId string, matchId string) bool {
+	var matchID string
+	err := db.QueryRow("SELECT matchID FROM tblindividualpunishment WHERE tournamentId = ? AND matchID = ?", tournamentId, matchId).Scan(&matchID)
+
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+
+
+
+
+// delete a referee
+func deleteAReferee(refereeId int) {
+	_, err := db.Query("DELETE FROM tblreferee WHERE refereeID = ?", refereeId)
+
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
+// controller function to delete a referee
+func DeleteAReferee(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/referee/{refereeId}", controller.DeleteAReferee).Methods("DELETE")
+	// get id from url
+	params := mux.Vars(r)
+
+	// convert id from string to int
+	id, err := strconv.Atoi(params["refereeId"])
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	// referee exists or not
+	if !refereeExists(id) {
+		json.NewEncoder(w).Encode("Referee doesn't exist!")
+		return
+	}
+
+	// prequisite check. check all tables where refereeId is used
+	if refereeExistsInAMatch(id) {
+		json.NewEncoder(w).Encode("Can't delete this referee! This referee is in a match! Please delete the match first!")
+		return
+	}
+
+	deleteAReferee(id)
+
+	json.NewEncoder(w).Encode("Referee deleted successfully!")
+}
+
+// referee exists in a match or not
+func refereeExistsInAMatch(refereeId int) bool {
+	var matchId string
+	err := db.QueryRow("SELECT matchID FROM tblmatch WHERE refereeID = ?", refereeId).Scan(&matchId)
+
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+
+
+
+
+// delete a tiebreaker
+func deleteATiebreaker(tournamentId string, matchId string) {
+	_, err := db.Query("DELETE FROM tbltiebreaker WHERE tournamentId = ? AND matchID = ?", tournamentId, matchId)
+
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
+// controller function to delete a tiebreaker
+func DeleteATiebreaker(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/match/tiebreaker/{tournamentId}/{matchId}", controller.DeleteATiebreaker).Methods("DELETE")
+	// get id from url
+	params := mux.Vars(r)
+
+	// get tournamentId and matchId from url
+	tournamentId, _ := params["tournamentId"]
+	matchId, _ := params["matchId"]
+
+	// match exists or not
+	if !matchExists(tournamentId, matchId) {
+		json.NewEncoder(w).Encode("Match doesn't exist!")
+		return
+	}
+
+	// tiebreaker exists or not
+	if !tiebreakerExists(tournamentId, matchId) {
+		json.NewEncoder(w).Encode("Tiebreaker doesn't exist!")
+		return
+	}
+
+	deleteATiebreaker(tournamentId, matchId)
+
+	json.NewEncoder(w).Encode("Tiebreaker deleted successfully!")
+}
+
+
+
+
+
+// delete an individual score
+func deleteAnIndividualScore(tournamentId string, matchId string, playerRegNo int) {
+	_, err := db.Query("DELETE FROM tblindividualscore WHERE tournamentId = ? AND matchID = ? AND playerRegNo = ?", tournamentId, matchId, playerRegNo)
+
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
+// controller function to delete an individual score
+func DeleteAnIndividualScore(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/match/individualscore/{tournamentId}/{matchId}/{playerRegNo}", controller.DeleteAnIndividualScore).Methods("DELETE")
+	// get id from url
+	params := mux.Vars(r)
+
+	// get tournamentId, matchId and playerRegNo from url
+	tournamentId, _ := params["tournamentId"]
+	matchId, _ := params["matchId"]
+	playerRegNo, _ := params["playerRegNo"]
+
+	// convert playerRegNo from string to int
+	playerRegNoInt, err := strconv.Atoi(playerRegNo)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	// match exists or not
+	if !matchExists(tournamentId, matchId) {
+		json.NewEncoder(w).Encode("Match doesn't exist!")
+		return
+	}
+
+	// player playing in the match or not
+	if !playerIsPlayingInAMatchOfATournament(tournamentId, matchId, playerRegNoInt) {
+		json.NewEncoder(w).Encode("Player is not playing in the match!")
+		return
+	}
+
+	// individual score exists or not
+	if !individualScoreExists(tournamentId, matchId, playerRegNoInt) {
+		json.NewEncoder(w).Encode("Individual score doesn't exist!")
+		return
+	}
+
+	deleteAnIndividualScore(tournamentId, matchId, playerRegNoInt)
+
+	json.NewEncoder(w).Encode("Individual score deleted successfully!")
+}
+
+// individual score exists or not
+func individualScoreExists(tournamentId string, matchId string, playerRegNo int) bool {
+	var tournamentIdDB string
+	err := db.QueryRow("SELECT tournamentId FROM tblindividualscore WHERE tournamentId = ? AND matchID = ? AND playerRegNo = ?", tournamentId, matchId, playerRegNo).Scan(&tournamentIdDB)
+
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+
+
+
+
+// delete an individual punishment
+func deleteAnIndividualPunishment(tournamentId string, matchId string, playerRegNo int) {
+	_, err := db.Query("DELETE FROM tblindividualpunishment WHERE tournamentId = ? AND matchID = ? AND playerRegNo = ?", tournamentId, matchId, playerRegNo)
+
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
+// controller function to delete an individual punishment
+func DeleteAnIndividualPunishment(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/match/individualpunishment/{tournamentId}/{matchId}/{playerRegNo}", controller.DeleteAnIndividualPunishment).Methods("DELETE")
+	// get id from url
+	params := mux.Vars(r)
+
+	// get tournamentId, matchId and playerRegNo from url
+	tournamentId, _ := params["tournamentId"]
+	matchId, _ := params["matchId"]
+	playerRegNo, _ := params["playerRegNo"]
+
+	// convert playerRegNo from string to int
+	playerRegNoInt, err := strconv.Atoi(playerRegNo)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	// match exists or not
+	if !matchExists(tournamentId, matchId) {
+		json.NewEncoder(w).Encode("Match doesn't exist!")
+		return
+	}
+
+	// player playing in the match or not
+	if !playerIsPlayingInAMatchOfATournament(tournamentId, matchId, playerRegNoInt) {
+		json.NewEncoder(w).Encode("Player is not playing in the match!")
+		return
+	}
+
+	// individual punishment exists or not
+	if !individualPunishmentExists(tournamentId, matchId, playerRegNoInt) {
+		json.NewEncoder(w).Encode("Individual punishment doesn't exist!")
+		return
+	}
+
+	deleteAnIndividualPunishment(tournamentId, matchId, playerRegNoInt)
+
+	json.NewEncoder(w).Encode("Individual punishment deleted successfully!")
+}
+
+// individual punishment exists or not
+func individualPunishmentExists(tournamentId string, matchId string, playerRegNo int) bool {
+	var tournamentIdDB string
+	err := db.QueryRow("SELECT tournamentId FROM tblindividualpunishment WHERE tournamentId = ? AND matchID = ? AND playerRegNo = ?", tournamentId, matchId, playerRegNo).Scan(&tournamentIdDB)
+
+	if err != nil {
+		return false
+	}
+
+	return true
+}

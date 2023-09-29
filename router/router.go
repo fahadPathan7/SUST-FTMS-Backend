@@ -53,5 +53,17 @@ func Router() *mux.Router {
 	router.HandleFunc("/api/match/individualscore/{tournamentId}/{matchId}/{playerRegNo}", controller.UpdateAnIndividualScore).Methods("PUT") // to update an individual score of a match
 	router.HandleFunc("/api/match/individualpunishment/{tournamentId}/{matchId}/{playerRegNo}", controller.UpdateAnIndividualPunishment).Methods("PUT") // to update an individual punishment of a match
 
+	// DELETE operations
+	router.HandleFunc("/api/match/individualpunishment/{tournamentId}/{matchId}/{playerRegNo}", controller.DeleteAnIndividualPunishment).Methods("DELETE") // to delete an individual punishment of a match
+	router.HandleFunc("/api/match/individualscore/{tournamentId}/{matchId}/{playerRegNo}", controller.DeleteAnIndividualScore).Methods("DELETE") // to delete an individual score of a match
+	router.HandleFunc("/api/match/tiebreaker/{tournamentId}/{matchId}", controller.DeleteATiebreaker).Methods("DELETE") // to delete a tiebreaker of a match
+	router.HandleFunc("/api/referee/{refereeId}", controller.DeleteAReferee).Methods("DELETE") // to delete a referee
+	router.HandleFunc("/api/tournament/match/{tournamentId}/{matchId}", controller.DeleteAMatch).Methods("DELETE") // to delete a match
+	router.HandleFunc("/api/tournament/team/{tournamentId}/{deptCode}", controller.DeleteATeam).Methods("DELETE") // to delete a team
+	router.HandleFunc("/api/tournament/{tournamentId}", controller.DeleteATournament).Methods("DELETE") // to delete a tournament
+	router.HandleFunc("/api/dept/{deptCode}", controller.DeleteADept).Methods("DELETE") // to delete a dept
+	router.HandleFunc("/api/player/{playerRegNo}", controller.DeleteAPlayer).Methods("DELETE") // to delete a player
+
+	
 	return router
 }
