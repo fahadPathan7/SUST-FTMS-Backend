@@ -199,7 +199,7 @@ func playerIsPlayingInAMatchOfATournament(tournamentId string, matchId string, p
 
 // check player is in a team of a tournament or not
 func playerIsInATeamOfATournament(tournamentId string, deptCode int, playerRegNo int) bool {
-	var playerRegNoFromDB []int
+	var playerRegNoFromDB [20]int
 
 	// get playerRegNo from team
 	result, err := db.Query("SELECT player1RegNo, player2RegNo, player3RegNo, player4RegNo, player5RegNo, player6RegNo, player7RegNo, player8RegNo, player9RegNo, player10RegNo, player11RegNo, player12RegNo, player13RegNo, player14RegNo, player15RegNo, player16RegNo, player17RegNo, player18RegNo, player19RegNo, player20RegNo FROM tblteam WHERE tournamentId = ? AND deptCode = ?", tournamentId, deptCode)
@@ -693,6 +693,12 @@ func InsertNewTiebreaker(w http.ResponseWriter, r *http.Request) {
 	}
 	if team1Score != team2Score {
 		json.NewEncoder(w).Encode("Tie breaker is not eligible for this match!")
+		return
+	}
+
+	// check if tiebreaker already exists
+	if tiebreakerExists(tiebreaker.TournamentId, tiebreaker.MatchId) {
+		json.NewEncoder(w).Encode("Tiebreaker already exists!")
 		return
 	}
 
