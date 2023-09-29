@@ -761,11 +761,11 @@ func InsertNewIndividualScore(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// check if player is playing in the match or not
-	if !playerIsPlayingInAMatchOfATournament(individualScore.TournamentId, individualScore.MatchId, individualScore.PlayerRegNo) {
-		json.NewEncoder(w).Encode("Player is not playing in the match!")
-		return
-	}
+	// // check if player is playing in the match or not
+	// if !playerIsPlayingInAMatchOfATournament(individualScore.TournamentId, individualScore.MatchId, individualScore.PlayerRegNo) {
+	// 	json.NewEncoder(w).Encode("Player is not playing in the match!")
+	// 	return
+	// }
 
 	// check if player is in the team or not
 	if !playerIsInATeamOfATournament(individualScore.TournamentId, individualScore.TeamDeptCode, individualScore.PlayerRegNo) {
@@ -839,11 +839,11 @@ func InsertNewIndividualPunishment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// check if player is playing in the match or not
-	if !playerIsPlayingInAMatchOfATournament(individualPunishment.TournamentId, individualPunishment.MatchId, individualPunishment.PlayerRegNo) {
-		json.NewEncoder(w).Encode("Player is not playing in the match!")
-		return
-	}
+	// // check if player is playing in the match or not
+	// if !playerIsPlayingInAMatchOfATournament(individualPunishment.TournamentId, individualPunishment.MatchId, individualPunishment.PlayerRegNo) {
+	// 	json.NewEncoder(w).Encode("Player is not playing in the match!")
+	// 	return
+	// }
 
 	// check if player is in the team or not
 	if !playerIsInATeamOfATournament(individualPunishment.TournamentId, individualPunishment.TeamDeptCode, individualPunishment.PlayerRegNo) {
