@@ -1982,9 +1982,9 @@ func UpdateAPlayer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// check if dept exists
-	if !deptExists(player.PlayerDeptCode) {
-		json.NewEncoder(w).Encode("Dept doesn't exist!")
+	// check if dept is changed
+	if player.PlayerDeptCode != getAPlayer(id).PlayerDeptCode {
+		json.NewEncoder(w).Encode("PlayerDeptCode can't be changed!")
 		return
 	}
 
@@ -2056,7 +2056,7 @@ func UpdateADept(w http.ResponseWriter, r *http.Request) {
 
 // update a team
 func updateATeam(tournamentId string, deptCode int, team models.Team) {
-	query := "UPDATE tblteam SET teamSubmissionDate = ?, teamManager = ?, teamCaptainRegID = ?, playerRegNo1 = ?, playerRegNo2 = ?, playerRegNo3 = ?, playerRegNo4 = ?, playerRegNo5 = ?, playerRegNo6 = ?, playerRegNo7 = ?, playerRegNo8 = ?, playerRegNo9 = ?, playerRegNo10 = ?, playerRegNo11 = ?, playerRegNo12 = ?, playerRegNo13 = ?, playerRegNo14 = ?, playerRegNo15 = ?, playerRegNo16 = ?, playerRegNo17 = ?, playerRegNo18 = ?, playerRegNo19 = ?, playerRegNo20 = ? WHERE tournamentId = ? AND deptCode = ?"
+	query := "UPDATE tblteam SET teamSubmissionDate = ?, teamManager = ?, teamCaptainRegID = ?, player1RegNo = ?, player2RegNo = ?, player3RegNo = ?, player4RegNo = ?, player5RegNo = ?, player6RegNo = ?, player7RegNo = ?, player8RegNo = ?, player9RegNo = ?, player10RegNo = ?, player11RegNo = ?, player12RegNo = ?, player13RegNo = ?, player14RegNo = ?, player15RegNo = ?, player16RegNo = ?, player17RegNo = ?, player18RegNo = ?, player19RegNo = ?, player20RegNo = ? WHERE tournamentId = ? AND deptCode = ?"
 
 	_, err := db.Exec(query, team.TeamSubmissionDate, team.TeamManager, team.TeamCaptainRegID, team.PlayerRegNo[0], team.PlayerRegNo[1], team.PlayerRegNo[2], team.PlayerRegNo[3], team.PlayerRegNo[4], team.PlayerRegNo[5], team.PlayerRegNo[6], team.PlayerRegNo[7], team.PlayerRegNo[8], team.PlayerRegNo[9], team.PlayerRegNo[10], team.PlayerRegNo[11], team.PlayerRegNo[12], team.PlayerRegNo[13], team.PlayerRegNo[14], team.PlayerRegNo[15], team.PlayerRegNo[16], team.PlayerRegNo[17], team.PlayerRegNo[18], team.PlayerRegNo[19], tournamentId, deptCode)
 
