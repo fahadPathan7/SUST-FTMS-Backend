@@ -204,19 +204,21 @@ func playerIsInATeamOfATournament(tournamentId string, deptCode int, playerRegNo
 	result, err := db.Query("SELECT player1RegNo, player2RegNo, player3RegNo, player4RegNo, player5RegNo, player6RegNo, player7RegNo, player8RegNo, player9RegNo, player10RegNo, player11RegNo, player12RegNo, player13RegNo, player14RegNo, player15RegNo, player16RegNo, player17RegNo, player18RegNo, player19RegNo, player20RegNo FROM tblteam WHERE tournamentId = ? AND deptCode = ?", tournamentId, deptCode)
 
 	if err != nil {
-		return false
+		panic(err.Error())
 	}
 
-	err = result.Scan(&playerRegNoFromDB[0], &playerRegNoFromDB[1], &playerRegNoFromDB[2], &playerRegNoFromDB[3], &playerRegNoFromDB[4], &playerRegNoFromDB[5], &playerRegNoFromDB[6], &playerRegNoFromDB[7], &playerRegNoFromDB[8], &playerRegNoFromDB[9], &playerRegNoFromDB[10], &playerRegNoFromDB[11], &playerRegNoFromDB[12], &playerRegNoFromDB[13], &playerRegNoFromDB[14], &playerRegNoFromDB[15], &playerRegNoFromDB[16], &playerRegNoFromDB[17], &playerRegNoFromDB[18], &playerRegNoFromDB[19])
+	for result.Next() {
+		err = result.Scan(&playerRegNoFromDB[0], &playerRegNoFromDB[1], &playerRegNoFromDB[2], &playerRegNoFromDB[3], &playerRegNoFromDB[4], &playerRegNoFromDB[5], &playerRegNoFromDB[6], &playerRegNoFromDB[7], &playerRegNoFromDB[8], &playerRegNoFromDB[9], &playerRegNoFromDB[10], &playerRegNoFromDB[11], &playerRegNoFromDB[12], &playerRegNoFromDB[13], &playerRegNoFromDB[14], &playerRegNoFromDB[15], &playerRegNoFromDB[16], &playerRegNoFromDB[17], &playerRegNoFromDB[18], &playerRegNoFromDB[19])
 
-	if err != nil {
-		return false
-	}
+		if err != nil {
+			panic(err.Error())
+		}
 
-	// check if playerRegNo is in playerRegNoFromDB
-	for i := 0; i < 20; i++ {
-		if playerRegNo == playerRegNoFromDB[i] {
-			return true
+		// check if playerRegNo is in playerRegNoFromDB
+		for i := 0; i < 20; i++ {
+			if playerRegNo == playerRegNoFromDB[i] {
+				return true
+			}
 		}
 	}
 
@@ -3565,11 +3567,17 @@ func individualScoreExists(tournamentId string, matchId string, playerRegNo int)
 		panic(err.Error())
 	}
 
+	count := 0
 	for rows.Next() {
+		count++
 		break
 	}
 
-	return true
+	if count > 0 {
+		return true
+	}
+
+	return false
 }
 
 
@@ -3642,9 +3650,15 @@ func individualPunishmentExists(tournamentId string, matchId string, playerRegNo
 		panic(err.Error())
 	}
 
+	count := 0
 	for rows.Next() {
+		count++
 		break
 	}
 
-	return true
+	if count > 0 {
+		return true
+	}
+
+	return false
 }
