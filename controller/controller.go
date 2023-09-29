@@ -182,10 +182,12 @@ func playerIsPlayingInAMatchOfATournament(tournamentId string, matchId string, p
 		return false
 	}
 
-	err = result.Scan(&team1DeptCode, &team2DeptCode)
+	for result.Next() {
+		err = result.Scan(&team1DeptCode, &team2DeptCode)
 
-	if err != nil {
-		return false
+		if err != nil {
+			return false
+		}
 	}
 
 	// check if player is in team1 or team2
