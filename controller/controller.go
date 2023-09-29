@@ -175,18 +175,17 @@ func playerIsPlayingInAMatchOfATournament(tournamentId string, matchId string, p
 	var team2DeptCode int
 
 	// get team1DeptCode and team2DeptCode from match
-	result, err := db.Query("SELECT team1_deptCode, team2_deptCode FROM tblmatch WHERE tournamentId = ? AND matchID = ?", tournamentId, matchId)
+	query := "SELECT team1_deptCode, team2_deptCode FROM tblmatch WHERE tournamentId = ? AND matchID = ?"
+	result, err := db.Query(query, tournamentId, matchId)
 
 	if err != nil {
 		return false
 	}
 
-	for result.Next() {
-		err = result.Scan(&team1DeptCode, &team2DeptCode)
+	err = result.Scan(&team1DeptCode, &team2DeptCode)
 
-		if err != nil {
-			return false
-		}
+	if err != nil {
+		return false
 	}
 
 	// check if player is in team1 or team2
@@ -3205,7 +3204,7 @@ func teamExistsInAMatch(tournamentId string, deptCode int) bool {
 	for rows.Next() {
 		// get the tournamentId and matchId and delete the match
 		var match models.Match
-		err = rows.Scan(&match.TournamentId, &match.MatchId, &match.MatchDate, &match.Team1DeptCode, &match.Team2DeptCode, &match.Team1Score, &match.Team2Score, &match.WinnerTeamDeptCode, &match.MatchRefereeID, &match.MatchLinesman1ID, &match.MatchLinesman2ID, match.MatchFourthRefereeID)
+		err = rows.Scan(&match.TournamentId, &match.MatchId, &match.MatchDate, &match.Team1DeptCode, &match.Team2DeptCode, &match.Team1Score, &match.Team2Score, &match.WinnerTeamDeptCode, &match.MatchRefereeID, &match.MatchLinesman1ID, &match.MatchLinesman2ID, &match.MatchFourthRefereeID)
 		if err != nil {
 			panic(err.Error())
 		}
