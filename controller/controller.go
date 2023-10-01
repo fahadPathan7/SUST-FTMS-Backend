@@ -257,12 +257,16 @@ func InsertNewDept(w http.ResponseWriter, r *http.Request) {
 
 	// null check
 	if dept.DeptCode == 0 || dept.DeptName == "" || dept.DeptHeadName == "" || dept.DeptShortName == "" {
-		json.NewEncoder(w).Encode("All fields are required!")
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		w.Header().Set("Content-Type", "application/json")
 		return
 	}
 
 	// check if dept already exists
 	if deptExists(dept.DeptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Dept already exists!")
 		return
 	}
@@ -298,18 +302,24 @@ func InsertNewPlayer(w http.ResponseWriter, r *http.Request) {
 
 	// null check
 	if player.PlayerRegNo == 0 || player.PlayerSession == "" || player.PlayerSemester == 0 || player.PlayerName == "" || player.PlayerDeptCode == 0 {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("All fields are required!")
 		return
 	}
 
 	// check if player already exists
 	if playerExists(player.PlayerRegNo) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Player already exists!")
 		return
 	}
 
 	// check if dept exists
 	if !deptExists(player.PlayerDeptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Dept doesn't exist!")
 		return
 	}
@@ -357,35 +367,47 @@ func InsertNewTeam(w http.ResponseWriter, r *http.Request) {
 
 	// null check
 	if team.TournamentId == "" || team.TeamSubmissionDate == "" || team.DeptCode == 0 || team.TeamManager == "" || team.TeamCaptainRegID == 0 || team.PlayerRegNo[0] == 0 || team.PlayerRegNo[1] == 0 || team.PlayerRegNo[2] == 0 || team.PlayerRegNo[3] == 0 || team.PlayerRegNo[4] == 0 || team.PlayerRegNo[5] == 0 || team.PlayerRegNo[6] == 0 || team.PlayerRegNo[7] == 0 || team.PlayerRegNo[8] == 0 || team.PlayerRegNo[9] == 0 || team.PlayerRegNo[10] == 0 || team.PlayerRegNo[11] == 0 || team.PlayerRegNo[12] == 0 || team.PlayerRegNo[13] == 0 || team.PlayerRegNo[14] == 0 || team.PlayerRegNo[15] == 0 || team.PlayerRegNo[16] == 0 || team.PlayerRegNo[17] == 0 || team.PlayerRegNo[18] == 0 || team.PlayerRegNo[19] == 0 {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("All fields are required!")
 		return
 	}
 
 	// check if team already exists
 	if teamExists(team.TournamentId, team.DeptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team already exists!")
 		return
 	}
 
 	// check if tournament exists
 	if !tournamentExists(team.TournamentId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Tournament doesn't exist!")
 		return
 	}
 
 	// check if dept exists
 	if !deptExists(team.DeptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Dept doesn't exist!")
 		return
 	}
 
 	// check if all players exist
 	if !playerExists(team.TeamCaptainRegID) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team captain doesn't exist!")
 		return
 	}
 	for i := 0; i < 20; i++ {
 		if !playerExists(team.PlayerRegNo[i]) {
+			// set response header as forbidden
+			w.WriteHeader(http.StatusForbidden)
 			json.NewEncoder(w).Encode("Player" + strconv.Itoa(i+1) + " doesn't exist!")
 			return
 		}
@@ -393,11 +415,15 @@ func InsertNewTeam(w http.ResponseWriter, r *http.Request) {
 
 	// check if all players are from same dept.
 	if getPlayerDeptCode(team.TeamCaptainRegID) != team.DeptCode {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team captain is not from this dept!")
 		return
 	}
 	for i := 0; i < 20; i++ {
 		if getPlayerDeptCode(team.PlayerRegNo[i]) != team.DeptCode {
+			// set response header as forbidden
+			w.WriteHeader(http.StatusForbidden)
 			json.NewEncoder(w).Encode("Player" + strconv.Itoa(i+1) + " is not from this dept!")
 			return
 		}
@@ -412,6 +438,8 @@ func InsertNewTeam(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if !captainFound {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team captain is not in player list!")
 		return
 	}
@@ -420,6 +448,8 @@ func InsertNewTeam(w http.ResponseWriter, r *http.Request) {
 	for i := 0; i < 20 - 1; i++ {
 		for j := i + 1; j < 20; j++ {
 			if team.PlayerRegNo[i] == team.PlayerRegNo[j] {
+				// set response header as forbidden
+				w.WriteHeader(http.StatusForbidden)
 				json.NewEncoder(w).Encode("Player" + strconv.Itoa(i+1) + " and Player" + strconv.Itoa(j+1) + " are same!")
 				return
 			}
@@ -458,16 +488,23 @@ func InsertNewTournament(w http.ResponseWriter, r *http.Request) {
 
 	// null check
 	if tournament.TournamentId == "" || tournament.TournamentName == "" || tournament.TournamentYear == "" {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("All fields are required!")
 		return
 	}
 
-	if !tournamentExists(tournament.TournamentId) {
-		insertNewTournament(tournament)
-		json.NewEncoder(w).Encode(tournament)
-	} else {
+
+	if tournamentExists(tournament.TournamentId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Tournament already exists!")
+		return
 	}
+
+	// insert new tournament
+	insertNewTournament(tournament)
+	json.NewEncoder(w).Encode(tournament)
 }
 
 
@@ -496,11 +533,15 @@ func InsertNewReferee(w http.ResponseWriter, r *http.Request) {
 
 	// null check
 	if referee.RefereeID == 0 || referee.RefereeName == "" || referee.RefereeInstitute == "" {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("All fields are required!")
 		return
 	}
 
 	if refereeExists(referee.RefereeID) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Referee already exists!")
 		return
 	}
@@ -535,70 +576,96 @@ func InsertNewMatch(w http.ResponseWriter, r *http.Request) {
 
 	// null check
 	if match.TournamentId == "" || match.MatchId == "" || match.MatchDate == "" || match.Team1DeptCode == 0 || match.Team2DeptCode == 0 || match.Team1Score == 0 || match.Team2Score == 0 || match.WinnerTeamDeptCode == 0 || match.MatchRefereeID == 0 || match.MatchLinesman1ID == 0 || match.MatchLinesman2ID == 0 || match.MatchFourthRefereeID == 0 {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("All fields are required!")
 		return
 	}
 
 	// check if match already exists
 	if matchExists(match.TournamentId, match.MatchId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Match already exists!")
 		return
 	}
 
 	// check if tournament exists
 	if !tournamentExists(match.TournamentId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Tournament doesn't exist!")
 		return
 	}
 
 	// check if team1 exists
 	if !teamExists(match.TournamentId, match.Team1DeptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team1 doesn't exist!")
 		return
 	}
 
 	// check if team2 exists
 	if !teamExists(match.TournamentId, match.Team2DeptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team2 doesn't exist!")
 		return
 	}
 
 	// check if team1 and team2 are different
 	if match.Team1DeptCode == match.Team2DeptCode {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team1 and Team2 are same!")
 		return
 	}
 
 	// check if team1 and team2 are playing in the tournament or not
 	if !teamExistsInATournament(match.TournamentId, match.Team1DeptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team1 is not playing in the tournament!")
 		return
 	}
 	if !teamExistsInATournament(match.TournamentId, match.Team2DeptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team2 is not playing in the tournament!")
 		return
 	}
 
 	// check if referee exists
 	if !refereeExists(match.MatchRefereeID) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Referee doesn't exist!")
 		return
 	}
 	if !refereeExists(match.MatchLinesman1ID) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Linesman1 doesn't exist!")
 		return
 	}
 	if !refereeExists(match.MatchLinesman2ID) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Linesman2 doesn't exist!")
 		return
 	}
 	if !refereeExists(match.MatchFourthRefereeID) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Fourth referee doesn't exist!")
 		return
 	}
 
 	// check if the winner team is one of the two teams
 	if match.WinnerTeamDeptCode != match.Team1DeptCode && match.WinnerTeamDeptCode != match.Team2DeptCode {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Winner team is not one of the two teams!")
 		return
 	}
@@ -634,46 +701,62 @@ func InsertNewTiebreaker(w http.ResponseWriter, r *http.Request) {
 
 	// null check
 	if tiebreaker.TournamentId == "" || tiebreaker.MatchId == "" || tiebreaker.Team1DeptCode == 0 || tiebreaker.Team2DeptCode == 0 || tiebreaker.Team1TieBreakerScore == 0 || tiebreaker.Team2TieBreakerScore == 0 {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("All fields are required!")
 		return
 	}
 
 	// check if tournament exists
 	if !tournamentExists(tiebreaker.TournamentId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Tournament doesn't exist!")
 		return
 	}
 
 	// check if match exists
 	if !matchExists(tiebreaker.TournamentId, tiebreaker.MatchId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Match doesn't exist!")
 		return
 	}
 
 	// check if team1 exists
 	if !teamExists(tiebreaker.TournamentId, tiebreaker.Team1DeptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team1 doesn't exist!")
 		return
 	}
 
 	// check if team2 exists
 	if !teamExists(tiebreaker.TournamentId, tiebreaker.Team2DeptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team2 doesn't exist!")
 		return
 	}
 
 	// check if team1 and team2 are playing in the match or not
 	if !teamIsPlayingInAMatchOfATournament(tiebreaker.TournamentId, tiebreaker.MatchId, tiebreaker.Team1DeptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team1 is not playing in the match!")
 		return
 	}
 	if !teamIsPlayingInAMatchOfATournament(tiebreaker.TournamentId, tiebreaker.MatchId, tiebreaker.Team2DeptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team2 is not playing in the match!")
 		return
 	}
 
 	// check if team1 and team2 are different
 	if tiebreaker.Team1DeptCode == tiebreaker.Team2DeptCode {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team1 and Team2 are same!")
 		return
 	}
@@ -682,6 +765,8 @@ func InsertNewTiebreaker(w http.ResponseWriter, r *http.Request) {
 	var team1DeptCode int
 	err := db.QueryRow("SELECT team1_deptCode FROM tblmatch WHERE tournamentId = ? AND matchID = ?", tiebreaker.TournamentId, tiebreaker.MatchId).Scan(&team1DeptCode)
 	if err != nil || tiebreaker.Team1DeptCode != team1DeptCode {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team1 and Team2 are misplaced!")
 		return
 	}
@@ -691,16 +776,22 @@ func InsertNewTiebreaker(w http.ResponseWriter, r *http.Request) {
 	var team2Score int
 	err = db.QueryRow("SELECT team1_goal_number, team2_goal_number FROM tblmatch WHERE tournamentId = ? AND matchID = ?", tiebreaker.TournamentId, tiebreaker.MatchId).Scan(&team1Score, &team2Score)
 	if err != nil {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Error in getting match score!")
 		return
 	}
 	if team1Score != team2Score {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Tie breaker is not eligible for this match!")
 		return
 	}
 
 	// check if tiebreaker already exists
 	if tiebreakerExists(tiebreaker.TournamentId, tiebreaker.MatchId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Tiebreaker already exists!")
 		return
 	}
@@ -737,48 +828,64 @@ func InsertNewIndividualScore(w http.ResponseWriter, r *http.Request) {
 
 	// null check
 	if individualScore.TournamentId == "" || individualScore.MatchId == "" || individualScore.PlayerRegNo == 0 || individualScore.TeamDeptCode == 0 || individualScore.Goals == 0 {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("All fields are required!")
 		return
 	}
 
 	// check if tournament exists
 	if !tournamentExists(individualScore.TournamentId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Tournament doesn't exist!")
 		return
 	}
 
 	// check if match exists
 	if !matchExists(individualScore.TournamentId, individualScore.MatchId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Match doesn't exist!")
 		return
 	}
 
 	// check if team exists
 	if !teamExists(individualScore.TournamentId, individualScore.TeamDeptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team doesn't exist!")
 		return
 	}
 
 	// check if the team is playing in the match or not
 	if !teamIsPlayingInAMatchOfATournament(individualScore.TournamentId, individualScore.MatchId, individualScore.TeamDeptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team is not playing in the match!")
 		return
 	}
 
 	// // check if player is playing in the match or not
 	// if !playerIsPlayingInAMatchOfATournament(individualScore.TournamentId, individualScore.MatchId, individualScore.PlayerRegNo) {
+	// set response header as forbidden
+	//	w.WriteHeader(http.StatusForbidden)
 	// 	json.NewEncoder(w).Encode("Player is not playing in the match!")
 	// 	return
 	// }
 
 	// check if player is in the team or not
 	if !playerIsInATeamOfATournament(individualScore.TournamentId, individualScore.TeamDeptCode, individualScore.PlayerRegNo) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Player is not in the team!")
 		return
 	}
 
 	// check if individual score already exists
 	if individualScoreExists(individualScore.TournamentId, individualScore.MatchId, individualScore.PlayerRegNo) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Individual score already exists!")
 		return
 	}
@@ -815,30 +922,40 @@ func InsertNewIndividualPunishment(w http.ResponseWriter, r *http.Request) {
 
 	// null check
 	if individualPunishment.TournamentId == "" || individualPunishment.MatchId == "" || individualPunishment.PlayerRegNo == 0 || individualPunishment.TeamDeptCode == 0 || individualPunishment.PunishmentType == "" {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("All fields are required!")
 		return
 	}
 
 	// check if tournament exists
 	if !tournamentExists(individualPunishment.TournamentId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Tournament doesn't exist!")
 		return
 	}
 
 	// check if match exists
 	if !matchExists(individualPunishment.TournamentId, individualPunishment.MatchId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Match doesn't exist!")
 		return
 	}
 
 	// check if team exists
 	if !teamExists(individualPunishment.TournamentId, individualPunishment.TeamDeptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team doesn't exist!")
 		return
 	}
 
 	// check if the team is playing in the match or not
 	if !teamIsPlayingInAMatchOfATournament(individualPunishment.TournamentId, individualPunishment.MatchId, individualPunishment.TeamDeptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team is not playing in the match!")
 		return
 	}
@@ -851,12 +968,16 @@ func InsertNewIndividualPunishment(w http.ResponseWriter, r *http.Request) {
 
 	// check if player is in the team or not
 	if !playerIsInATeamOfATournament(individualPunishment.TournamentId, individualPunishment.TeamDeptCode, individualPunishment.PlayerRegNo) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Player is not in the team!")
 		return
 	}
 
 	// check if individual punishment already exists
 	if individualPunishmentExists(individualPunishment.TournamentId, individualPunishment.MatchId, individualPunishment.PlayerRegNo) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Individual punishment already exists!")
 		return
 	}
@@ -946,6 +1067,8 @@ func GetADept(w http.ResponseWriter, r *http.Request) {
 
 	// dept exists or not
 	if !deptExists(id) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Dept doesn't exist!")
 		return
 	}
@@ -1026,6 +1149,8 @@ func GetATournament(w http.ResponseWriter, r *http.Request) {
 
 	// tournament exists or not
 	if !tournamentExists(id) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Tournament doesn't exist!")
 		return
 	}
@@ -1078,6 +1203,8 @@ func GetAllTeamsOfATournament(w http.ResponseWriter, r *http.Request) {
 
 	// tournament exists or not
 	if !tournamentExists(id) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Tournament doesn't exist!")
 		return
 	}
@@ -1133,6 +1260,8 @@ func GetPlayersOfADept(w http.ResponseWriter, r *http.Request) {
 
 	// dept exists or not
 	if !deptExists(id) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Dept doesn't exist!")
 		return
 	}
@@ -1180,6 +1309,8 @@ func GetATeamOfATournament(w http.ResponseWriter, r *http.Request) {
 
 	// team exists or not
 	if !teamExists(tournamentId, deptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team doesn't exist!")
 		return
 	}
@@ -1232,6 +1363,8 @@ func GetAllMatchesOfATournament(w http.ResponseWriter, r *http.Request) {
 
 	// tournament exists or not
 	if !tournamentExists(id) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Tournament doesn't exist!")
 		return
 	}
@@ -1275,6 +1408,8 @@ func GetAMatchOfATournament(w http.ResponseWriter, r *http.Request) {
 
 	// match exists or not
 	if !matchExists(tournamentId, matchId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Match doesn't exist!")
 		return
 	}
@@ -1320,6 +1455,8 @@ func GetAPlayer(w http.ResponseWriter, r *http.Request) {
 
 	// player exists or not
 	if !playerExists(id) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Player doesn't exist!")
 		return
 	}
@@ -1404,6 +1541,8 @@ func GetAReferee(w http.ResponseWriter, r *http.Request) {
 
 	// referee exists or not
 	if !refereeExists(id) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Referee doesn't exist!")
 		return
 	}
@@ -1456,6 +1595,8 @@ func GetAllTiebreakersOfATournament(w http.ResponseWriter, r *http.Request) {
 
 	// tournament exists or not
 	if !tournamentExists(id) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Tournament doesn't exist!")
 		return
 	}
@@ -1498,6 +1639,8 @@ func GetATiebreakerOfATournament(w http.ResponseWriter, r *http.Request) {
 
 	// tiebreaker exists or not
 	if !tiebreakerExists(tournamentId, matchId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Tiebreaker doesn't exist!")
 		return
 	}
@@ -1550,6 +1693,8 @@ func GetAllIndividualScoresOfATournament(w http.ResponseWriter, r *http.Request)
 
 	// tournament exists or not
 	if !tournamentExists(id) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Tournament doesn't exist!")
 		return
 	}
@@ -1611,12 +1756,16 @@ func GetAllIndividualScoresOfAMatchByATeam(w http.ResponseWriter, r *http.Reques
 
 	// match exists or not
 	if !matchExists(tournamentId, matchId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Match doesn't exist!")
 		return
 	}
 
 	// check if the team is playing in the match
 	if !teamIsPlayingInAMatchOfATournament(tournamentId, matchId, teamDeptCodeInt) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team is not playing in the match!")
 		return
 	}
@@ -1678,12 +1827,16 @@ func GetAllIndividualScoresOfAPlayerInATournament(w http.ResponseWriter, r *http
 
 	// tournament exists or not
 	if !tournamentExists(tournamentId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Tournament doesn't exist!")
 		return
 	}
 
 	// player exists or not
 	if !playerExists(playerRegNoInt) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Player doesn't exist!")
 		return
 	}
@@ -1736,6 +1889,8 @@ func GetAllIndividualPunishmentsOfATournament(w http.ResponseWriter, r *http.Req
 
 	// tournament exists or not
 	if !tournamentExists(id) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Tournament doesn't exist!")
 		return
 	}
@@ -1797,12 +1952,16 @@ func GetAllIndividualPunishmentsOfAMatchByATeam(w http.ResponseWriter, r *http.R
 
 	// match exists or not
 	if !matchExists(tournamentId, matchId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Match doesn't exist!")
 		return
 	}
 
 	// check if the team is playing in the match
 	if !teamIsPlayingInAMatchOfATournament(tournamentId, matchId, teamDeptCodeInt) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team is not playing in the match!")
 		return
 	}
@@ -1863,12 +2022,16 @@ func GetAllIndividualPunishmentsOfAPlayerInATournament(w http.ResponseWriter, r 
 
 	// tournament exists or not
 	if !tournamentExists(tournamentId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Tournament doesn't exist!")
 		return
 	}
 
 	// player exists or not
 	if !playerExists(playerRegNoInt) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Player doesn't exist!")
 		return
 	}
@@ -1914,6 +2077,8 @@ func UpdateATournament(w http.ResponseWriter, r *http.Request) {
 
 	// tournament exists or not
 	if !tournamentExists(id) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Tournament doesn't exist!")
 		return
 	}
@@ -1924,12 +2089,16 @@ func UpdateATournament(w http.ResponseWriter, r *http.Request) {
 
 	// null value check
 	if tournament.TournamentName == "" || tournament.TournamentYear == "" {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("All fields must be filled!")
 		return
 	}
 
 	// tournamentId can't be changed
 	if id != tournament.TournamentId {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("TournamentId can't be changed!")
 		return
 	}
@@ -1971,6 +2140,8 @@ func UpdateAPlayer(w http.ResponseWriter, r *http.Request) {
 
 	// player exists or not
 	if !playerExists(id) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Player doesn't exist!")
 		return
 	}
@@ -1987,12 +2158,16 @@ func UpdateAPlayer(w http.ResponseWriter, r *http.Request) {
 
 	// check if the playerRegNo is changed
 	if id != player.PlayerRegNo {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("PlayerRegNo can't be changed!")
 		return
 	}
 
 	// check if dept is changed
 	if player.PlayerDeptCode != getAPlayer(id).PlayerDeptCode {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("PlayerDeptCode can't be changed!")
 		return
 	}
@@ -2034,6 +2209,8 @@ func UpdateADept(w http.ResponseWriter, r *http.Request) {
 
 	// dept exists or not
 	if !deptExists(id) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Dept doesn't exist!")
 		return
 	}
@@ -2044,6 +2221,8 @@ func UpdateADept(w http.ResponseWriter, r *http.Request) {
 
 	// null value check
 	if dept.DeptName == "" || dept.DeptShortName == "" || dept.DeptHeadName == "" {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("All fields must be filled!")
 		return
 	}
@@ -2095,6 +2274,8 @@ func UpdateATeam(w http.ResponseWriter, r *http.Request) {
 
 	// team exists or not
 	if !teamExists(tournamentId, deptCodeInt) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team doesn't exist!")
 		return
 	}
@@ -2105,28 +2286,38 @@ func UpdateATeam(w http.ResponseWriter, r *http.Request) {
 
 	// null value check
 	if team.TeamSubmissionDate == "" || team.TeamManager == "" || team.TeamCaptainRegID == 0 || team.PlayerRegNo[0] == 0 || team.PlayerRegNo[1] == 0 || team.PlayerRegNo[2] == 0 || team.PlayerRegNo[3] == 0 || team.PlayerRegNo[4] == 0 || team.PlayerRegNo[5] == 0 || team.PlayerRegNo[6] == 0 || team.PlayerRegNo[7] == 0 || team.PlayerRegNo[8] == 0 || team.PlayerRegNo[9] == 0 || team.PlayerRegNo[10] == 0 || team.PlayerRegNo[11] == 0 || team.PlayerRegNo[12] == 0 || team.PlayerRegNo[13] == 0 || team.PlayerRegNo[14] == 0 || team.PlayerRegNo[15] == 0 || team.PlayerRegNo[16] == 0 || team.PlayerRegNo[17] == 0 || team.PlayerRegNo[18] == 0 || team.PlayerRegNo[19] == 0 {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("All fields must be filled!")
 		return
 	}
 
 	// check if the tournamentId and deptCode is changed
 	if tournamentId != team.TournamentId {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("TournamentId can't be changed!")
 		return
 	}
 
 	if deptCodeInt != team.DeptCode {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("DeptCode can't be changed!")
 		return
 	}
 
 	// check if all players exist
 	if !playerExists(team.TeamCaptainRegID) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team captain doesn't exist!")
 		return
 	}
 	for i := 0; i < 20; i++ {
 		if !playerExists(team.PlayerRegNo[i]) {
+			// set response header as forbidden
+			w.WriteHeader(http.StatusForbidden)
 			json.NewEncoder(w).Encode("Player" + strconv.Itoa(i+1) + " doesn't exist!")
 			return
 		}
@@ -2134,11 +2325,15 @@ func UpdateATeam(w http.ResponseWriter, r *http.Request) {
 
 	// check if all players are from same dept.
 	if getPlayerDeptCode(team.TeamCaptainRegID) != team.DeptCode {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team captain is not from this dept!")
 		return
 	}
 	for i := 0; i < 20; i++ {
 		if getPlayerDeptCode(team.PlayerRegNo[i]) != team.DeptCode {
+			// set response header as forbidden
+			w.WriteHeader(http.StatusForbidden)
 			json.NewEncoder(w).Encode("Player" + strconv.Itoa(i+1) + " is not from this dept!")
 			return
 		}
@@ -2153,6 +2348,8 @@ func UpdateATeam(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if !captainFound {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team captain is not in player list!")
 		return
 	}
@@ -2161,6 +2358,8 @@ func UpdateATeam(w http.ResponseWriter, r *http.Request) {
 	for i := 0; i < 20 - 1; i++ {
 		for j := i + 1; j < 20; j++ {
 			if team.PlayerRegNo[i] == team.PlayerRegNo[j] {
+				// set response header as forbidden
+				w.WriteHeader(http.StatusForbidden)
 				json.NewEncoder(w).Encode("Player" + strconv.Itoa(i+1) + " and Player" + strconv.Itoa(j+1) + " are same!")
 				return
 			}
@@ -2201,6 +2400,8 @@ func UpdateAMatch(w http.ResponseWriter, r *http.Request) {
 
 	// match exists or not
 	if !matchExists(tournamentId, matchId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Match doesn't exist!")
 		return
 	}
@@ -2211,51 +2412,71 @@ func UpdateAMatch(w http.ResponseWriter, r *http.Request) {
 
 	// null value check
 	if match.MatchDate == "" || match.Team1DeptCode == 0 || match.Team2DeptCode == 0 || match.Team1Score == 0 || match.Team2Score == 0 || match.WinnerTeamDeptCode == 0 || match.MatchRefereeID == 0 || match.MatchLinesman1ID == 0 || match.MatchLinesman2ID == 0 || match.MatchFourthRefereeID == 0 {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("All fields must be filled!")
 		return
 	}
 
 	// check if the tournamentId and matchId is changed
 	if tournamentId != match.TournamentId {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("TournamentId can't be changed!")
 		return
 	}
 
 	if matchId != match.MatchId {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("MatchId can't be changed!")
 		return
 	}
 
 	// check both teams participates in this tournament or not
 	if !teamExistsInATournament(tournamentId, match.Team1DeptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team1 doesn't participate in this tournament!")
 		return
 	}
 	if !teamExistsInATournament(tournamentId, match.Team2DeptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team2 doesn't participate in this tournament!")
 		return
 	}
 
 	// check if all referee exists
 	if !refereeExists(match.MatchRefereeID) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Match referee doesn't exist!")
 		return
 	}
 	if !refereeExists(match.MatchLinesman1ID) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Match linesman1 doesn't exist!")
 		return
 	}
 	if !refereeExists(match.MatchLinesman2ID) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Match linesman2 doesn't exist!")
 		return
 	}
 	if !refereeExists(match.MatchFourthRefereeID) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Match fourth referee doesn't exist!")
 		return
 	}
 
 	// check if the winner team is one of the two teams
 	if match.WinnerTeamDeptCode != match.Team1DeptCode && match.WinnerTeamDeptCode != match.Team2DeptCode {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Winner team is not one of the two teams!")
 		return
 	}
@@ -2297,6 +2518,8 @@ func UpdateAReferee(w http.ResponseWriter, r *http.Request) {
 
 	// referee exists or not
 	if !refereeExists(id) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Referee doesn't exist!")
 		return
 	}
@@ -2307,12 +2530,16 @@ func UpdateAReferee(w http.ResponseWriter, r *http.Request) {
 
 	// null value check
 	if referee.RefereeName == "" || referee.RefereeInstitute == "" {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("All fields must be filled!")
 		return
 	}
 
 	// check if the refereeId is changed
 	if id != referee.RefereeID {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("RefereeId can't be changed!")
 		return
 	}
@@ -2351,6 +2578,8 @@ func UpdateATiebreaker(w http.ResponseWriter, r *http.Request) {
 
 	// match exists or not
 	if !matchExists(tournamentId, matchId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Match doesn't exist!")
 		return
 	}
@@ -2361,17 +2590,23 @@ func UpdateATiebreaker(w http.ResponseWriter, r *http.Request) {
 
 	// null value check
 	if tiebreaker.Team1DeptCode == 0 || tiebreaker.Team2DeptCode == 0 || tiebreaker.Team1TieBreakerScore == 0 || tiebreaker.Team2TieBreakerScore == 0 {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("All fields must be filled!")
 		return
 	}
 
 	// check if the tournamentId and matchId is changed
 	if tournamentId != tiebreaker.TournamentId {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("TournamentId can't be changed!")
 		return
 	}
 
 	if matchId != tiebreaker.MatchId {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("MatchId can't be changed!")
 		return
 	}
@@ -2379,16 +2614,22 @@ func UpdateATiebreaker(w http.ResponseWriter, r *http.Request) {
 
 	// check if both teams are playing in the match
 	if !teamIsPlayingInAMatchOfATournament(tournamentId, matchId, tiebreaker.Team1DeptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team1 is not playing in the match!")
 		return
 	}
 	if !teamIsPlayingInAMatchOfATournament(tournamentId, matchId, tiebreaker.Team2DeptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team2 is not playing in the match!")
 		return
 	}
 
 	// check if team1 and team2 are different
 	if tiebreaker.Team1DeptCode == tiebreaker.Team2DeptCode {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team1 and Team2 are same!")
 		return
 	}
@@ -2397,12 +2638,16 @@ func UpdateATiebreaker(w http.ResponseWriter, r *http.Request) {
 	var team1DeptCode int
 	err := db.QueryRow("SELECT team1_deptCode FROM tblmatch WHERE tournamentId = ? AND matchID = ?", tiebreaker.TournamentId, tiebreaker.MatchId).Scan(&team1DeptCode)
 	if err != nil || tiebreaker.Team1DeptCode != team1DeptCode {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team1 and Team2 are misplaced!")
 		return
 	}
 
 	// check if tiebreaker valid or not
 	if tiebreaker.Team1TieBreakerScore == tiebreaker.Team2TieBreakerScore {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Tiebreaker score can not be same!")
 		return
 	}
@@ -2413,10 +2658,14 @@ func UpdateATiebreaker(w http.ResponseWriter, r *http.Request) {
 	var team2Score int
 	err = db.QueryRow("SELECT team1_goal_number, team2_goal_number FROM tblmatch WHERE tournamentId = ? AND matchID = ?", tiebreaker.TournamentId, tiebreaker.MatchId).Scan(&team1Score, &team2Score)
 	if err != nil {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Error in getting match score!")
 		return
 	}
 	if team1Score != team2Score {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Tie breaker is not eligible for this match!")
 		return
 	}
@@ -2463,12 +2712,16 @@ func UpdateAnIndividualScore(w http.ResponseWriter, r *http.Request) {
 
 	// match exists or not
 	if !matchExists(tournamentId, matchId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Match doesn't exist!")
 		return
 	}
 
 	// player playing in the match or not
 	if !playerIsPlayingInAMatchOfATournament(tournamentId, matchId, playerRegNoInt) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Player is not playing in the match!")
 		return
 	}
@@ -2479,22 +2732,30 @@ func UpdateAnIndividualScore(w http.ResponseWriter, r *http.Request) {
 
 	// null value check
 	if individualScore.TeamDeptCode == 0 || individualScore.Goals == 0 {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("All fields must be filled!")
 		return
 	}
 
 	// check if the tournamentId, matchId and playerRegNo is changed
 	if tournamentId != individualScore.TournamentId {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("TournamentId can't be changed!")
 		return
 	}
 
 	if matchId != individualScore.MatchId {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("MatchId can't be changed!")
 		return
 	}
 
 	if playerRegNoInt != individualScore.PlayerRegNo {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("PlayerRegNo can't be changed!")
 		return
 	}
@@ -2502,12 +2763,16 @@ func UpdateAnIndividualScore(w http.ResponseWriter, r *http.Request) {
 
 	// check if the team is playing in the match
 	if !teamIsPlayingInAMatchOfATournament(tournamentId, matchId, individualScore.TeamDeptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team is not playing in the match!")
 		return
 	}
 
 	// check if the player is from the team
 	if getPlayerDeptCode(playerRegNoInt) != individualScore.TeamDeptCode {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Player is not from the team!")
 		return
 	}
@@ -2554,12 +2819,16 @@ func UpdateAnIndividualPunishment(w http.ResponseWriter, r *http.Request) {
 
 	// match exists or not
 	if !matchExists(tournamentId, matchId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Match doesn't exist!")
 		return
 	}
 
 	// player playing in the match or not
 	if !playerIsPlayingInAMatchOfATournament(tournamentId, matchId, playerRegNoInt) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Player is not playing in the match!")
 		return
 	}
@@ -2570,22 +2839,30 @@ func UpdateAnIndividualPunishment(w http.ResponseWriter, r *http.Request) {
 
 	// null value check
 	if individualPunishment.TeamDeptCode == 0 || individualPunishment.PunishmentType == "" {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("All fields must be filled!")
 		return
 	}
 
 	// check if the tournamentId, matchId and playerRegNo is changed
 	if tournamentId != individualPunishment.TournamentId {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("TournamentId can't be changed!")
 		return
 	}
 
 	if matchId != individualPunishment.MatchId {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("MatchId can't be changed!")
 		return
 	}
 
 	if playerRegNoInt != individualPunishment.PlayerRegNo {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("PlayerRegNo can't be changed!")
 		return
 	}
@@ -2593,12 +2870,16 @@ func UpdateAnIndividualPunishment(w http.ResponseWriter, r *http.Request) {
 
 	// check if the team is playing in the match
 	if !teamIsPlayingInAMatchOfATournament(tournamentId, matchId, individualPunishment.TeamDeptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team is not playing in the match!")
 		return
 	}
 
 	// check if the player is from the team
 	if getPlayerDeptCode(playerRegNoInt) != individualPunishment.TeamDeptCode {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Player is not from the team!")
 		return
 	}
@@ -2641,6 +2922,8 @@ func DeleteATournament(w http.ResponseWriter, r *http.Request) {
 
 	// tournament exists or not
 	if !tournamentExists(id) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Tournament doesn't exist!")
 		return
 	}
@@ -2756,6 +3039,8 @@ func DeleteAPlayer(w http.ResponseWriter, r *http.Request) {
 
 	// player exists or not
 	if !playerExists(id) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Player doesn't exist!")
 		return
 	}
@@ -2910,6 +3195,8 @@ func DeleteADept(w http.ResponseWriter, r *http.Request) {
 
 	// dept exists or not
 	if !deptExists(id) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Dept doesn't exist!")
 		return
 	}
@@ -3180,6 +3467,8 @@ func DeleteATeam(w http.ResponseWriter, r *http.Request) {
 
 	// team exists or not
 	if !teamExists(tournamentId, deptCodeInt) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team doesn't exist!")
 		return
 	}
@@ -3256,6 +3545,8 @@ func DeleteAMatch(w http.ResponseWriter, r *http.Request) {
 
 	// match exists or not
 	if !matchExists(tournamentId, matchId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Match doesn't exist!")
 		return
 	}
@@ -3410,6 +3701,8 @@ func DeleteAReferee(w http.ResponseWriter, r *http.Request) {
 
 	// referee exists or not
 	if !refereeExists(id) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Referee doesn't exist!")
 		return
 	}
@@ -3486,12 +3779,16 @@ func DeleteATiebreaker(w http.ResponseWriter, r *http.Request) {
 
 	// match exists or not
 	if !matchExists(tournamentId, matchId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Match doesn't exist!")
 		return
 	}
 
 	// tiebreaker exists or not
 	if !tiebreakerExists(tournamentId, matchId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Tiebreaker doesn't exist!")
 		return
 	}
@@ -3536,18 +3833,24 @@ func DeleteAnIndividualScore(w http.ResponseWriter, r *http.Request) {
 
 	// match exists or not
 	if !matchExists(tournamentId, matchId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Match doesn't exist!")
 		return
 	}
 
 	// player playing in the match or not
 	if !playerIsPlayingInAMatchOfATournament(tournamentId, matchId, playerRegNoInt) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Player is not playing in the match!")
 		return
 	}
 
 	// individual score exists or not
 	if !individualScoreExists(tournamentId, matchId, playerRegNoInt) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Individual score doesn't exist!")
 		return
 	}
@@ -3617,18 +3920,24 @@ func DeleteAnIndividualPunishment(w http.ResponseWriter, r *http.Request) {
 
 	// match exists or not
 	if !matchExists(tournamentId, matchId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Match doesn't exist!")
 		return
 	}
 
 	// player playing in the match or not
 	if !playerIsPlayingInAMatchOfATournament(tournamentId, matchId, playerRegNoInt) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Player is not playing in the match!")
 		return
 	}
 
 	// individual punishment exists or not
 	if !individualPunishmentExists(tournamentId, matchId, playerRegNoInt) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Individual punishment doesn't exist!")
 		return
 	}
