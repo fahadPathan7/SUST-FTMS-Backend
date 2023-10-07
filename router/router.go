@@ -9,6 +9,9 @@ import (
 func Router() *mux.Router {
 	router := mux.NewRouter() // create mux router. it will be used to register routes
 
+	// operator login
+	router.HandleFunc("/api/operator/login", controller.Login).Methods("POST") // to login as an operator
+
 	// POST operations
 	router.HandleFunc("/api/dept", controller.InsertNewDept).Methods("POST") // to insert new dept
 	router.HandleFunc("/api/player", controller.InsertNewPlayer).Methods("POST") // to insert new player
@@ -64,6 +67,6 @@ func Router() *mux.Router {
 	router.HandleFunc("/api/dept/{deptCode}", controller.DeleteADept).Methods("DELETE") // to delete a dept
 	router.HandleFunc("/api/player/{playerRegNo}", controller.DeleteAPlayer).Methods("DELETE") // to delete a player
 
-	
+
 	return router
 }

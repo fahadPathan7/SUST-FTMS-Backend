@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"ftms/models"
 	"strconv"
+	"time"
 
 	"net/http"
 
+	"github.com/dgrijalva/jwt-go"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 )
@@ -30,6 +32,139 @@ func CreateDbConnection() {
 	// defer db.Close()
 	fmt.Println("Successfully connected to mysql database")
 }
+
+
+// credentials for login
+var jwtKey = []byte("secret_key")
+
+// valid token check from cookies
+func isTokenValid(w http.ResponseWriter, r *http.Request) bool {
+	cookie, err := r.Cookie("jwtToken")
+
+	if err != nil {
+		if err == http.ErrNoCookie {
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode("No cookie found!")
+			return false
+		}
+
+		w.WriteHeader(http.StatusBadRequest)
+		return false
+	}
+
+	tokenString := cookie.Value
+
+	claims := &models.Claims{}
+
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return jwtKey, nil
+	})
+
+	if err != nil {
+		if err == jwt.ErrSignatureInvalid {
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode("Invalid token!")
+			return false
+		}
+
+		w.WriteHeader(http.StatusBadRequest)
+		return false
+	}
+
+	if !token.Valid {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode("Invalid token!")
+		return false
+	}
+
+	return true
+}
+
+// check if the user is valid or not from database
+func checkUser(userEmail string, password string) bool {
+	var operator models.Operator
+	err := db.QueryRow("SELECT * FROM tbloperator WHERE email = ?", userEmail).Scan(&operator.Email, &operator.Password)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false
+		} else {
+			panic(err.Error())
+		}
+	}
+
+	if operator.Password != password {
+		return false
+	}
+
+	return true
+}
+
+// login function for admin
+func Login(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
+	w.Header().Set("Allow-Control-Allow-Methods", "POST")
+
+	var operator models.Operator
+	_ = json.NewDecoder(r.Body).Decode(&operator)
+
+	// null check
+	if operator.Email == "" || operator.Password == "" {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("All fields are required!")
+		return
+	}
+
+	// check credentials
+	if checkUser(operator.Email, operator.Password) == false {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("Invalid credentials!")
+		return
+	}
+
+
+	// json web token
+	expirationTime := time.Now().Add(14*24 * time.Hour)
+
+	claims := &models.Claims{
+		Email: operator.Email,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: expirationTime.Unix(),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString(jwtKey)
+
+	if err != nil {
+		// set response header as internal server error
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode("Couldn't login!")
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		// set cookie name
+		Name: "jwtToken",
+		// set cookie value
+		Value: tokenString,
+		// set cookie expiration time
+		Expires: expirationTime,
+		// access from all urls
+		Path: "/", // root directory
+	})
+
+
+
+	// set response header as ok
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode("Login successful!")
+}
+
+
+
 
 // verifications.
 
@@ -252,6 +387,11 @@ func InsertNewDept(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
 	w.Header().Set("Allow-Control-Allow-Methods", "POST")
 
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
+
 	var dept models.Dept
 	_ = json.NewDecoder(r.Body).Decode(&dept)
 
@@ -296,6 +436,11 @@ func insertNewPlayer(player models.Player) {
 func InsertNewPlayer(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
 	w.Header().Set("Allow-Control-Allow-Methods", "POST")
+
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
 
 	var player models.Player
 	_ = json.NewDecoder(r.Body).Decode(&player)
@@ -361,6 +506,11 @@ func getPlayerDeptCode(playerRegNo int) int {
 func InsertNewTeam(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
 	w.Header().Set("Allow-Control-Allow-Methods", "POST")
+
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
 
 	var team models.Team
 	_ = json.NewDecoder(r.Body).Decode(&team)
@@ -483,6 +633,11 @@ func InsertNewTournament(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
 	w.Header().Set("Allow-Control-Allow-Methods", "POST")
 
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
+
 	var tournament models.Tournament
 	_ = json.NewDecoder(r.Body).Decode(&tournament)
 
@@ -528,6 +683,11 @@ func InsertNewReferee(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
 	w.Header().Set("Allow-Control-Allow-Methods", "POST")
 
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
+
 	var referee models.Referee
 	_ = json.NewDecoder(r.Body).Decode(&referee)
 
@@ -570,6 +730,11 @@ func insertNewMatch(match models.Match) {
 func InsertNewMatch(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
 	w.Header().Set("Allow-Control-Allow-Methods", "POST")
+
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
 
 	var match models.Match
 	_ = json.NewDecoder(r.Body).Decode(&match)
@@ -695,6 +860,11 @@ func insertNewTiebreaker(tiebreaker models.Tiebreaker) {
 func InsertNewTiebreaker(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
 	w.Header().Set("Allow-Control-Allow-Methods", "POST")
+
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
 
 	var tiebreaker models.Tiebreaker
 	_ = json.NewDecoder(r.Body).Decode(&tiebreaker)
@@ -823,6 +993,11 @@ func InsertNewIndividualScore(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
 	w.Header().Set("Allow-Control-Allow-Methods", "POST")
 
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
+
 	var individualScore models.IndividualScore
 	_ = json.NewDecoder(r.Body).Decode(&individualScore)
 
@@ -916,6 +1091,11 @@ func insertNewIndividualPunishment(individualPunishment models.IndividualPunishm
 func InsertNewIndividualPunishment(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
 	w.Header().Set("Allow-Control-Allow-Methods", "POST")
+
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
 
 	var individualPunishment models.IndividualPunishment
 	_ = json.NewDecoder(r.Body).Decode(&individualPunishment)
@@ -2068,6 +2248,11 @@ func updateATournament(tournamentId string, tournament models.Tournament) {
 func UpdateATournament(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
+
 	// router.HandleFunc("/api/tournament/{tournamentId}", controller.UpdateATournament).Methods("PUT")
 	// get id from url
 	params := mux.Vars(r)
@@ -2126,6 +2311,11 @@ func updateAPlayer(playerRegNo int, player models.Player) {
 // controller function to update a player
 func UpdateAPlayer(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
 
 	// router.HandleFunc("/api/player/{playerRegNo}", controller.UpdateAPlayer).Methods("PUT")
 	// get id from url
@@ -2196,6 +2386,11 @@ func updateADept(deptCode int, dept models.Dept) {
 func UpdateADept(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
+
 	// router.HandleFunc("/api/dept/{deptCode}", controller.UpdateADept).Methods("PUT")
 	// get id from url
 	params := mux.Vars(r)
@@ -2256,6 +2451,11 @@ func updateATeam(tournamentId string, deptCode int, team models.Team) {
 // controller function to update a team
 func UpdateATeam(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
 
 	// router.HandleFunc("/api/tournament/team/{tournamentId}/{deptCode}", controller.UpdateATeam).Methods("PUT")
 	// get id from url
@@ -2390,6 +2590,11 @@ func updateAMatch(tournamentId string, matchId string, match models.Match) {
 func UpdateAMatch(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
+
 	// router.HandleFunc("/api/tournament/match/{tournamentId}/{matchId}", controller.UpdateAMatch).Methods("PUT")
 	// get id from url
 	params := mux.Vars(r)
@@ -2505,6 +2710,11 @@ func updateAReferee(refereeId int, referee models.Referee) {
 func UpdateAReferee(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
+
 	// router.HandleFunc("/api/referee/{refereeId}", controller.UpdateAReferee).Methods("PUT")
 	// get id from url
 	params := mux.Vars(r)
@@ -2567,6 +2777,11 @@ func updateATiebreaker(tournamentId string, matchId string, tiebreaker models.Ti
 // controller function to update a tiebreaker
 func UpdateATiebreaker(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
 
 	// router.HandleFunc("/api/match/tiebreaker/{tournamentId}/{matchId}", controller.UpdateATiebreaker).Methods("PUT")
 	// get id from url
@@ -2694,6 +2909,11 @@ func updateAnIndividualScore(tournamentId string, matchId string, playerRegNo in
 func UpdateAnIndividualScore(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
+
 	// router.HandleFunc("/api/match/individualscore/{tournamentId}/{matchId}/{playerRegNo}", controller.UpdateAnIndividualScore).Methods("PUT")
 	// get id from url
 	params := mux.Vars(r)
@@ -2800,6 +3020,11 @@ func updateAnIndividualPunishment(tournamentId string, matchId string, playerReg
 // controller function to update an individual punishment
 func UpdateAnIndividualPunishment(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
 
 	// router.HandleFunc("/api/match/individualpunishment/{tournamentId}/{matchId}/{playerRegNo}", controller.UpdateAnIndividualPunishment).Methods("PUT")
 	// get id from url
@@ -2913,6 +3138,11 @@ func deleteATournament(tournamentId string) {
 func DeleteATournament(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
+
 	// router.HandleFunc("/api/tournament/{tournamentId}", controller.DeleteATournament).Methods("DELETE")
 	// get id from url
 	params := mux.Vars(r)
@@ -3025,6 +3255,11 @@ func deleteAPlayer(playerRegNo int) {
 // controller function to delete a player
 func DeleteAPlayer(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
 
 	// router.HandleFunc("/api/player/{playerRegNo}", controller.DeleteAPlayer).Methods("DELETE")
 	// get id from url
@@ -3181,6 +3416,11 @@ func deleteADept(deptCode int) {
 // controller function to delete a dept
 func DeleteADept(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
 
 	// router.HandleFunc("/api/dept/{deptCode}", controller.DeleteADept).Methods("DELETE")
 	// get id from url
@@ -3450,6 +3690,11 @@ func deleteATeam(tournamentId string, deptCode int) {
 func DeleteATeam(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
+
 	// router.HandleFunc("/api/tournament/team/{tournamentId}/{deptCode}", controller.DeleteATeam).Methods("DELETE")
 	// get id from url
 	params := mux.Vars(r)
@@ -3534,6 +3779,11 @@ func deleteAMatch(tournamentId string, matchId string) {
 // controller function to delete a match
 func DeleteAMatch(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
 
 	// router.HandleFunc("/api/tournament/match/{tournamentId}/{matchId}", controller.DeleteAMatch).Methods("DELETE")
 	// get id from url
@@ -3688,6 +3938,11 @@ func deleteAReferee(refereeId int) {
 func DeleteAReferee(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
+
 	// router.HandleFunc("/api/referee/{refereeId}", controller.DeleteAReferee).Methods("DELETE")
 	// get id from url
 	params := mux.Vars(r)
@@ -3769,6 +4024,11 @@ func deleteATiebreaker(tournamentId string, matchId string) {
 func DeleteATiebreaker(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
+
 	// router.HandleFunc("/api/match/tiebreaker/{tournamentId}/{matchId}", controller.DeleteATiebreaker).Methods("DELETE")
 	// get id from url
 	params := mux.Vars(r)
@@ -3814,6 +4074,11 @@ func deleteAnIndividualScore(tournamentId string, matchId string, playerRegNo in
 // controller function to delete an individual score
 func DeleteAnIndividualScore(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
 
 	// router.HandleFunc("/api/match/individualscore/{tournamentId}/{matchId}/{playerRegNo}", controller.DeleteAnIndividualScore).Methods("DELETE")
 	// get id from url
@@ -3901,6 +4166,11 @@ func deleteAnIndividualPunishment(tournamentId string, matchId string, playerReg
 // controller function to delete an individual punishment
 func DeleteAnIndividualPunishment(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
 
 	// router.HandleFunc("/api/match/individualpunishment/{tournamentId}/{matchId}/{playerRegNo}", controller.DeleteAnIndividualPunishment).Methods("DELETE")
 	// get id from url

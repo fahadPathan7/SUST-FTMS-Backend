@@ -1,5 +1,20 @@
 package models
 
+import (
+	"github.com/dgrijalva/jwt-go"
+)
+
+
+type Operator struct {
+	Email   string `json:"email"`
+	Password string `json:"password"`
+}
+
+type Claims struct {
+	Email string `json:"email"`
+	jwt.StandardClaims
+}
+
 type Dept struct {
 	DeptCode      int    `json:"deptCode"`
 	DeptName      string `json:"deptName"`
