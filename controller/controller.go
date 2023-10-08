@@ -295,7 +295,7 @@ func teamExistsInATournament(tournamentId string, deptCode int) bool {
 // check if the team is playing in a match or not
 func teamIsPlayingInAMatchOfATournament(tournamentId string, matchId string, deptCode int) bool {
 	var match models.Match
-	err := db.QueryRow("SELECT * FROM tblmatch WHERE tournamentId = ? AND matchID = ? AND (team1_deptCode = ? OR team2_deptCode = ?)", tournamentId, matchId, deptCode, deptCode).Scan(&match.TournamentId, &match.MatchId, &match.MatchDate, &match.Team1DeptCode, &match.Team2DeptCode, &match.Team1Score, &match.Team2Score, &match.WinnerTeamDeptCode, &match.MatchRefereeID, &match.MatchLinesman1ID, &match.MatchLinesman2ID, &match.MatchFourthRefereeID)
+	err := db.QueryRow("SELECT * FROM tblmatch WHERE tournamentId = ? AND matchID = ? AND (team1DeptCode = ? OR team2DeptCode = ?)", tournamentId, matchId, deptCode, deptCode).Scan(&match.TournamentId, &match.MatchId, &match.MatchDate, &match.Team1DeptCode, &match.Team2DeptCode, &match.Team1Score, &match.Team2Score, &match.WinnerTeamDeptCode, &match.MatchRefereeID, &match.MatchLinesman1ID, &match.MatchLinesman2ID, &match.MatchFourthRefereeID)
 
 	if err != nil {
 		return false
@@ -310,7 +310,7 @@ func playerIsPlayingInAMatchOfATournament(tournamentId string, matchId string, p
 	var team2DeptCode int
 
 	// get team1DeptCode and team2DeptCode from match
-	query := "SELECT team1_deptCode, team2_deptCode FROM tblmatch WHERE tournamentId = ? AND matchID = ?"
+	query := "SELECT team1DeptCode, team2DeptCode FROM tblmatch WHERE tournamentId = ? AND matchID = ?"
 	result, err := db.Query(query, tournamentId, matchId)
 
 	if err != nil {
@@ -933,7 +933,7 @@ func InsertNewTiebreaker(w http.ResponseWriter, r *http.Request) {
 
 	// check if team1 matches with the team1 of the match
 	var team1DeptCode int
-	err := db.QueryRow("SELECT team1_deptCode FROM tblmatch WHERE tournamentId = ? AND matchID = ?", tiebreaker.TournamentId, tiebreaker.MatchId).Scan(&team1DeptCode)
+	err := db.QueryRow("SELECT team1DeptCode FROM tblmatch WHERE tournamentId = ? AND matchID = ?", tiebreaker.TournamentId, tiebreaker.MatchId).Scan(&team1DeptCode)
 	if err != nil || tiebreaker.Team1DeptCode != team1DeptCode {
 		// set response header as forbidden
 		w.WriteHeader(http.StatusForbidden)
@@ -944,7 +944,7 @@ func InsertNewTiebreaker(w http.ResponseWriter, r *http.Request) {
 	// check tie breaker eligibility
 	var team1Score int
 	var team2Score int
-	err = db.QueryRow("SELECT team1_goal_number, team2_goal_number FROM tblmatch WHERE tournamentId = ? AND matchID = ?", tiebreaker.TournamentId, tiebreaker.MatchId).Scan(&team1Score, &team2Score)
+	err = db.QueryRow("SELECT team1Score, team2Score FROM tblmatch WHERE tournamentId = ? AND matchID = ?", tiebreaker.TournamentId, tiebreaker.MatchId).Scan(&team1Score, &team2Score)
 	if err != nil {
 		// set response header as forbidden
 		w.WriteHeader(http.StatusForbidden)
@@ -1563,7 +1563,7 @@ func GetAllMatchesOfATournament(w http.ResponseWriter, r *http.Request) {
 func getAMatchOfATournament(tournamentId string, matchId string) models.Match {
 	var match models.Match
 
-	err := db.QueryRow("SELECT * FROM tblmatch WHERE tournamentId = ? AND matchId = ?", tournamentId, matchId).Scan(&match.TournamentId, &match.MatchId, &match.MatchDate, &match.Team1DeptCode, &match.Team2DeptCode, &match.Team1Score, &match.Team2Score, &match.WinnerTeamDeptCode, &match.MatchRefereeID, &match.MatchLinesman1ID, &match.MatchLinesman2ID, &match.MatchFourthRefereeID)
+	err := db.QueryRow("SELECT * FROM tblmatch WHERE tournamentId = ? AND matchID = ?", tournamentId, matchId).Scan(&match.TournamentId, &match.MatchId, &match.MatchDate, &match.Team1DeptCode, &match.Team2DeptCode, &match.Team1Score, &match.Team2Score, &match.WinnerTeamDeptCode, &match.MatchRefereeID, &match.MatchLinesman1ID, &match.MatchLinesman2ID, &match.MatchFourthRefereeID)
 
 	if err != nil {
 		//panic(err.Error())
@@ -2577,7 +2577,7 @@ func UpdateATeam(w http.ResponseWriter, r *http.Request) {
 
 // update a match
 func updateAMatch(tournamentId string, matchId string, match models.Match) {
-	query := "UPDATE tblmatch SET matchDate = ?, team1_deptCode = ?, team1_deptCode = ?, team1_goal_number = ?, team2_goal_number = ?, winner_team = ?, matchRefereeID = ?, matchLineman1ID = ?, matchLineman2ID = ?, matchFourthRefereeID = ? WHERE tournamentId = ? AND matchID = ?"
+	query := "UPDATE tblmatch SET matchDate = ?, team1DeptCode = ?, team1DeptCode = ?, team1Score = ?, team2Score = ?, winnerTeamDeptCode = ?, matchRefereeID = ?, matchLineman1ID = ?, matchLineman2ID = ?, matchFourthRefereeID = ? WHERE tournamentId = ? AND matchID = ?"
 
 	_, err := db.Exec(query, match.MatchDate, match.Team1DeptCode, match.Team2DeptCode, match.Team1Score, match.Team2Score, match.WinnerTeamDeptCode, match.MatchRefereeID, match.MatchLinesman1ID, match.MatchLinesman2ID, match.MatchFourthRefereeID, tournamentId, matchId)
 
@@ -2697,7 +2697,7 @@ func UpdateAMatch(w http.ResponseWriter, r *http.Request) {
 
 // update a referee
 func updateAReferee(refereeId int, referee models.Referee) {
-	query := "UPDATE tblreferee SET refName = ?, refInstitute = ? WHERE refereeID = ?"
+	query := "UPDATE tblreferee SET refereeName = ?, refereeInstitute = ? WHERE refereeID = ?"
 
 	_, err := db.Exec(query, referee.RefereeName, referee.RefereeInstitute, refereeId)
 
@@ -2871,7 +2871,7 @@ func UpdateATiebreaker(w http.ResponseWriter, r *http.Request) {
 	// check tie breaker eligibility
 	var team1Score int
 	var team2Score int
-	err = db.QueryRow("SELECT team1_goal_number, team2_goal_number FROM tblmatch WHERE tournamentId = ? AND matchID = ?", tiebreaker.TournamentId, tiebreaker.MatchId).Scan(&team1Score, &team2Score)
+	err = db.QueryRow("SELECT team1Score, team2Score FROM tblmatch WHERE tournamentId = ? AND matchID = ?", tiebreaker.TournamentId, tiebreaker.MatchId).Scan(&team1Score, &team2Score)
 	if err != nil {
 		// set response header as forbidden
 		w.WriteHeader(http.StatusForbidden)
@@ -3639,7 +3639,7 @@ func deptExistsInATeam(deptCode int) bool {
 
 // dept exists in a match or not
 func deptExistsInAMatch(deptCode int) bool {
-	query := "SELECT * FROM tblmatch WHERE team1_deptCode = ? OR team2_deptCode = ?"
+	query := "SELECT * FROM tblmatch WHERE team1DeptCode = ? OR team2DeptCode = ?"
 	rows, err := db.Query(query, deptCode, deptCode)
 
 	if err != nil {
@@ -3729,7 +3729,7 @@ func DeleteATeam(w http.ResponseWriter, r *http.Request) {
 
 // team exists in a match or not
 func teamExistsInAMatch(tournamentId string, deptCode int) bool {
-	query := "SELECT * FROM tblmatch WHERE tournamentId = ? AND (team1_deptCode = ? OR team2_deptCode = ?)"
+	query := "SELECT * FROM tblmatch WHERE tournamentId = ? AND (team1DeptCode = ? OR team2DeptCode = ?)"
 	rows, err := db.Query(query, tournamentId, deptCode, deptCode)
 
 	if err != nil {
