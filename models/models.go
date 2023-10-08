@@ -37,6 +37,7 @@ type Team struct {
 	TeamManager        string  `json:"teamManager"`
 	TeamCaptainRegID   int     `json:"teamCaptainRegID"`
 	PlayerRegNo        [20]int `json:"playerRegNo"`
+	IsKnockedOut       bool    `json:"isKnockedOut"`
 }
 
 type IndividualPunishment struct {
@@ -58,7 +59,8 @@ type IndividualScore struct {
 type Tournament struct {
 	TournamentId   string `json:"tournamentId"`
 	TournamentName string `json:"tournamentName"`
-	TournamentYear string `json:"tournamentYear"`
+	StartingDate   string `json:"startingDate"`
+	EndingDate     string `json:"endingDate"`
 }
 
 type Tiebreaker struct {
