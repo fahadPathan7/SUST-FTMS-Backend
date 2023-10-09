@@ -1250,6 +1250,14 @@ func InsertNewIndividualScore(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// check if the player is a starting player or not
+	if !playerIsAStartingPlayer(individualScore.TournamentId, individualScore.MatchId, individualScore.TeamDeptCode, individualScore.PlayerRegNo) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("Player is neither a starting player nor a substitute player!")
+		return
+	}
+
 	// check if individual score already exists
 	if individualScoreExists(individualScore.TournamentId, individualScore.MatchId, individualScore.PlayerRegNo) {
 		// set response header as forbidden
@@ -1262,6 +1270,18 @@ func InsertNewIndividualScore(w http.ResponseWriter, r *http.Request) {
 	// insert new individual score
 	insertNewIndividualScore(individualScore)
 	json.NewEncoder(w).Encode(individualScore)
+}
+
+// check if the player is a starting player or not
+func playerIsAStartingPlayer(tournamentId string, matchId string, teamDeptCode int, playerRegNo int) bool {
+	var startingEleven models.StartingEleven
+	err := db.QueryRow("SELECT * FROM tblplaying11 WHERE tournamentId = ? AND matchID = ? AND teamDeptCode = ? AND startingPlayer1RegNo = ? OR startingPlayer2RegNo = ? OR startingPlayer3RegNo = ? OR startingPlayer4RegNo = ? OR startingPlayer5RegNo = ? OR startingPlayer6RegNo = ? OR startingPlayer7RegNo = ? OR startingPlayer8RegNo = ? OR startingPlayer9RegNo = ? OR startingPlayer10RegNo = ? OR startingPlayer11RegNo = ? OR substitutePlayer1RegNo = ? OR substitutePlayer2RegNo = ? OR substitutePlayer3RegNo = ?", tournamentId, matchId, teamDeptCode, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo).Scan(&startingEleven.TournamentId, &startingEleven.MatchId, &startingEleven.TeamDeptCode, &startingEleven.StartingPlayerRegNo[0], &startingEleven.StartingPlayerRegNo[1], &startingEleven.StartingPlayerRegNo[2], &startingEleven.StartingPlayerRegNo[3], &startingEleven.StartingPlayerRegNo[4], &startingEleven.StartingPlayerRegNo[5], &startingEleven.StartingPlayerRegNo[6], &startingEleven.StartingPlayerRegNo[7], &startingEleven.StartingPlayerRegNo[8], &startingEleven.StartingPlayerRegNo[9], &startingEleven.StartingPlayerRegNo[10], &startingEleven.SubstitutePlayerRegNo[0], &startingEleven.SubstitutedPlayerRegNo[0], &startingEleven.SubstitutePlayerRegNo[1], &startingEleven.SubstitutedPlayerRegNo[1], &startingEleven.SubstitutePlayerRegNo[2], &startingEleven.SubstitutedPlayerRegNo[2])
+
+	if err != nil {
+		return false
+	}
+
+	return true
 }
 
 
@@ -2831,7 +2851,7 @@ func UpdateATeam(w http.ResponseWriter, r *http.Request) {
 
 // update a match
 func updateAMatch(tournamentId string, matchId string, match models.Match) {
-	query := "UPDATE tblmatch SET matchDate = ?, team1DeptCode = ?, team1DeptCode = ?, team1Score = ?, team2Score = ?, winnerTeamDeptCode = ?, matchRefereeID = ?, matchLineman1ID = ?, matchLineman2ID = ?, matchFourthRefereeID = ? WHERE tournamentId = ? AND matchID = ?"
+	query := "UPDATE tblmatch SET matchDate = ?, team1DeptCode = ?, team2DeptCode = ?, team1Score = ?, team2Score = ?, winnerTeamDeptCode = ?, matchRefereeID = ?, matchLineman1ID = ?, matchLineman2ID = ?, matchFourthRefereeID = ? WHERE tournamentId = ? AND matchID = ?"
 
 	_, err := db.Exec(query, match.MatchDate, match.Team1DeptCode, match.Team2DeptCode, match.Team1Score, match.Team2Score, match.WinnerTeamDeptCode, match.MatchRefereeID, match.MatchLinesman1ID, match.MatchLinesman2ID, match.MatchFourthRefereeID, tournamentId, matchId)
 
@@ -2933,10 +2953,20 @@ func UpdateAMatch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check if the winner team is one of the two teams
-	if match.WinnerTeamDeptCode != match.Team1DeptCode && match.WinnerTeamDeptCode != match.Team2DeptCode {
+	if match.WinnerTeamDeptCode != 0 {
+		if match.WinnerTeamDeptCode != match.Team1DeptCode && match.WinnerTeamDeptCode != match.Team2DeptCode {
+			// set response header as forbidden
+			w.WriteHeader(http.StatusForbidden)
+			json.NewEncoder(w).Encode("Winner team is not one of the two teams!")
+			return
+		}
+	}
+
+	// check if both teams deptCode is same or not
+	if match.Team1DeptCode == match.Team2DeptCode {
 		// set response header as forbidden
 		w.WriteHeader(http.StatusForbidden)
-		json.NewEncoder(w).Encode("Winner team is not one of the two teams!")
+		json.NewEncoder(w).Encode("Both teams are from same dept!")
 		return
 	}
 
@@ -3620,8 +3650,8 @@ func DeleteATournament(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// prequisite check
-	matchExistsInATournament(id)
-	anyTeamExistsInATournament(id)
+	matchExistsInATournament(w, r, id)
+	anyTeamExistsInATournament(w, r, id)
 
 
 
@@ -3631,7 +3661,7 @@ func DeleteATournament(w http.ResponseWriter, r *http.Request) {
 }
 
 // match exists in a tournament or not
-func matchExistsInATournament(tournamentId string) bool {
+func matchExistsInATournament(w http.ResponseWriter, r *http.Request, tournamentId string) bool {
 	query := "SELECT matchID FROM tblmatch WHERE tournamentId = ?"
 	rows, err := db.Query(query, tournamentId)
 
@@ -3650,6 +3680,13 @@ func matchExistsInATournament(tournamentId string) bool {
 			panic(err.Error())
 		}
 		url := "http://localhost:5000/api/tournament/match/" + match.TournamentId + "/" + match.MatchId
+		// get cookie and set it in request header
+		cookie, err := r.Cookie("jwtToken")
+		if err != nil {
+			panic(err.Error())
+		}
+		// set cookie in request header
+		w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -3666,7 +3703,7 @@ func matchExistsInATournament(tournamentId string) bool {
 }
 
 // any team exists in a tournament or not
-func anyTeamExistsInATournament(tournamentId string) bool {
+func anyTeamExistsInATournament(w http.ResponseWriter, r *http.Request, tournamentId string) bool {
 	query := "SELECT deptCode FROM tblteam WHERE tournamentId = ?"
 	rows, err := db.Query(query, tournamentId)
 
@@ -3685,6 +3722,13 @@ func anyTeamExistsInATournament(tournamentId string) bool {
 			panic(err.Error())
 		}
 		url := "http://localhost:5000/api/tournament/team/" + tournamentId + "/" + strconv.Itoa(deptCode)
+		// get cookie and set it in request header
+		cookie, err := r.Cookie("jwtToken")
+		if err != nil {
+			panic(err.Error())
+		}
+		// set cookie in request header
+		w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -3717,10 +3761,10 @@ func deleteAPlayer(playerRegNo int) {
 func DeleteAPlayer(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// token validation check
-	if isTokenValid(w, r) == false {
-		return
-	}
+	// // token validation check
+	// if isTokenValid(w, r) == false {
+	// 	return
+	// }
 
 	// router.HandleFunc("/api/player/{playerRegNo}", controller.DeleteAPlayer).Methods("DELETE")
 	// get id from url
@@ -3742,9 +3786,10 @@ func DeleteAPlayer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// prequisite check. check all tables where playerRegNo is used
-	playerIsInATeam(id)
-	playerHasIndividualPunishment(id)
-	playerHasIndividualScore(id)
+	playerIsInATeam(w, r, id)
+	playerHasIndividualPunishment(w, r, id)
+	playerHasIndividualScore(w, r, id)
+	playerExistsInAPlayingEleven(w, r, id)
 
 
 
@@ -3753,8 +3798,52 @@ func DeleteAPlayer(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode("Player deleted successfully!")
 }
 
+// player is in a playing eleven or not
+func playerExistsInAPlayingEleven(w http.ResponseWriter, r *http.Request, playerRegNo int) bool {
+	query := "SELECT * FROM tblplaying11 WHERE startingPlayer1RegNo = ? OR startingPlayer2RegNo = ? OR startingPlayer3RegNo = ? OR startingPlayer4RegNo = ? OR startingPlayer5RegNo = ? OR startingPlayer6RegNo = ? OR startingPlayer7RegNo = ? OR startingPlayer8RegNo = ? OR startingPlayer9RegNo = ? OR startingPlayer10RegNo = ? OR startingPlayer11RegNo = ?"
+	rows, err := db.Query(query, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false
+		}
+		panic(err.Error())
+	}
+
+	for rows.Next() {
+		// get the tournamentId and matchId and delete the playing eleven
+		var playingEleven models.StartingEleven
+		err = rows.Scan(&playingEleven.TournamentId, &playingEleven.MatchId, &playingEleven.StartingPlayerRegNo[0], &playingEleven.StartingPlayerRegNo[1], &playingEleven.StartingPlayerRegNo[2], &playingEleven.StartingPlayerRegNo[3], &playingEleven.StartingPlayerRegNo[4], &playingEleven.StartingPlayerRegNo[5], &playingEleven.StartingPlayerRegNo[6], &playingEleven.StartingPlayerRegNo[7], &playingEleven.StartingPlayerRegNo[8], &playingEleven.StartingPlayerRegNo[9], &playingEleven.StartingPlayerRegNo[10], &playingEleven.SubstitutePlayerRegNo[0], &playingEleven.SubstitutedPlayerRegNo[0], &playingEleven.SubstitutePlayerRegNo[1], &playingEleven.SubstitutedPlayerRegNo[1], &playingEleven.SubstitutePlayerRegNo[2], &playingEleven.SubstitutedPlayerRegNo[2])
+
+		if err != nil {
+			panic(err.Error())
+		}
+		// now call delete playing eleven api
+		url := "http://localhost:5000/api/match/startingeleven/" + playingEleven.TournamentId + "/" + playingEleven.MatchId + "/" + strconv.Itoa(playingEleven.TeamDeptCode)
+		// get cookie and set it in request header
+		cookie, err := r.Cookie("jwtToken")
+		if err != nil {
+			panic(err.Error())
+		}
+		// set cookie in request header
+		w.Header().Set("Cookie", cookie.String())
+		req, err := http.NewRequest("DELETE", url, nil)
+		if err != nil {
+			panic(err.Error())
+		}
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			panic(err.Error())
+		}
+		defer resp.Body.Close()
+	}
+
+	return true
+}
+
 // player is in a team or not
-func playerIsInATeam(playerRegNo int) bool {
+func playerIsInATeam(w http.ResponseWriter, r *http.Request, playerRegNo int) bool {
 	query := "SELECT * FROM tblteam WHERE player1RegNo = ? OR player2RegNo = ? OR player3RegNo = ? OR player4RegNo = ? OR player5RegNo = ? OR player6RegNo = ? OR player7RegNo = ? OR player8RegNo = ? OR player9RegNo = ? OR player10RegNo = ? OR player11RegNo = ? OR player12RegNo = ? OR player13RegNo = ? OR player14RegNo = ? OR player15RegNo = ? OR player16RegNo = ? OR player17RegNo = ? OR player18RegNo = ? OR player19RegNo = ? OR player20RegNo = ?"
 	rows, err := db.Query(query, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo, playerRegNo)
 
@@ -3774,6 +3863,13 @@ func playerIsInATeam(playerRegNo int) bool {
 		}
 		// now call delete team api
 		url := "http://localhost:5000/api/tournament/team/" + team.TournamentId + "/" + strconv.Itoa(team.DeptCode)
+		// get cookie and set it in request header
+		cookie, err := r.Cookie("jwtToken")
+		if err != nil {
+			panic(err.Error())
+		}
+		// set cookie in request header
+		w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -3790,7 +3886,7 @@ func playerIsInATeam(playerRegNo int) bool {
 }
 
 // player has individual punishment or not
-func playerHasIndividualPunishment(playerRegNo int) bool {
+func playerHasIndividualPunishment(w http.ResponseWriter, r *http.Request, playerRegNo int) bool {
 	query := "SELECT * FROM tblindividualpunishment WHERE playerRegNo = ?"
 	rows, err := db.Query(query, playerRegNo)
 
@@ -3810,6 +3906,13 @@ func playerHasIndividualPunishment(playerRegNo int) bool {
 		}
 		// now call delete individual punishment api
 		url := "http://localhost:5000/api/match/individualpunishment/" + individualPunishment.TournamentId + "/" + individualPunishment.MatchId + "/" + strconv.Itoa(individualPunishment.PlayerRegNo)
+		// get cookie and set it in request header
+		cookie, err := r.Cookie("jwtToken")
+		if err != nil {
+			panic(err.Error())
+		}
+		// set cookie in request header
+		w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -3826,7 +3929,7 @@ func playerHasIndividualPunishment(playerRegNo int) bool {
 }
 
 // player has individual score or not
-func playerHasIndividualScore(playerRegNo int) bool {
+func playerHasIndividualScore(w http.ResponseWriter, r *http.Request, playerRegNo int) bool {
 	query := "SELECT * FROM tblindividualscore WHERE playerRegNo = ?"
 	rows, err := db.Query(query, playerRegNo)
 
@@ -3846,6 +3949,13 @@ func playerHasIndividualScore(playerRegNo int) bool {
 		}
 		// now call delete individual score api
 		url := "http://localhost:5000/api/match/individualscore/" + individualScore.TournamentId + "/" + individualScore.MatchId + "/" + strconv.Itoa(individualScore.PlayerRegNo)
+		// get cookie and set it in request header
+		cookie, err := r.Cookie("jwtToken")
+		if err != nil {
+			panic(err.Error())
+		}
+		// set cookie in request header
+		w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -3903,12 +4013,12 @@ func DeleteADept(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// prequisite check. check all tables where deptCode is used
-	deptExistsInATeam(id)
-	deptExistsInAMatch(id)
-	deptExistsInATiebreaker(id)
-	deptExistsInAnIndividualScore(id)
-	deptExistsInAnIndividualPunishment(id)
-	deptExistsInAPlayer(id)
+	deptExistsInATeam(w, r, id)
+	//deptExistsInAMatch(w, r, id)
+	deptExistsInATiebreaker(w, r, id)
+	deptExistsInAnIndividualScore(w, r, id)
+	deptExistsInAnIndividualPunishment(w, r, id)
+	deptExistsInAPlayer(w, r, id)
 
 
 
@@ -3918,7 +4028,7 @@ func DeleteADept(w http.ResponseWriter, r *http.Request) {
 }
 
 // dept exists in a tiebreaker or not
-func deptExistsInATiebreaker(deptCode int) bool {
+func deptExistsInATiebreaker(w http.ResponseWriter, r *http.Request, deptCode int) bool {
 	query := "SELECT * FROM tbltiebreaker WHERE team1DeptCode = ? OR team2DeptCode = ?"
 	rows, err := db.Query(query, deptCode, deptCode)
 
@@ -3938,6 +4048,13 @@ func deptExistsInATiebreaker(deptCode int) bool {
 		}
 		// now call delete tiebreaker api
 		url := "http://localhost:5000/api/match/tiebreaker/" + tiebreaker.TournamentId + "/" + tiebreaker.MatchId
+		// get cookie and set it in request header
+		cookie, err := r.Cookie("jwtToken")
+		if err != nil {
+			panic(err.Error())
+		}
+		// set cookie in request header
+		w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -3954,7 +4071,7 @@ func deptExistsInATiebreaker(deptCode int) bool {
 }
 
 // dept exists in an individual score or not
-func deptExistsInAnIndividualScore(deptCode int) bool {
+func deptExistsInAnIndividualScore(w http.ResponseWriter, r *http.Request, deptCode int) bool {
 	query := "SELECT * FROM tblindividualscore WHERE teamDeptCode = ?"
 	rows, err := db.Query(query, deptCode)
 
@@ -3974,6 +4091,13 @@ func deptExistsInAnIndividualScore(deptCode int) bool {
 		}
 		// now call delete individual score api
 		url := "http://localhost:5000/api/match/individualscore/" + individualScore.TournamentId + "/" + individualScore.MatchId + "/" + strconv.Itoa(individualScore.PlayerRegNo)
+		// get cookie and set it in request header
+		cookie, err := r.Cookie("jwtToken")
+		if err != nil {
+			panic(err.Error())
+		}
+		// set cookie in request header
+		w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -3990,7 +4114,7 @@ func deptExistsInAnIndividualScore(deptCode int) bool {
 }
 
 // dept exists in an individual punishment or not
-func deptExistsInAnIndividualPunishment(deptCode int) bool {
+func deptExistsInAnIndividualPunishment(w http.ResponseWriter, r *http.Request, deptCode int) bool {
 	query := "SELECT * FROM tblindividualpunishment WHERE teamDeptCode = ?"
 	rows, err := db.Query(query, deptCode)
 
@@ -4010,6 +4134,13 @@ func deptExistsInAnIndividualPunishment(deptCode int) bool {
 		}
 		// now call delete individual punishment api
 		url := "http://localhost:5000/api/match/individualpunishment/" + individualPunishment.TournamentId + "/" + individualPunishment.MatchId + "/" + strconv.Itoa(individualPunishment.PlayerRegNo)
+		// get cookie and set it in request header
+		cookie, err := r.Cookie("jwtToken")
+		if err != nil {
+			panic(err.Error())
+		}
+		// set cookie in request header
+		w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -4026,7 +4157,7 @@ func deptExistsInAnIndividualPunishment(deptCode int) bool {
 }
 
 // dept exists in a player table or not
-func deptExistsInAPlayer(deptCode int) bool {
+func deptExistsInAPlayer(w http.ResponseWriter, r *http.Request, deptCode int) bool {
 	query := "SELECT * FROM tblplayer WHERE playerDeptCode = ?"
 	rows, err := db.Query(query, deptCode)
 
@@ -4046,6 +4177,13 @@ func deptExistsInAPlayer(deptCode int) bool {
 		}
 		// now call delete player api
 		url := "http://localhost:5000/api/player/" + strconv.Itoa(player.PlayerRegNo)
+		// get cookie and set it in request header
+		cookie, err := r.Cookie("jwtToken")
+		if err != nil {
+			panic(err.Error())
+		}
+		// set cookie in request header
+		w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -4063,7 +4201,7 @@ func deptExistsInAPlayer(deptCode int) bool {
 
 
 // dept exists in a team or not
-func deptExistsInATeam(deptCode int) bool {
+func deptExistsInATeam(w http.ResponseWriter, r *http.Request, deptCode int) bool {
 	query := "SELECT * FROM tblteam WHERE deptCode = ?"
 	rows, err := db.Query(query, deptCode)
 
@@ -4083,6 +4221,13 @@ func deptExistsInATeam(deptCode int) bool {
 		}
 		// now call delete team api
 		url := "http://localhost:5000/api/tournament/team/" + team.TournamentId + "/" + strconv.Itoa(team.DeptCode)
+		// get cookie and set it in request header
+		cookie, err := r.Cookie("jwtToken")
+		if err != nil {
+			panic(err.Error())
+		}
+		// set cookie in request header
+		w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -4099,7 +4244,7 @@ func deptExistsInATeam(deptCode int) bool {
 }
 
 // dept exists in a match or not
-func deptExistsInAMatch(deptCode int) bool {
+func deptExistsInAMatch(w http.ResponseWriter, r *http.Request, deptCode int) bool {
 	query := "SELECT * FROM tblmatch WHERE team1DeptCode = ? OR team2DeptCode = ?"
 	rows, err := db.Query(query, deptCode, deptCode)
 
@@ -4119,6 +4264,13 @@ func deptExistsInAMatch(deptCode int) bool {
 		}
 		// now call delete match api
 		url := "http://localhost:5000/api/tournament/match/" + match.TournamentId + "/" + match.MatchId
+		// get cookie and set it in request header
+		cookie, err := r.Cookie("jwtToken")
+		if err != nil {
+			panic(err.Error())
+		}
+		// set cookie in request header
+		w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -4180,7 +4332,7 @@ func DeleteATeam(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// prequisite check. check all tables where tournamentId and deptCode is used
-	teamExistsInAMatch(tournamentId, deptCodeInt)
+	teamExistsInAMatch(w, r, tournamentId, deptCodeInt)
 
 
 	deleteATeam(tournamentId, deptCodeInt)
@@ -4189,7 +4341,7 @@ func DeleteATeam(w http.ResponseWriter, r *http.Request) {
 }
 
 // team exists in a match or not
-func teamExistsInAMatch(tournamentId string, deptCode int) bool {
+func teamExistsInAMatch(w http.ResponseWriter, r *http.Request, tournamentId string, deptCode int) bool {
 	query := "SELECT * FROM tblmatch WHERE tournamentId = ? AND (team1DeptCode = ? OR team2DeptCode = ?)"
 	rows, err := db.Query(query, tournamentId, deptCode, deptCode)
 
@@ -4209,6 +4361,13 @@ func teamExistsInAMatch(tournamentId string, deptCode int) bool {
 		}
 		// now call delete match api
 		url := "http://localhost:5000/api/tournament/match/" + match.TournamentId + "/" + match.MatchId
+		// get cookie and set it in request header
+		cookie, err := r.Cookie("jwtToken")
+		if err != nil {
+			panic(err.Error())
+		}
+		// set cookie in request header
+		w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -4263,10 +4422,10 @@ func DeleteAMatch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// prequisite check. check all tables where tournamentId and matchId is used
-	matchExistsInATiebreaker(tournamentId, matchId)
-	matchExistsInAnIndividualScore(tournamentId, matchId)
-	matchExistsInAnIndividualPunishment(tournamentId, matchId)
-	matchExistsInAStartingEleven(tournamentId, matchId)
+	matchExistsInATiebreaker(w, r, tournamentId, matchId)
+	matchExistsInAnIndividualScore(w, r, tournamentId, matchId)
+	matchExistsInAnIndividualPunishment(w, r, tournamentId, matchId)
+	matchExistsInAStartingEleven(w, r, tournamentId, matchId)
 
 
 
@@ -4276,7 +4435,7 @@ func DeleteAMatch(w http.ResponseWriter, r *http.Request) {
 }
 
 // match exists in a starting eleven or not
-func matchExistsInAStartingEleven(tournamentId string, matchId string) bool {
+func matchExistsInAStartingEleven(w http.ResponseWriter, r *http.Request, tournamentId string, matchId string) bool {
 	query := "SELECT * FROM tblplaying11 WHERE tournamentId = ? AND matchID = ?"
 	rows, err := db.Query(query, tournamentId, matchId)
 
@@ -4296,6 +4455,13 @@ func matchExistsInAStartingEleven(tournamentId string, matchId string) bool {
 		}
 		// now call delete starting eleven api
 		url := "http://localhost:5000/api/match/startingeleven/" + startingEleven.TournamentId + "/" + startingEleven.MatchId + "/" + strconv.Itoa(startingEleven.TeamDeptCode)
+		// get cookie and set it in request header
+		cookie, err := r.Cookie("jwtToken")
+		if err != nil {
+			panic(err.Error())
+		}
+		// set cookie in request header
+		w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -4312,7 +4478,7 @@ func matchExistsInAStartingEleven(tournamentId string, matchId string) bool {
 }
 
 // match exists in a tiebreaker or not
-func matchExistsInATiebreaker(tournamentId string, matchId string) bool {
+func matchExistsInATiebreaker(w http.ResponseWriter, r *http.Request, tournamentId string, matchId string) bool {
 	query := "SELECT * FROM tbltiebreaker WHERE tournamentId = ? AND matchID = ?"
 	rows, err := db.Query(query, tournamentId, matchId)
 
@@ -4332,6 +4498,13 @@ func matchExistsInATiebreaker(tournamentId string, matchId string) bool {
 		}
 		// now call delete tiebreaker api
 		url := "http://localhost:5000/api/match/tiebreaker/" + tiebreaker.TournamentId + "/" + tiebreaker.MatchId
+		// get cookie and set it in request header
+		cookie, err := r.Cookie("jwtToken")
+		if err != nil {
+			panic(err.Error())
+		}
+		// set cookie in request header
+		w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -4348,7 +4521,7 @@ func matchExistsInATiebreaker(tournamentId string, matchId string) bool {
 }
 
 // match exists in an individual score or not
-func matchExistsInAnIndividualScore(tournamentId string, matchId string) bool {
+func matchExistsInAnIndividualScore(w http.ResponseWriter, r *http.Request, tournamentId string, matchId string) bool {
 	query := "SELECT * FROM tblindividualscore WHERE tournamentId = ? AND matchID = ?"
 	rows, err := db.Query(query, tournamentId, matchId)
 
@@ -4368,6 +4541,13 @@ func matchExistsInAnIndividualScore(tournamentId string, matchId string) bool {
 		}
 		// now call delete individual score api
 		url := "http://localhost:5000/api/match/individualscore/" + individualScore.TournamentId + "/" + individualScore.MatchId + "/" + strconv.Itoa(individualScore.PlayerRegNo)
+		// get cookie and set it in request header
+		cookie, err := r.Cookie("jwtToken")
+		if err != nil {
+			panic(err.Error())
+		}
+		// set cookie in request header
+		w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -4384,7 +4564,7 @@ func matchExistsInAnIndividualScore(tournamentId string, matchId string) bool {
 }
 
 // match exists in an individual punishment or not
-func matchExistsInAnIndividualPunishment(tournamentId string, matchId string) bool {
+func matchExistsInAnIndividualPunishment(w http.ResponseWriter, r *http.Request, tournamentId string, matchId string) bool {
 	query := "SELECT * FROM tblindividualpunishment WHERE tournamentId = ? AND matchID = ?"
 	rows, err := db.Query(query, tournamentId, matchId)
 
@@ -4404,6 +4584,13 @@ func matchExistsInAnIndividualPunishment(tournamentId string, matchId string) bo
 		}
 		// now call delete individual punishment api
 		url := "http://localhost:5000/api/match/individualpunishment/" + individualPunishment.TournamentId + "/" + individualPunishment.MatchId + "/" + strconv.Itoa(individualPunishment.PlayerRegNo)
+		// get cookie and set it in request header
+		cookie, err := r.Cookie("jwtToken")
+		if err != nil {
+			panic(err.Error())
+		}
+		// set cookie in request header
+		w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -4511,7 +4698,7 @@ func DeleteAReferee(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// prequisite check. check all tables where refereeId is used
-	refereeExistsInAMatch(id)
+	refereeExistsInAMatch(w, r, id)
 
 
 	deleteAReferee(id)
@@ -4520,7 +4707,7 @@ func DeleteAReferee(w http.ResponseWriter, r *http.Request) {
 }
 
 // referee exists in a match or not
-func refereeExistsInAMatch(refereeId int) bool {
+func refereeExistsInAMatch(w http.ResponseWriter, r *http.Request, refereeId int) bool {
 	query := "SELECT * FROM tblmatch WHERE matchRefereeID = ? OR matchLineman1ID = ? OR matchLineman2ID = ? OR matchFourthRefereeID = ?"
 	rows, err := db.Query(query, refereeId, refereeId, refereeId, refereeId)
 
@@ -4540,6 +4727,13 @@ func refereeExistsInAMatch(refereeId int) bool {
 		}
 		// now call delete match api
 		url := "http://localhost:5000/api/tournament/match/" + match.TournamentId + "/" + match.MatchId
+		// get cookie and set it in request header
+		cookie, err := r.Cookie("jwtToken")
+		if err != nil {
+			panic(err.Error())
+		}
+		// set cookie in request header
+		w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
