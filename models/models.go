@@ -4,9 +4,8 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-
 type Operator struct {
-	Email   string `json:"email"`
+	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
@@ -28,6 +27,7 @@ type Player struct {
 	PlayerSemester int    `json:"playerSemester"`
 	PlayerName     string `json:"playerName"`
 	PlayerDeptCode int    `json:"playerDeptCode"`
+	PlayerJerseyNo int    `json:"playerJerseyNo"`
 }
 
 type Team struct {
@@ -85,6 +85,15 @@ type Match struct {
 	MatchLinesman1ID     int    `json:"matchLinesman1ID"`
 	MatchLinesman2ID     int    `json:"matchLinesman2ID"`
 	MatchFourthRefereeID int    `json:"matchFourthRefereeID"`
+}
+
+type StartingEleven struct {
+	TournamentId          string  `json:"tournamentId"`
+	MatchId               string  `json:"matchId"`
+	TeamDeptCode          int     `json:"teamDeptCode"`
+	StartingPlayerRegNo   [11]int `json:"startingPlayerRegNo"`
+	SubstitutePlayerRegNo [3]int  `json:"substitutePlayerRegNo"`
+	SubstitutedPlayerRegNo [3]int  `json:"substituedPlayerRegNo"`
 }
 
 type Referee struct {

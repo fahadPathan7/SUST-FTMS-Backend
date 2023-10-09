@@ -19,6 +19,7 @@ func Router() *mux.Router {
 	router.HandleFunc("/api/tournament", controller.InsertNewTournament).Methods("POST") // to insert new tournament
 	router.HandleFunc("/api/referee", controller.InsertNewReferee).Methods("POST") // to insert new referee
 	router.HandleFunc("/api/match", controller.InsertNewMatch).Methods("POST") // to insert new match
+	router.HandleFunc("/api/match/startingeleven", controller.InsertNewStartingEleven).Methods("POST") // to insert new lineup
 	router.HandleFunc("/api/tiebreaker", controller.InsertNewTiebreaker).Methods("POST") // to insert new tiebreaker
 	router.HandleFunc("/api/individualpunishment", controller.InsertNewIndividualPunishment).Methods("POST") // to insert new individualpunishment
 	router.HandleFunc("/api/individualscore", controller.InsertNewIndividualScore).Methods("POST") // to insert new individualscore
@@ -34,6 +35,7 @@ func Router() *mux.Router {
 	router.HandleFunc("/api/tournament/team/{tournamentId}/{deptCode}", controller.GetATeamOfATournament).Methods("GET") // to get a team of a tournament
 	router.HandleFunc("/api/tournament/matches/{tournamentId}", controller.GetAllMatchesOfATournament).Methods("GET") // to get all matches of a tournament
 	router.HandleFunc("/api/tournament/match/{tournamentId}/{matchId}", controller.GetAMatchOfATournament).Methods("GET") // to get a match of a tournament
+	router.HandleFunc("/api/match/startingeleven/{tournamentId}/{matchId}/{deptCode}", controller.GetStartingElevenOfATeamOfAMatch).Methods("GET") // to get starting eleven of a team of a match
 	router.HandleFunc("/api/referees", controller.GetAllReferees).Methods("GET") // to get all referees
 	router.HandleFunc("/api/referee/{refereeId}", controller.GetAReferee).Methods("GET") // to get a specific referee
 	router.HandleFunc("/api/tournament/tiebreakers/{tournamentId}", controller.GetAllTiebreakersOfATournament).Methods("GET") // to get all tiebreakers of a tournament
@@ -51,6 +53,7 @@ func Router() *mux.Router {
 	router.HandleFunc("/api/tournament/{tournamentId}", controller.UpdateATournament).Methods("PUT") // to update a tournament
 	router.HandleFunc("/api/tournament/team/{tournamentId}/{deptCode}", controller.UpdateATeam).Methods("PUT") // to update a team
 	router.HandleFunc("/api/tournament/match/{tournamentId}/{matchId}", controller.UpdateAMatch).Methods("PUT") // to update a match
+	router.HandleFunc("/api/match/startingeleven/{tournamentId}/{matchId}/{teamDeptCode}", controller.UpdateAStartingEleven).Methods("PUT") // to update a lineup
 	router.HandleFunc("/api/referee/{refereeId}", controller.UpdateAReferee).Methods("PUT") // to update a referee
 	router.HandleFunc("/api/match/tiebreaker/{tournamentId}/{matchId}", controller.UpdateATiebreaker).Methods("PUT") // to update a tiebreaker of a match
 	router.HandleFunc("/api/match/individualscore/{tournamentId}/{matchId}/{playerRegNo}", controller.UpdateAnIndividualScore).Methods("PUT") // to update an individual score of a match
@@ -62,6 +65,7 @@ func Router() *mux.Router {
 	router.HandleFunc("/api/match/tiebreaker/{tournamentId}/{matchId}", controller.DeleteATiebreaker).Methods("DELETE") // to delete a tiebreaker of a match
 	router.HandleFunc("/api/referee/{refereeId}", controller.DeleteAReferee).Methods("DELETE") // to delete a referee
 	router.HandleFunc("/api/tournament/match/{tournamentId}/{matchId}", controller.DeleteAMatch).Methods("DELETE") // to delete a match
+	router.HandleFunc("/api/match/startingeleven/{tournamentId}/{matchId}/{teamDeptCode}", controller.DeleteAStartingEleven).Methods("DELETE") // to delete a lineup
 	router.HandleFunc("/api/tournament/team/{tournamentId}/{deptCode}", controller.DeleteATeam).Methods("DELETE") // to delete a team
 	router.HandleFunc("/api/tournament/{tournamentId}", controller.DeleteATournament).Methods("DELETE") // to delete a tournament
 	router.HandleFunc("/api/dept/{deptCode}", controller.DeleteADept).Methods("DELETE") // to delete a dept

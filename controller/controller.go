@@ -171,7 +171,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 // check if player exists in database
 func playerExists(playerRegNo int) bool {
 	var player models.Player
-	err := db.QueryRow("SELECT * FROM tblplayer WHERE playerRegNo = ?", playerRegNo).Scan(&player.PlayerRegNo, &player.PlayerSession, &player.PlayerSemester, &player.PlayerName, &player.PlayerDeptCode)
+	err := db.QueryRow("SELECT * FROM tblplayer WHERE playerRegNo = ?", playerRegNo).Scan(&player.PlayerRegNo, &player.PlayerSession, &player.PlayerSemester, &player.PlayerName, &player.PlayerDeptCode, &player.PlayerJerseyNo)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -423,7 +423,7 @@ func InsertNewDept(w http.ResponseWriter, r *http.Request) {
 // insert player info into database
 func insertNewPlayer(player models.Player) {
 	// player.PlayerRegNo is int type. and it is primary key.
-	insert, err := db.Query("INSERT INTO tblplayer VALUES (?, ?, ?, ?, ?)", player.PlayerRegNo, player.PlayerSession, player.PlayerSemester, player.PlayerName, player.PlayerDeptCode)
+	insert, err := db.Query("INSERT INTO tblplayer VALUES (?, ?, ?, ?, ?, ?)", player.PlayerRegNo, player.PlayerSession, player.PlayerSemester, player.PlayerName, player.PlayerDeptCode, player.PlayerJerseyNo)
 
 	if err != nil {
 		panic(err.Error())
@@ -446,7 +446,7 @@ func InsertNewPlayer(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&player)
 
 	// null check
-	if player.PlayerRegNo == 0 || player.PlayerSession == "" || player.PlayerSemester == 0 || player.PlayerName == "" || player.PlayerDeptCode == 0 {
+	if player.PlayerRegNo == 0 || player.PlayerSession == "" || player.PlayerSemester == 0 || player.PlayerName == "" || player.PlayerDeptCode == 0 || player.PlayerJerseyNo == 0 {
 		// set response header as forbidden
 		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("All fields are required!")
@@ -493,7 +493,7 @@ func insertNewTeam(team models.Team) {
 // return player's dept code from tblplayer in database
 func getPlayerDeptCode(playerRegNo int) int {
 	var player models.Player
-	err := db.QueryRow("SELECT * FROM tblplayer WHERE playerRegNo = ?", playerRegNo).Scan(&player.PlayerRegNo, &player.PlayerSession, &player.PlayerSemester, &player.PlayerName, &player.PlayerDeptCode)
+	err := db.QueryRow("SELECT * FROM tblplayer WHERE playerRegNo = ?", playerRegNo).Scan(&player.PlayerRegNo, &player.PlayerSession, &player.PlayerSemester, &player.PlayerName, &player.PlayerDeptCode, &player.PlayerJerseyNo)
 
 	if err != nil {
 		panic(err.Error())
@@ -838,6 +838,199 @@ func InsertNewMatch(w http.ResponseWriter, r *http.Request) {
 	// insert new match
 	insertNewMatch(match)
 	json.NewEncoder(w).Encode(match)
+}
+
+
+
+
+
+// insert starting eleven info into database
+func insertNewStartingEleven(startingEleven models.StartingEleven) {
+	// startingEleven.TournamentId is int type. and startingEleven.MatchId is int type. and startingEleven.DeptCode is int type. and all are primary key.
+	insert, err := db.Query("INSERT INTO tblplaying11 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", startingEleven.TournamentId, startingEleven.MatchId, startingEleven.TeamDeptCode, startingEleven.StartingPlayerRegNo[0], startingEleven.StartingPlayerRegNo[1], startingEleven.StartingPlayerRegNo[2], startingEleven.StartingPlayerRegNo[3], startingEleven.StartingPlayerRegNo[4], startingEleven.StartingPlayerRegNo[5], startingEleven.StartingPlayerRegNo[6], startingEleven.StartingPlayerRegNo[7], startingEleven.StartingPlayerRegNo[8], startingEleven.StartingPlayerRegNo[9], startingEleven.StartingPlayerRegNo[10],startingEleven.SubstitutePlayerRegNo[0],startingEleven.SubstitutePlayerRegNo[1], startingEleven.SubstitutePlayerRegNo[2], startingEleven.SubstitutedPlayerRegNo[0], startingEleven.SubstitutedPlayerRegNo[1], startingEleven.SubstitutedPlayerRegNo[2])
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer insert.Close()
+}
+
+// controller function to insert new starting eleven
+func InsertNewStartingEleven(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
+	w.Header().Set("Allow-Control-Allow-Methods", "POST")
+
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
+
+	var startingEleven models.StartingEleven
+	_ = json.NewDecoder(r.Body).Decode(&startingEleven)
+
+	// null check
+	if startingEleven.TournamentId == "" || startingEleven.MatchId == "" || startingEleven.TeamDeptCode == 0 || startingEleven.StartingPlayerRegNo[0] == 0 || startingEleven.StartingPlayerRegNo[1] == 0 || startingEleven.StartingPlayerRegNo[2] == 0 || startingEleven.StartingPlayerRegNo[3] == 0 || startingEleven.StartingPlayerRegNo[4] == 0 || startingEleven.StartingPlayerRegNo[5] == 0 || startingEleven.StartingPlayerRegNo[6] == 0 || startingEleven.StartingPlayerRegNo[7] == 0 || startingEleven.StartingPlayerRegNo[8] == 0 || startingEleven.StartingPlayerRegNo[9] == 0 || startingEleven.StartingPlayerRegNo[10] == 0 {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("All fields are required!")
+		return
+	}
+
+	// check if starting eleven already exists
+	if startingElevenExists(startingEleven.TournamentId, startingEleven.MatchId, startingEleven.TeamDeptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("Starting eleven already exists!")
+		return
+	}
+
+	// check if match exists
+	if !matchExists(startingEleven.TournamentId, startingEleven.MatchId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("Match doesn't exist!")
+		return
+	}
+
+	// check if team is playing in the match or not
+	if !teamIsPlayingInAMatchOfATournament(startingEleven.TournamentId, startingEleven.MatchId, startingEleven.TeamDeptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("Team is not playing in the match!")
+		return
+	}
+
+	// check players are from the team or not
+	for i := 0; i < 11; i++ {
+		if !playerIsInATeamOfATournament(startingEleven.TournamentId, startingEleven.TeamDeptCode, startingEleven.StartingPlayerRegNo[i]) {
+			// set response header as forbidden
+			w.WriteHeader(http.StatusForbidden)
+			json.NewEncoder(w).Encode("Player" + strconv.Itoa(i+1) + " is not from the team!")
+			return
+		}
+	}
+
+	// check if substitute players are from the team or not
+	for i := 0; i < 3; i++ {
+		if startingEleven.SubstitutePlayerRegNo[i] != 0 {
+			if !playerIsInATeamOfATournament(startingEleven.TournamentId, startingEleven.TeamDeptCode, startingEleven.SubstitutePlayerRegNo[i]) {
+				// set response header as forbidden
+				w.WriteHeader(http.StatusForbidden)
+				json.NewEncoder(w).Encode("Substitute player" + strconv.Itoa(i+1) + " is not from the team!")
+				return
+			}
+		}
+	}
+
+	// check if for all the substitute players, there is a substituted player
+	for i := 0; i < 3; i++ {
+		if startingEleven.SubstitutePlayerRegNo[i] == 0 {
+			if startingEleven.SubstitutedPlayerRegNo[i] != 0 {
+				// set response header as forbidden
+				w.WriteHeader(http.StatusForbidden)
+				json.NewEncoder(w).Encode("Substitute player" + strconv.Itoa(i+1) + " needed!")
+				return
+			}
+			continue
+		}
+		if startingEleven.SubstitutedPlayerRegNo[i] == 0 {
+			// set response header as forbidden
+			w.WriteHeader(http.StatusForbidden)
+			json.NewEncoder(w).Encode("Substituted player" + strconv.Itoa(i+1) + " needed!")
+			return
+		}
+	}
+
+	// check duplicate players
+	for i := 0; i < 11; i++ {
+		for j := i + 1; j < 11; j++ {
+			if startingEleven.StartingPlayerRegNo[i] == startingEleven.StartingPlayerRegNo[j] {
+				// set response header as forbidden
+				w.WriteHeader(http.StatusForbidden)
+				json.NewEncoder(w).Encode("Player" + strconv.Itoa(i+1) + " and Player" + strconv.Itoa(j+1) + " are same!")
+				return
+			}
+		}
+	}
+
+	// check duplicate substitute players
+	for i := 0; i < 3; i++ {
+		for j := i + 1; j < 3; j++ {
+			if startingEleven.SubstitutePlayerRegNo[i] != 0 && startingEleven.SubstitutePlayerRegNo[i] == startingEleven.SubstitutePlayerRegNo[j] {
+				// set response header as forbidden
+				w.WriteHeader(http.StatusForbidden)
+				json.NewEncoder(w).Encode("Substitute player" + strconv.Itoa(i+1) + " and Substitute player" + strconv.Itoa(j+1) + " are same!")
+				return
+			}
+		}
+	}
+
+	// check duplicate substituted players
+	for i := 0; i < 3; i++ {
+		for j := i + 1; j < 3; j++ {
+			if startingEleven.SubstitutedPlayerRegNo[i] != 0 && startingEleven.SubstitutedPlayerRegNo[i] == startingEleven.SubstitutedPlayerRegNo[j] {
+				// set response header as forbidden
+				w.WriteHeader(http.StatusForbidden)
+				json.NewEncoder(w).Encode("Substituted player" + strconv.Itoa(i+1) + " and Substituted player" + strconv.Itoa(j+1) + " are same!")
+				return
+			}
+		}
+	}
+
+	// check if the substitute players are from starting eleven or not
+	for i := 0; i < 3; i++ {
+		if startingEleven.SubstitutePlayerRegNo[i] != 0 {
+			var found bool = false
+			for j := 0; j < 11; j++ {
+				if startingEleven.SubstitutePlayerRegNo[i] == startingEleven.StartingPlayerRegNo[j] {
+					found = true
+					break
+				}
+			}
+			if found {
+				// set response header as forbidden
+				w.WriteHeader(http.StatusForbidden)
+				json.NewEncoder(w).Encode("Substitute player" + strconv.Itoa(i+1) + " is from starting eleven!")
+				return
+			}
+		}
+	}
+
+	// check if the substitued players are from starting eleven or not
+	for i := 0; i < 3; i++ {
+		if startingEleven.SubstitutedPlayerRegNo[i] != 0 {
+			var found bool = false
+			for j := 0; j < 11; j++ {
+				if startingEleven.SubstitutedPlayerRegNo[i] == startingEleven.StartingPlayerRegNo[j] {
+					found = true
+					break
+				}
+			}
+			if !found {
+				// set response header as forbidden
+				w.WriteHeader(http.StatusForbidden)
+				json.NewEncoder(w).Encode("Substituted player" + strconv.Itoa(i+1) + " is not from starting eleven!")
+				return
+			}
+		}
+	}
+
+
+	insertNewStartingEleven(startingEleven)
+	json.NewEncoder(w).Encode(startingEleven)
+}
+
+// check if starting eleven already exists
+func startingElevenExists(tournamentId string, matchId string, teamDeptCode int) bool {
+	var startingEleven models.StartingEleven
+	err := db.QueryRow("SELECT * FROM tblplaying11 WHERE tournamentId = ? AND matchID = ? AND teamDeptCode = ?", tournamentId, matchId, teamDeptCode).Scan(&startingEleven.TournamentId, &startingEleven.MatchId, &startingEleven.TeamDeptCode, &startingEleven.StartingPlayerRegNo[0], &startingEleven.StartingPlayerRegNo[1], &startingEleven.StartingPlayerRegNo[2], &startingEleven.StartingPlayerRegNo[3], &startingEleven.StartingPlayerRegNo[4], &startingEleven.StartingPlayerRegNo[5], &startingEleven.StartingPlayerRegNo[6], &startingEleven.StartingPlayerRegNo[7], &startingEleven.StartingPlayerRegNo[8], &startingEleven.StartingPlayerRegNo[9], &startingEleven.StartingPlayerRegNo[10], &startingEleven.SubstitutePlayerRegNo[0], &startingEleven.SubstitutedPlayerRegNo[0], &startingEleven.SubstitutePlayerRegNo[1], &startingEleven.SubstitutedPlayerRegNo[1], &startingEleven.SubstitutePlayerRegNo[2], &startingEleven.SubstitutedPlayerRegNo[2])
+
+	if err != nil {
+		return false
+	}
+
+	return true
 }
 
 
@@ -1411,7 +1604,7 @@ func getPlayersOfADept(deptCode int) []models.Player {
 	}
 
 	for result.Next() {
-		err = result.Scan(&player.PlayerRegNo, &player.PlayerSession, &player.PlayerSemester, &player.PlayerName, &player.PlayerDeptCode)
+		err = result.Scan(&player.PlayerRegNo, &player.PlayerSession, &player.PlayerSemester, &player.PlayerName, &player.PlayerDeptCode, &player.PlayerJerseyNo)
 
 		if err != nil {
 			panic(err.Error())
@@ -1604,11 +1797,72 @@ func GetAMatchOfATournament(w http.ResponseWriter, r *http.Request) {
 
 
 
+// get starting eleven of a team of a match
+func getStartingElevenOfATeamOfAMatch(tournamentId string, matchId string, deptCode int) models.StartingEleven {
+	var startingEleven models.StartingEleven
+
+	err := db.QueryRow("SELECT * FROM tblplaying11 WHERE tournamentId = ? AND matchID = ? AND teamDeptCode = ?", tournamentId, matchId, deptCode).Scan(&startingEleven.TournamentId, & startingEleven.MatchId, &startingEleven.TeamDeptCode, &startingEleven.StartingPlayerRegNo[0], &startingEleven.StartingPlayerRegNo[1], &startingEleven.StartingPlayerRegNo[2], &startingEleven.StartingPlayerRegNo[3], &startingEleven.StartingPlayerRegNo[4], &startingEleven.StartingPlayerRegNo[5], &startingEleven.StartingPlayerRegNo[6], &startingEleven.StartingPlayerRegNo[7], &startingEleven.StartingPlayerRegNo[8], &startingEleven.StartingPlayerRegNo[9], &startingEleven.StartingPlayerRegNo[10], &startingEleven.SubstitutePlayerRegNo[0], &startingEleven.SubstitutePlayerRegNo[1], &startingEleven.SubstitutePlayerRegNo[2], &startingEleven.SubstitutedPlayerRegNo[0], &startingEleven.SubstitutedPlayerRegNo[1], &startingEleven.SubstitutedPlayerRegNo[2])
+
+	if err != nil {
+		//panic(err.Error())
+		return models.StartingEleven{}
+	}
+
+	return startingEleven
+}
+
+// controller function to get starting eleven of a team of a match
+func GetStartingElevenOfATeamOfAMatch(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
+
+	// router.HandleFunc("/api/match/startingeleven/{tournamentId}/{matchId}/{deptCode}", controller.GetStartingElevenOfATeamOfAMatch).Methods("GET")
+	// get id from url
+	params := mux.Vars(r)
+
+	// get tournamentId, matchId and deptCode from url
+	tournamentId, _ := params["tournamentId"]
+	matchId, _ := params["matchId"]
+	deptCode, _ := strconv.Atoi(params["deptCode"])
+
+	// match exists or not
+	if !matchExists(tournamentId, matchId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("Match doesn't exist!")
+		return
+	}
+
+	// team exists or not
+	if !teamExists(tournamentId, deptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("Team doesn't exist!")
+		return
+	}
+
+	// team is playing in the match or not
+	if !teamIsPlayingInAMatchOfATournament(tournamentId, matchId, deptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("Team is not playing in the match!")
+		return
+	}
+
+	var startingEleven models.StartingEleven
+	startingEleven = getStartingElevenOfATeamOfAMatch(tournamentId, matchId, deptCode)
+
+	json.NewEncoder(w).Encode(startingEleven)
+}
+
+
+
+
+
 // get a player
 func getAPlayer(playerRegNo int) models.Player {
 	var player models.Player
 
-	err := db.QueryRow("SELECT * FROM tblplayer WHERE playerRegNo = ?", playerRegNo).Scan(&player.PlayerRegNo, &player.PlayerSession, &player.PlayerSemester, &player.PlayerName, &player.PlayerDeptCode)
+	err := db.QueryRow("SELECT * FROM tblplayer WHERE playerRegNo = ?", playerRegNo).Scan(&player.PlayerRegNo, &player.PlayerSession, &player.PlayerSemester, &player.PlayerName, &player.PlayerDeptCode, &player.PlayerJerseyNo)
 
 	if err != nil {
 		//panic(err.Error())
@@ -2299,9 +2553,9 @@ func UpdateATournament(w http.ResponseWriter, r *http.Request) {
 
 // update a player
 func updateAPlayer(playerRegNo int, player models.Player) {
-	query := "UPDATE tblplayer SET playerSession = ?, playerSemester = ?, playerName = ?, playerDeptCode = ? WHERE playerRegNo = ?"
+	query := "UPDATE tblplayer SET playerSession = ?, playerSemester = ?, playerName = ?, playerDeptCode = ?, playerJerseyNo = ? WHERE playerRegNo = ?"
 
-	_, err := db.Exec(query, player.PlayerSession, player.PlayerSemester, player.PlayerName, player.PlayerDeptCode, playerRegNo)
+	_, err := db.Exec(query, player.PlayerSession, player.PlayerSemester, player.PlayerName, player.PlayerDeptCode, player.PlayerJerseyNo, playerRegNo)
 
 	if err != nil {
 		panic(err.Error())
@@ -2690,6 +2944,213 @@ func UpdateAMatch(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(match)
 }
+
+
+
+
+
+// update a starting eleven
+func updateAStartingEleven(tournamentId string, matchId string, teamDeptCode int, startingEleven models.StartingEleven) {
+	query := "UPDATE tblplaying11 SET startingPlayer1RegNo = ?, startingPlayer2RegNo = ?, startingPlayer3RegNo = ?, startingPlayer4RegNo = ?, startingPlayer5RegNo = ?, startingPlayer6RegNo = ?, startingPlayer7RegNo = ?, startingPlayer8RegNo = ?, startingPlayer9RegNo = ?, startingPlayer10RegNo = ?, startingPlayer11RegNo = ?, substitutePlayer1RegNo, substitutedPlayer1RegNo, substitutePlayer2RegNo, substitutedPlayer2RegNo, substitutePlayer3RegNo, substitutedPlayer3RegNo, WHERE tournamentId = ? AND matchID = ? AND teamDeptCode = ?"
+
+	_, err := db.Exec(query, startingEleven.StartingPlayerRegNo[0], startingEleven.StartingPlayerRegNo[1], startingEleven.StartingPlayerRegNo[2], startingEleven.StartingPlayerRegNo[3], startingEleven.StartingPlayerRegNo[4], startingEleven.StartingPlayerRegNo[5], startingEleven.StartingPlayerRegNo[6], startingEleven.StartingPlayerRegNo[7], startingEleven.StartingPlayerRegNo[8], startingEleven.StartingPlayerRegNo[9], startingEleven.StartingPlayerRegNo[10], startingEleven.SubstitutePlayerRegNo[0], startingEleven.SubstitutedPlayerRegNo[0], startingEleven.SubstitutePlayerRegNo[1], startingEleven.SubstitutedPlayerRegNo[1], startingEleven.SubstitutePlayerRegNo[2], startingEleven.SubstitutedPlayerRegNo[2], tournamentId, matchId, teamDeptCode)
+
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
+// controller function to update a starting eleven
+func UpdateAStartingEleven(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
+
+	// router.HandleFunc("/api/match/startingeleven/{tournamentId}/{matchId}/{teamDeptCode}", controller.UpdateAStartingEleven).Methods("PUT")
+
+	params := mux.Vars(r)
+
+	// get tournamentId, matchId and teamDeptCode from url
+	tournamentId, _ := params["tournamentId"]
+	matchId, _ := params["matchId"]
+	teamDeptCode, _ := params["teamDeptCode"]
+
+	// convert teamDeptCode from string to int
+	teamDeptCodeInt, err := strconv.Atoi(teamDeptCode)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	// get starting eleven from body
+	var startingEleven models.StartingEleven
+	_ = json.NewDecoder(r.Body).Decode(&startingEleven)
+
+	// tournamentId, matchId and teamDeptCode can't be changed
+	if tournamentId != startingEleven.TournamentId {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("TournamentId can't be changed!")
+		return
+	}
+	if matchId != startingEleven.MatchId {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("MatchId can't be changed!")
+		return
+	}
+	if teamDeptCodeInt != startingEleven.TeamDeptCode {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("TeamDeptCode can't be changed!")
+		return
+	}
+
+	// null check
+	if startingEleven.TournamentId == "" || startingEleven.MatchId == "" || startingEleven.TeamDeptCode == 0 || startingEleven.StartingPlayerRegNo[0] == 0 || startingEleven.StartingPlayerRegNo[1] == 0 || startingEleven.StartingPlayerRegNo[2] == 0 || startingEleven.StartingPlayerRegNo[3] == 0 || startingEleven.StartingPlayerRegNo[4] == 0 || startingEleven.StartingPlayerRegNo[5] == 0 || startingEleven.StartingPlayerRegNo[6] == 0 || startingEleven.StartingPlayerRegNo[7] == 0 || startingEleven.StartingPlayerRegNo[8] == 0 || startingEleven.StartingPlayerRegNo[9] == 0 || startingEleven.StartingPlayerRegNo[10] == 0 {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("All fields are required!")
+		return
+	}
+
+	// check if match exists
+	if !matchExists(startingEleven.TournamentId, startingEleven.MatchId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("Match doesn't exist!")
+		return
+	}
+
+	// check if team is playing in the match or not
+	if !teamIsPlayingInAMatchOfATournament(startingEleven.TournamentId, startingEleven.MatchId, startingEleven.TeamDeptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("Team is not playing in the match!")
+		return
+	}
+
+	// check players are from the team or not
+	for i := 0; i < 11; i++ {
+		if !playerIsInATeamOfATournament(startingEleven.TournamentId, startingEleven.TeamDeptCode, startingEleven.StartingPlayerRegNo[i]) {
+			// set response header as forbidden
+			w.WriteHeader(http.StatusForbidden)
+			json.NewEncoder(w).Encode("Player" + strconv.Itoa(i+1) + " is not from the team!")
+			return
+		}
+	}
+
+	// check if substitute players are from the team or not
+	for i := 0; i < 3; i++ {
+		if startingEleven.SubstitutePlayerRegNo[i] != 0 {
+			if !playerIsInATeamOfATournament(startingEleven.TournamentId, startingEleven.TeamDeptCode, startingEleven.SubstitutePlayerRegNo[i]) {
+				// set response header as forbidden
+				w.WriteHeader(http.StatusForbidden)
+				json.NewEncoder(w).Encode("Substitute player" + strconv.Itoa(i+1) + " is not from the team!")
+				return
+			}
+		}
+	}
+
+	// check if for all the substitute players, there is a substituted player
+	for i := 0; i < 3; i++ {
+		if startingEleven.SubstitutePlayerRegNo[i] == 0 {
+			if startingEleven.SubstitutedPlayerRegNo[i] != 0 {
+				// set response header as forbidden
+				w.WriteHeader(http.StatusForbidden)
+				json.NewEncoder(w).Encode("Substitute player" + strconv.Itoa(i+1) + " needed!")
+				return
+			}
+			continue
+		}
+		if startingEleven.SubstitutedPlayerRegNo[i] == 0 {
+			// set response header as forbidden
+			w.WriteHeader(http.StatusForbidden)
+			json.NewEncoder(w).Encode("Substituted player" + strconv.Itoa(i+1) + " needed!")
+			return
+		}
+	}
+
+	// check duplicate players
+	for i := 0; i < 11; i++ {
+		for j := i + 1; j < 11; j++ {
+			if startingEleven.StartingPlayerRegNo[i] == startingEleven.StartingPlayerRegNo[j] {
+				// set response header as forbidden
+				w.WriteHeader(http.StatusForbidden)
+				json.NewEncoder(w).Encode("Player" + strconv.Itoa(i+1) + " and Player" + strconv.Itoa(j+1) + " are same!")
+				return
+			}
+		}
+	}
+
+	// check duplicate substitute players
+	for i := 0; i < 3; i++ {
+		for j := i + 1; j < 3; j++ {
+			if startingEleven.SubstitutePlayerRegNo[i] != 0 && startingEleven.SubstitutePlayerRegNo[i] == startingEleven.SubstitutePlayerRegNo[j] {
+				// set response header as forbidden
+				w.WriteHeader(http.StatusForbidden)
+				json.NewEncoder(w).Encode("Substitute player" + strconv.Itoa(i+1) + " and Substitute player" + strconv.Itoa(j+1) + " are same!")
+				return
+			}
+		}
+	}
+
+	// check duplicate substituted players
+	for i := 0; i < 3; i++ {
+		for j := i + 1; j < 3; j++ {
+			if startingEleven.SubstitutedPlayerRegNo[i] != 0 && startingEleven.SubstitutedPlayerRegNo[i] == startingEleven.SubstitutedPlayerRegNo[j] {
+				// set response header as forbidden
+				w.WriteHeader(http.StatusForbidden)
+				json.NewEncoder(w).Encode("Substituted player" + strconv.Itoa(i+1) + " and Substituted player" + strconv.Itoa(j+1) + " are same!")
+				return
+			}
+		}
+	}
+
+	// check if the substitute players are from starting eleven or not
+	for i := 0; i < 3; i++ {
+		if startingEleven.SubstitutePlayerRegNo[i] != 0 {
+			var found bool = false
+			for j := 0; j < 11; j++ {
+				if startingEleven.SubstitutePlayerRegNo[i] == startingEleven.StartingPlayerRegNo[j] {
+					found = true
+					break
+				}
+			}
+			if found {
+				// set response header as forbidden
+				w.WriteHeader(http.StatusForbidden)
+				json.NewEncoder(w).Encode("Substitute player" + strconv.Itoa(i+1) + " is from starting eleven!")
+				return
+			}
+		}
+	}
+
+	// check if the substitued players are from starting eleven or not
+	for i := 0; i < 3; i++ {
+		if startingEleven.SubstitutedPlayerRegNo[i] != 0 {
+			var found bool = false
+			for j := 0; j < 11; j++ {
+				if startingEleven.SubstitutedPlayerRegNo[i] == startingEleven.StartingPlayerRegNo[j] {
+					found = true
+					break
+				}
+			}
+			if !found {
+				// set response header as forbidden
+				w.WriteHeader(http.StatusForbidden)
+				json.NewEncoder(w).Encode("Substituted player" + strconv.Itoa(i+1) + " is not from starting eleven!")
+				return
+			}
+		}
+	}
+}
+
+
+
 
 
 
@@ -3579,7 +4040,7 @@ func deptExistsInAPlayer(deptCode int) bool {
 	for rows.Next() {
 		// get the playerRegNo and delete the player
 		var player models.Player
-		err = rows.Scan(&player.PlayerRegNo, &player.PlayerSession, &player.PlayerSemester, &player.PlayerName, &player.PlayerDeptCode)
+		err = rows.Scan(&player.PlayerRegNo, &player.PlayerSession, &player.PlayerSemester, &player.PlayerName, &player.PlayerDeptCode, &player.PlayerJerseyNo)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -3805,12 +4266,49 @@ func DeleteAMatch(w http.ResponseWriter, r *http.Request) {
 	matchExistsInATiebreaker(tournamentId, matchId)
 	matchExistsInAnIndividualScore(tournamentId, matchId)
 	matchExistsInAnIndividualPunishment(tournamentId, matchId)
+	matchExistsInAStartingEleven(tournamentId, matchId)
 
 
 
 	deleteAMatch(tournamentId, matchId)
 
 	json.NewEncoder(w).Encode("Match deleted successfully!")
+}
+
+// match exists in a starting eleven or not
+func matchExistsInAStartingEleven(tournamentId string, matchId string) bool {
+	query := "SELECT * FROM tblplaying11 WHERE tournamentId = ? AND matchID = ?"
+	rows, err := db.Query(query, tournamentId, matchId)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false
+		}
+		panic(err.Error())
+	}
+
+	for rows.Next() {
+		var startingEleven models.StartingEleven
+		err = rows.Scan(&startingEleven.TournamentId, &startingEleven.MatchId, &startingEleven.TeamDeptCode, &startingEleven.StartingPlayerRegNo[0], &startingEleven.StartingPlayerRegNo[1], &startingEleven.StartingPlayerRegNo[2], &startingEleven.StartingPlayerRegNo[3], &startingEleven.StartingPlayerRegNo[4], &startingEleven.StartingPlayerRegNo[5], &startingEleven.StartingPlayerRegNo[6], &startingEleven.StartingPlayerRegNo[7], &startingEleven.StartingPlayerRegNo[8], &startingEleven.StartingPlayerRegNo[9], &startingEleven.StartingPlayerRegNo[10], &startingEleven.SubstitutePlayerRegNo[0], &startingEleven.SubstitutedPlayerRegNo[0], &startingEleven.SubstitutePlayerRegNo[1], &startingEleven.SubstitutedPlayerRegNo[1], &startingEleven.SubstitutePlayerRegNo[2], &startingEleven.SubstitutedPlayerRegNo[2])
+
+		if err != nil {
+			panic(err.Error())
+		}
+		// now call delete starting eleven api
+		url := "http://localhost:5000/api/match/startingeleven/" + startingEleven.TournamentId + "/" + startingEleven.MatchId + "/" + strconv.Itoa(startingEleven.TeamDeptCode)
+		req, err := http.NewRequest("DELETE", url, nil)
+		if err != nil {
+			panic(err.Error())
+		}
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			panic(err.Error())
+		}
+		defer resp.Body.Close()
+	}
+
+	return true
 }
 
 // match exists in a tiebreaker or not
@@ -3919,6 +4417,56 @@ func matchExistsInAnIndividualPunishment(tournamentId string, matchId string) bo
 	}
 
 	return true
+}
+
+
+
+
+
+// delete a starting eleven
+func deleteAStartingEleven(tournamentId string, matchId string, teamDeptCode int) {
+	_, err := db.Query("DELETE FROM tblplaying11 WHERE tournamentId = ? AND matchID = ? AND teamDeptCode = ?", tournamentId, matchId, teamDeptCode)
+
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
+// controller function to delete a starting eleven
+func DeleteAStartingEleven(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// token validation check
+	if isTokenValid(w, r) == false {
+		return
+	}
+
+	// router.HandleFunc("/api/match/startingeleven/{tournamentId}/{matchId}/{teamDeptCode}", controller.DeleteAStartingEleven).Methods("DELETE")
+	// get id from url
+	params := mux.Vars(r)
+
+	// get tournamentId, matchId and teamDeptCode from url
+	tournamentId, _ := params["tournamentId"]
+	matchId, _ := params["matchId"]
+	teamDeptCode, _ := params["teamDeptCode"]
+
+	// convert teamDeptCode from string to int
+	teamDeptCodeInt, err := strconv.Atoi(teamDeptCode)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	// starting eleven exists or not
+	if !startingElevenExists(tournamentId, matchId, teamDeptCodeInt) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("Starting eleven doesn't exist!")
+		return
+	}
+
+	deleteAStartingEleven(tournamentId, matchId, teamDeptCodeInt)
+	json.NewEncoder(w).Encode("Starting eleven deleted successfully!")
 }
 
 
