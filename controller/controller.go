@@ -3680,13 +3680,13 @@ func matchExistsInATournament(w http.ResponseWriter, r *http.Request, tournament
 			panic(err.Error())
 		}
 		url := "http://localhost:5000/api/tournament/match/" + match.TournamentId + "/" + match.MatchId
-		// get cookie and set it in request header
-		cookie, err := r.Cookie("jwtToken")
-		if err != nil {
-			panic(err.Error())
-		}
-		// set cookie in request header
-		w.Header().Set("Cookie", cookie.String())
+		// // get cookie and set it in request header
+		// cookie, err := r.Cookie("jwtToken")
+		// if err != nil {
+		// 	panic(err.Error())
+		// }
+		// // set cookie in request header
+		// w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -3722,13 +3722,13 @@ func anyTeamExistsInATournament(w http.ResponseWriter, r *http.Request, tourname
 			panic(err.Error())
 		}
 		url := "http://localhost:5000/api/tournament/team/" + tournamentId + "/" + strconv.Itoa(deptCode)
-		// get cookie and set it in request header
-		cookie, err := r.Cookie("jwtToken")
-		if err != nil {
-			panic(err.Error())
-		}
-		// set cookie in request header
-		w.Header().Set("Cookie", cookie.String())
+		// // get cookie and set it in request header
+		// cookie, err := r.Cookie("jwtToken")
+		// if err != nil {
+		// 	panic(err.Error())
+		// }
+		// // set cookie in request header
+		// w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -3820,13 +3820,13 @@ func playerExistsInAPlayingEleven(w http.ResponseWriter, r *http.Request, player
 		}
 		// now call delete playing eleven api
 		url := "http://localhost:5000/api/match/startingeleven/" + playingEleven.TournamentId + "/" + playingEleven.MatchId + "/" + strconv.Itoa(playingEleven.TeamDeptCode)
-		// get cookie and set it in request header
-		cookie, err := r.Cookie("jwtToken")
-		if err != nil {
-			panic(err.Error())
-		}
-		// set cookie in request header
-		w.Header().Set("Cookie", cookie.String())
+		// // get cookie and set it in request header
+		// cookie, err := r.Cookie("jwtToken")
+		// if err != nil {
+		// 	panic(err.Error())
+		// }
+		// // set cookie in request header
+		// w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -3863,13 +3863,13 @@ func playerIsInATeam(w http.ResponseWriter, r *http.Request, playerRegNo int) bo
 		}
 		// now call delete team api
 		url := "http://localhost:5000/api/tournament/team/" + team.TournamentId + "/" + strconv.Itoa(team.DeptCode)
-		// get cookie and set it in request header
-		cookie, err := r.Cookie("jwtToken")
-		if err != nil {
-			panic(err.Error())
-		}
-		// set cookie in request header
-		w.Header().Set("Cookie", cookie.String())
+		// // get cookie and set it in request header
+		// cookie, err := r.Cookie("jwtToken")
+		// if err != nil {
+		// 	panic(err.Error())
+		// }
+		// // set cookie in request header
+		// w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -3906,13 +3906,13 @@ func playerHasIndividualPunishment(w http.ResponseWriter, r *http.Request, playe
 		}
 		// now call delete individual punishment api
 		url := "http://localhost:5000/api/match/individualpunishment/" + individualPunishment.TournamentId + "/" + individualPunishment.MatchId + "/" + strconv.Itoa(individualPunishment.PlayerRegNo)
-		// get cookie and set it in request header
-		cookie, err := r.Cookie("jwtToken")
-		if err != nil {
-			panic(err.Error())
-		}
-		// set cookie in request header
-		w.Header().Set("Cookie", cookie.String())
+		// // get cookie and set it in request header
+		// cookie, err := r.Cookie("jwtToken")
+		// if err != nil {
+		// 	panic(err.Error())
+		// }
+		// // set cookie in request header
+		// w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -3949,13 +3949,13 @@ func playerHasIndividualScore(w http.ResponseWriter, r *http.Request, playerRegN
 		}
 		// now call delete individual score api
 		url := "http://localhost:5000/api/match/individualscore/" + individualScore.TournamentId + "/" + individualScore.MatchId + "/" + strconv.Itoa(individualScore.PlayerRegNo)
-		// get cookie and set it in request header
-		cookie, err := r.Cookie("jwtToken")
-		if err != nil {
-			panic(err.Error())
-		}
-		// set cookie in request header
-		w.Header().Set("Cookie", cookie.String())
+		// // get cookie and set it in request header
+		// cookie, err := r.Cookie("jwtToken")
+		// if err != nil {
+		// 	panic(err.Error())
+		// }
+		// // set cookie in request header
+		// w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -4048,13 +4048,13 @@ func deptExistsInATiebreaker(w http.ResponseWriter, r *http.Request, deptCode in
 		}
 		// now call delete tiebreaker api
 		url := "http://localhost:5000/api/match/tiebreaker/" + tiebreaker.TournamentId + "/" + tiebreaker.MatchId
-		// get cookie and set it in request header
-		cookie, err := r.Cookie("jwtToken")
-		if err != nil {
-			panic(err.Error())
-		}
-		// set cookie in request header
-		w.Header().Set("Cookie", cookie.String())
+		// // get cookie and set it in request header
+		// cookie, err := r.Cookie("jwtToken")
+		// if err != nil {
+		// 	panic(err.Error())
+		// }
+		// // set cookie in request header
+		// w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -4091,13 +4091,13 @@ func deptExistsInAnIndividualScore(w http.ResponseWriter, r *http.Request, deptC
 		}
 		// now call delete individual score api
 		url := "http://localhost:5000/api/match/individualscore/" + individualScore.TournamentId + "/" + individualScore.MatchId + "/" + strconv.Itoa(individualScore.PlayerRegNo)
-		// get cookie and set it in request header
-		cookie, err := r.Cookie("jwtToken")
-		if err != nil {
-			panic(err.Error())
-		}
-		// set cookie in request header
-		w.Header().Set("Cookie", cookie.String())
+		// // get cookie and set it in request header
+		// cookie, err := r.Cookie("jwtToken")
+		// if err != nil {
+		// 	panic(err.Error())
+		// }
+		// // set cookie in request header
+		// w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -4134,13 +4134,13 @@ func deptExistsInAnIndividualPunishment(w http.ResponseWriter, r *http.Request, 
 		}
 		// now call delete individual punishment api
 		url := "http://localhost:5000/api/match/individualpunishment/" + individualPunishment.TournamentId + "/" + individualPunishment.MatchId + "/" + strconv.Itoa(individualPunishment.PlayerRegNo)
-		// get cookie and set it in request header
-		cookie, err := r.Cookie("jwtToken")
-		if err != nil {
-			panic(err.Error())
-		}
-		// set cookie in request header
-		w.Header().Set("Cookie", cookie.String())
+		// // get cookie and set it in request header
+		// cookie, err := r.Cookie("jwtToken")
+		// if err != nil {
+		// 	panic(err.Error())
+		// }
+		// // set cookie in request header
+		// w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -4177,13 +4177,13 @@ func deptExistsInAPlayer(w http.ResponseWriter, r *http.Request, deptCode int) b
 		}
 		// now call delete player api
 		url := "http://localhost:5000/api/player/" + strconv.Itoa(player.PlayerRegNo)
-		// get cookie and set it in request header
-		cookie, err := r.Cookie("jwtToken")
-		if err != nil {
-			panic(err.Error())
-		}
-		// set cookie in request header
-		w.Header().Set("Cookie", cookie.String())
+		// // get cookie and set it in request header
+		// cookie, err := r.Cookie("jwtToken")
+		// if err != nil {
+		// 	panic(err.Error())
+		// }
+		// // set cookie in request header
+		// w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -4221,13 +4221,13 @@ func deptExistsInATeam(w http.ResponseWriter, r *http.Request, deptCode int) boo
 		}
 		// now call delete team api
 		url := "http://localhost:5000/api/tournament/team/" + team.TournamentId + "/" + strconv.Itoa(team.DeptCode)
-		// get cookie and set it in request header
-		cookie, err := r.Cookie("jwtToken")
-		if err != nil {
-			panic(err.Error())
-		}
-		// set cookie in request header
-		w.Header().Set("Cookie", cookie.String())
+		// // get cookie and set it in request header
+		// cookie, err := r.Cookie("jwtToken")
+		// if err != nil {
+		// 	panic(err.Error())
+		// }
+		// // set cookie in request header
+		// w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -4264,13 +4264,13 @@ func deptExistsInAMatch(w http.ResponseWriter, r *http.Request, deptCode int) bo
 		}
 		// now call delete match api
 		url := "http://localhost:5000/api/tournament/match/" + match.TournamentId + "/" + match.MatchId
-		// get cookie and set it in request header
-		cookie, err := r.Cookie("jwtToken")
-		if err != nil {
-			panic(err.Error())
-		}
-		// set cookie in request header
-		w.Header().Set("Cookie", cookie.String())
+		// // get cookie and set it in request header
+		// cookie, err := r.Cookie("jwtToken")
+		// if err != nil {
+		// 	panic(err.Error())
+		// }
+		// // set cookie in request header
+		// w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -4361,13 +4361,13 @@ func teamExistsInAMatch(w http.ResponseWriter, r *http.Request, tournamentId str
 		}
 		// now call delete match api
 		url := "http://localhost:5000/api/tournament/match/" + match.TournamentId + "/" + match.MatchId
-		// get cookie and set it in request header
-		cookie, err := r.Cookie("jwtToken")
-		if err != nil {
-			panic(err.Error())
-		}
-		// set cookie in request header
-		w.Header().Set("Cookie", cookie.String())
+		// // get cookie and set it in request header
+		// cookie, err := r.Cookie("jwtToken")
+		// if err != nil {
+		// 	panic(err.Error())
+		// }
+		// // set cookie in request header
+		// w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -4455,13 +4455,13 @@ func matchExistsInAStartingEleven(w http.ResponseWriter, r *http.Request, tourna
 		}
 		// now call delete starting eleven api
 		url := "http://localhost:5000/api/match/startingeleven/" + startingEleven.TournamentId + "/" + startingEleven.MatchId + "/" + strconv.Itoa(startingEleven.TeamDeptCode)
-		// get cookie and set it in request header
-		cookie, err := r.Cookie("jwtToken")
-		if err != nil {
-			panic(err.Error())
-		}
-		// set cookie in request header
-		w.Header().Set("Cookie", cookie.String())
+		// // get cookie and set it in request header
+		// cookie, err := r.Cookie("jwtToken")
+		// if err != nil {
+		// 	panic(err.Error())
+		// }
+		// // set cookie in request header
+		// w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -4498,13 +4498,13 @@ func matchExistsInATiebreaker(w http.ResponseWriter, r *http.Request, tournament
 		}
 		// now call delete tiebreaker api
 		url := "http://localhost:5000/api/match/tiebreaker/" + tiebreaker.TournamentId + "/" + tiebreaker.MatchId
-		// get cookie and set it in request header
-		cookie, err := r.Cookie("jwtToken")
-		if err != nil {
-			panic(err.Error())
-		}
-		// set cookie in request header
-		w.Header().Set("Cookie", cookie.String())
+		// // get cookie and set it in request header
+		// cookie, err := r.Cookie("jwtToken")
+		// if err != nil {
+		// 	panic(err.Error())
+		// }
+		// // set cookie in request header
+		// w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -4541,13 +4541,13 @@ func matchExistsInAnIndividualScore(w http.ResponseWriter, r *http.Request, tour
 		}
 		// now call delete individual score api
 		url := "http://localhost:5000/api/match/individualscore/" + individualScore.TournamentId + "/" + individualScore.MatchId + "/" + strconv.Itoa(individualScore.PlayerRegNo)
-		// get cookie and set it in request header
-		cookie, err := r.Cookie("jwtToken")
-		if err != nil {
-			panic(err.Error())
-		}
-		// set cookie in request header
-		w.Header().Set("Cookie", cookie.String())
+		// // get cookie and set it in request header
+		// cookie, err := r.Cookie("jwtToken")
+		// if err != nil {
+		// 	panic(err.Error())
+		// }
+		// // set cookie in request header
+		// w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -4584,13 +4584,13 @@ func matchExistsInAnIndividualPunishment(w http.ResponseWriter, r *http.Request,
 		}
 		// now call delete individual punishment api
 		url := "http://localhost:5000/api/match/individualpunishment/" + individualPunishment.TournamentId + "/" + individualPunishment.MatchId + "/" + strconv.Itoa(individualPunishment.PlayerRegNo)
-		// get cookie and set it in request header
-		cookie, err := r.Cookie("jwtToken")
-		if err != nil {
-			panic(err.Error())
-		}
-		// set cookie in request header
-		w.Header().Set("Cookie", cookie.String())
+		// // get cookie and set it in request header
+		// cookie, err := r.Cookie("jwtToken")
+		// if err != nil {
+		// 	panic(err.Error())
+		// }
+		// // set cookie in request header
+		// w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
@@ -4727,13 +4727,13 @@ func refereeExistsInAMatch(w http.ResponseWriter, r *http.Request, refereeId int
 		}
 		// now call delete match api
 		url := "http://localhost:5000/api/tournament/match/" + match.TournamentId + "/" + match.MatchId
-		// get cookie and set it in request header
-		cookie, err := r.Cookie("jwtToken")
-		if err != nil {
-			panic(err.Error())
-		}
-		// set cookie in request header
-		w.Header().Set("Cookie", cookie.String())
+		// // get cookie and set it in request header
+		// cookie, err := r.Cookie("jwtToken")
+		// if err != nil {
+		// 	panic(err.Error())
+		// }
+		// // set cookie in request header
+		// w.Header().Set("Cookie", cookie.String())
 		req, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			panic(err.Error())
