@@ -172,16 +172,7 @@ CREATE TABLE tblPlaying11(
     FOREIGN KEY (startingPlayer8RegNo) REFERENCES tblPlayer(playerRegNo),
     FOREIGN KEY (startingPlayer9RegNo) REFERENCES tblPlayer(playerRegNo),
     FOREIGN KEY (startingPlayer10RegNo) REFERENCES tblPlayer(playerRegNo),
-    FOREIGN KEY (startingPlayer11RegNo) REFERENCES tblPlayer(playerRegNo),
-
-    FOREIGN KEY (substitutePlayer1RegNo) REFERENCES tblPlayer(playerRegNo),
-    FOREIGN KEY (substitutedPlayer1RegNo) REFERENCES tblPlayer(playerRegNo),
-
-    FOREIGN KEY (substitutePlayer2RegNo) REFERENCES tblPlayer(playerRegNo),
-    FOREIGN KEY (substitutedPlayer2RegNo) REFERENCES tblPlayer(playerRegNo),
-
-    FOREIGN KEY (substitutePlayer3RegNo) REFERENCES tblPlayer(playerRegNo),
-    FOREIGN KEY (substitutedPlayer3RegNo) REFERENCES tblPlayer(playerRegNo)
+    FOREIGN KEY (startingPlayer11RegNo) REFERENCES tblPlayer(playerRegNo)
 );
 
 CREATE TABLE tblIndividualPunishment (
