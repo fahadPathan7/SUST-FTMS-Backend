@@ -4423,11 +4423,7 @@ func DeleteAMatch(w http.ResponseWriter, r *http.Request) {
 
 	// prequisite check. check all tables where tournamentId and matchId is used
 	matchExistsInATiebreaker(w, r, tournamentId, matchId)
-	if matchExistsInAnIndividualScore(w, r, tournamentId, matchId) {
-		w.WriteHeader(http.StatusForbidden)
-		json.NewEncoder(w).Encode("Match can't be deleted because it has individual score!")
-		return
-	}
+	matchExistsInAnIndividualScore(w, r, tournamentId, matchId)
 	matchExistsInAnIndividualPunishment(w, r, tournamentId, matchId)
 	matchExistsInAStartingEleven(w, r, tournamentId, matchId)
 
