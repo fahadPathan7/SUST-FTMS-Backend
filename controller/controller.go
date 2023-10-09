@@ -3177,6 +3177,11 @@ func UpdateAStartingEleven(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+
+
+	updateAStartingEleven(tournamentId, matchId, teamDeptCodeInt, startingEleven)
+
+	json.NewEncoder(w).Encode(startingEleven)
 }
 
 
