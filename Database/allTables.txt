@@ -1,0 +1,232 @@
+CREATE TABLE tblOperator(
+    email varchar(50),
+    password varchar(50),
+
+    PRIMARY KEY(email)
+);
+
+CREATE TABLE tblDept (
+    deptCode int,
+    deptName varchar(40),
+    deptHeadName varchar(50),
+    deptShortName varchar(5),
+
+    PRIMARY KEY(deptCode)
+);
+
+CREATE TABLE tblReferee(
+    refereeID int,
+    refereeName varchar(40),
+    refereeInstitute varchar(40),
+
+    PRIMARY KEY(refereeID)
+);
+
+CREATE TABLE tblPlayer(
+     playerRegNo int,
+     playerSession varchar(10),
+     playerSemester int,
+     playerName varchar(50),
+     playerDeptCode int,
+     playerJerseyNo int,
+
+    PRIMARY KEY(playerRegNo),
+
+    FOREIGN KEY(playerDeptCode) REFERENCES tblDept(deptCode)
+);
+
+CREATE TABLE tblTournament(
+    tournamentId varchar(60),
+    tournamentName varchar(40),
+    startingDate date,
+    endingDate date,
+
+    PRIMARY KEY(tournamentId)
+);
+
+CREATE TABLE tblTeam(
+    tournamentId varchar(60),
+
+    teamSubmissionDate date,
+    deptCode int,
+    teamManager varchar(50),
+    teamCaptainRegID int,
+
+    player1RegNo int,
+    player2RegNo int,
+    player3RegNo int,
+    player4RegNo int,
+    player5RegNo int,
+    player6RegNo int,
+    player7RegNo int,
+    player8RegNo int,
+    player9RegNo int,
+    player10RegNo int,
+    player11RegNo int,
+    player12RegNo int,
+    player13RegNo int,
+    player14RegNo int,
+    player15RegNo int,
+    player16RegNo int,
+    player17RegNo int,
+    player18RegNo int,
+    player19RegNo int,
+    player20RegNo int,
+    isKnockedOut bool,
+
+
+    PRIMARY KEY (tournamentId, deptCode),
+
+
+    FOREIGN KEY(deptCode) REFERENCES tblDept(deptCode),
+    FOREIGN KEY(teamCaptainRegID) REFERENCES tblPlayer(playerRegNo),
+
+    FOREIGN KEY(player1RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY(player2RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY(player3RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY(player4RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY(player5RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY(player6RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY(player7RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY(player8RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY(player9RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY(player10RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY(player11RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY(player12RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY(player13RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY(player14RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY(player15RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY(player16RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY(player17RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY(player18RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY(player19RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY(player20RegNo) REFERENCES tblPlayer(playerRegNo),
+
+    FOREIGN KEY(tournamentId) REFERENCES tblTournament(tournamentId)
+);
+
+CREATE TABLE tblMatch (
+    tournamentId varchar(60),
+    matchID varchar(20),
+    matchDate date,
+    team1DeptCode int,
+    team2DeptCode int,
+    team1Score int,
+    team2Score int,
+    winnerTeamDeptCode int,
+    matchRefereeID int,
+    matchLineman1ID int,
+    matchLineman2ID int,
+    matchFourthRefereeID int,
+
+    PRIMARY KEY (tournamentId, matchID),
+
+    FOREIGN KEY (team1DeptCode) REFERENCES tblTeam(deptCode),
+    FOREIGN KEY (team2DeptCode) REFERENCES tblTeam(deptCode),
+    FOREIGN KEY (winnerTeamDeptCode) REFERENCES tblTeam(deptCode),
+    FOREIGN KEY (matchRefereeID) REFERENCES tblReferee(refereeID),
+    FOREIGN KEY (matchLineman1ID) REFERENCES tblReferee(refereeID),
+    FOREIGN KEY (matchLineman2ID) REFERENCES tblReferee(refereeID),
+    FOREIGN KEY (matchFourthRefereeID) REFERENCES tblReferee(refereeID),
+    FOREIGN KEY (tournamentId) REFERENCES tblTournament(tournamentId)
+);
+
+CREATE TABLE tblPlaying11(
+    tournamentId varchar(60),
+
+    matchID varchar(20),
+    teamDeptCode int,
+
+    startingPlayer1RegNo int,
+    startingPlayer2RegNo int,
+    startingPlayer3RegNo int,
+    startingPlayer4RegNo int,
+    startingPlayer5RegNo int,
+    startingPlayer6RegNo int,
+    startingPlayer7RegNo int,
+    startingPlayer8RegNo int,
+    startingPlayer9RegNo int,
+    startingPlayer10RegNo int,
+    startingPlayer11RegNo int,
+
+    substitutePlayer1RegNo int,
+    substitutedPlayer1RegNo int,
+    substitutePlayer2RegNo int,
+    substitutedPlayer2RegNo int,
+    substitutePlayer3RegNo int,
+    substitutedPlayer3RegNo int,
+
+
+    PRIMARY KEY (tournamentId, matchID, teamDeptCode),
+
+    FOREIGN KEY (tournamentId, matchID) REFERENCES tblMatch(tournamentId, matchID),
+    FOREIGN KEY (teamDeptCode) REFERENCES tblTeam(deptCode),
+
+    FOREIGN KEY (startingPlayer1RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY (startingPlayer2RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY (startingPlayer3RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY (startingPlayer4RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY (startingPlayer5RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY (startingPlayer6RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY (startingPlayer7RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY (startingPlayer8RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY (startingPlayer9RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY (startingPlayer10RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY (startingPlayer11RegNo) REFERENCES tblPlayer(playerRegNo),
+
+    FOREIGN KEY (substitutePlayer1RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY (substitutedPlayer1RegNo) REFERENCES tblPlayer(playerRegNo),
+
+    FOREIGN KEY (substitutePlayer2RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY (substitutedPlayer2RegNo) REFERENCES tblPlayer(playerRegNo),
+
+    FOREIGN KEY (substitutePlayer3RegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY (substitutedPlayer3RegNo) REFERENCES tblPlayer(playerRegNo)
+);
+
+CREATE TABLE tblIndividualPunishment (
+    tournamentId varchar(60),
+    matchID varchar(20),
+    playerRegNo INT,
+    teamDeptCode INT,
+    punishmentType VARCHAR(20),
+
+    PRIMARY KEY (tournamentId, matchID, playerRegNo),
+
+    FOREIGN KEY (tournamentId, matchID) REFERENCES tblMatch(tournamentId, matchID),
+    FOREIGN KEY (playerRegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY (teamDeptCode) REFERENCES tblDept(deptCode)
+);
+
+CREATE TABLE tblIndividualScore(
+    tournamentId varchar(60),
+
+    matchID varchar(20),
+    playerRegNo int,
+    teamDeptCode int,
+    goals int,
+
+    PRIMARY KEY (tournamentId, matchID, playerRegNo),
+
+    FOREIGN KEY (tournamentId, matchID) REFERENCES tblMatch(tournamentId, matchID),
+    FOREIGN KEY(playerRegNo) REFERENCES tblPlayer(playerRegNo),
+    FOREIGN KEY (teamDeptCode) REFERENCES tblDept(deptCode)
+);
+
+CREATE TABLE tblTiebreaker(
+    tournamentId varchar(60),
+
+    matchID varchar(20),
+    team1DeptCode int,
+    team2DeptCode int,
+
+    team1TieBreakerScore int,
+    team2TieBreakerScore int,
+
+    PRIMARY KEY (tournamentId, matchID),
+
+    FOREIGN KEY (tournamentId, matchID) REFERENCES tblMatch(tournamentId, matchID),
+
+    FOREIGN KEY (team1DeptCode) REFERENCES tblDept(deptCode),
+    FOREIGN KEY (team2DeptCode) REFERENCES tblDept(deptCode)
+);
