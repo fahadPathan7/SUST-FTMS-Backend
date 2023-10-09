@@ -3629,10 +3629,10 @@ func deleteATournament(tournamentId string) {
 func DeleteATournament(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// token validation check
-	if isTokenValid(w, r) == false {
-		return
-	}
+	// // token validation check
+	// if isTokenValid(w, r) == false {
+	// 	return
+	// }
 
 	// router.HandleFunc("/api/tournament/{tournamentId}", controller.DeleteATournament).Methods("DELETE")
 	// get id from url
@@ -3662,7 +3662,7 @@ func DeleteATournament(w http.ResponseWriter, r *http.Request) {
 
 // match exists in a tournament or not
 func matchExistsInATournament(w http.ResponseWriter, r *http.Request, tournamentId string) bool {
-	query := "SELECT matchID FROM tblmatch WHERE tournamentId = ?"
+	query := "SELECT * FROM tblmatch WHERE tournamentId = ?"
 	rows, err := db.Query(query, tournamentId)
 
 	if err != nil {
@@ -3813,7 +3813,7 @@ func playerExistsInAPlayingEleven(w http.ResponseWriter, r *http.Request, player
 	for rows.Next() {
 		// get the tournamentId and matchId and delete the playing eleven
 		var playingEleven models.StartingEleven
-		err = rows.Scan(&playingEleven.TournamentId, &playingEleven.MatchId, &playingEleven.StartingPlayerRegNo[0], &playingEleven.StartingPlayerRegNo[1], &playingEleven.StartingPlayerRegNo[2], &playingEleven.StartingPlayerRegNo[3], &playingEleven.StartingPlayerRegNo[4], &playingEleven.StartingPlayerRegNo[5], &playingEleven.StartingPlayerRegNo[6], &playingEleven.StartingPlayerRegNo[7], &playingEleven.StartingPlayerRegNo[8], &playingEleven.StartingPlayerRegNo[9], &playingEleven.StartingPlayerRegNo[10], &playingEleven.SubstitutePlayerRegNo[0], &playingEleven.SubstitutedPlayerRegNo[0], &playingEleven.SubstitutePlayerRegNo[1], &playingEleven.SubstitutedPlayerRegNo[1], &playingEleven.SubstitutePlayerRegNo[2], &playingEleven.SubstitutedPlayerRegNo[2])
+		err = rows.Scan(&playingEleven.TournamentId, &playingEleven.MatchId, &playingEleven.TeamDeptCode, &playingEleven.StartingPlayerRegNo[0], &playingEleven.StartingPlayerRegNo[1], &playingEleven.StartingPlayerRegNo[2], &playingEleven.StartingPlayerRegNo[3], &playingEleven.StartingPlayerRegNo[4], &playingEleven.StartingPlayerRegNo[5], &playingEleven.StartingPlayerRegNo[6], &playingEleven.StartingPlayerRegNo[7], &playingEleven.StartingPlayerRegNo[8], &playingEleven.StartingPlayerRegNo[9], &playingEleven.StartingPlayerRegNo[10], &playingEleven.SubstitutePlayerRegNo[0], &playingEleven.SubstitutedPlayerRegNo[0], &playingEleven.SubstitutePlayerRegNo[1], &playingEleven.SubstitutedPlayerRegNo[1], &playingEleven.SubstitutePlayerRegNo[2], &playingEleven.SubstitutedPlayerRegNo[2])
 
 		if err != nil {
 			panic(err.Error())
@@ -3988,10 +3988,10 @@ func deleteADept(deptCode int) {
 func DeleteADept(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// token validation check
-	if isTokenValid(w, r) == false {
-		return
-	}
+	// // token validation check
+	// if isTokenValid(w, r) == false {
+	// 	return
+	// }
 
 	// router.HandleFunc("/api/dept/{deptCode}", controller.DeleteADept).Methods("DELETE")
 	// get id from url
@@ -4303,10 +4303,10 @@ func deleteATeam(tournamentId string, deptCode int) {
 func DeleteATeam(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// token validation check
-	if isTokenValid(w, r) == false {
-		return
-	}
+	// // token validation check
+	// if isTokenValid(w, r) == false {
+	// 	return
+	// }
 
 	// router.HandleFunc("/api/tournament/team/{tournamentId}/{deptCode}", controller.DeleteATeam).Methods("DELETE")
 	// get id from url
@@ -4400,10 +4400,10 @@ func deleteAMatch(tournamentId string, matchId string) {
 func DeleteAMatch(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// token validation check
-	if isTokenValid(w, r) == false {
-		return
-	}
+	// // token validation check
+	// if isTokenValid(w, r) == false {
+	// 	return
+	// }
 
 	// router.HandleFunc("/api/tournament/match/{tournamentId}/{matchId}", controller.DeleteAMatch).Methods("DELETE")
 	// get id from url
@@ -4423,7 +4423,11 @@ func DeleteAMatch(w http.ResponseWriter, r *http.Request) {
 
 	// prequisite check. check all tables where tournamentId and matchId is used
 	matchExistsInATiebreaker(w, r, tournamentId, matchId)
-	matchExistsInAnIndividualScore(w, r, tournamentId, matchId)
+	if matchExistsInAnIndividualScore(w, r, tournamentId, matchId) {
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("Match can't be deleted because it has individual score!")
+		return
+	}
 	matchExistsInAnIndividualPunishment(w, r, tournamentId, matchId)
 	matchExistsInAStartingEleven(w, r, tournamentId, matchId)
 
@@ -4623,10 +4627,10 @@ func deleteAStartingEleven(tournamentId string, matchId string, teamDeptCode int
 func DeleteAStartingEleven(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// token validation check
-	if isTokenValid(w, r) == false {
-		return
-	}
+	// // token validation check
+	// if isTokenValid(w, r) == false {
+	// 	return
+	// }
 
 	// router.HandleFunc("/api/match/startingeleven/{tournamentId}/{matchId}/{teamDeptCode}", controller.DeleteAStartingEleven).Methods("DELETE")
 	// get id from url
@@ -4673,10 +4677,10 @@ func deleteAReferee(refereeId int) {
 func DeleteAReferee(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// token validation check
-	if isTokenValid(w, r) == false {
-		return
-	}
+	// // token validation check
+	// if isTokenValid(w, r) == false {
+	// 	return
+	// }
 
 	// router.HandleFunc("/api/referee/{refereeId}", controller.DeleteAReferee).Methods("DELETE")
 	// get id from url
@@ -4721,7 +4725,7 @@ func refereeExistsInAMatch(w http.ResponseWriter, r *http.Request, refereeId int
 	for rows.Next() {
 		// get the tournamentId and matchId and delete the match
 		var match models.Match
-		err = rows.Scan(&match.TournamentId, &match.MatchId, &match.MatchDate, &match.Team1DeptCode, &match.Team2DeptCode, &match.Team1Score, &match.Team2Score, &match.WinnerTeamDeptCode, &match.MatchRefereeID, &match.MatchLinesman1ID, &match.MatchLinesman2ID, match.MatchFourthRefereeID)
+		err = rows.Scan(&match.TournamentId, &match.MatchId, &match.MatchDate, &match.Team1DeptCode, &match.Team2DeptCode, &match.Team1Score, &match.Team2Score, &match.WinnerTeamDeptCode, &match.MatchRefereeID, &match.MatchLinesman1ID, &match.MatchLinesman2ID, &match.MatchFourthRefereeID)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -4766,10 +4770,10 @@ func deleteATiebreaker(tournamentId string, matchId string) {
 func DeleteATiebreaker(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// token validation check
-	if isTokenValid(w, r) == false {
-		return
-	}
+	// // token validation check
+	// if isTokenValid(w, r) == false {
+	// 	return
+	// }
 
 	// router.HandleFunc("/api/match/tiebreaker/{tournamentId}/{matchId}", controller.DeleteATiebreaker).Methods("DELETE")
 	// get id from url
@@ -4817,10 +4821,10 @@ func deleteAnIndividualScore(tournamentId string, matchId string, playerRegNo in
 func DeleteAnIndividualScore(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// token validation check
-	if isTokenValid(w, r) == false {
-		return
-	}
+	// // token validation check
+	// if isTokenValid(w, r) == false {
+	// 	return
+	// }
 
 	// router.HandleFunc("/api/match/individualscore/{tournamentId}/{matchId}/{playerRegNo}", controller.DeleteAnIndividualScore).Methods("DELETE")
 	// get id from url
@@ -4909,10 +4913,10 @@ func deleteAnIndividualPunishment(tournamentId string, matchId string, playerReg
 func DeleteAnIndividualPunishment(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// token validation check
-	if isTokenValid(w, r) == false {
-		return
-	}
+	// // token validation check
+	// if isTokenValid(w, r) == false {
+	// 	return
+	// }
 
 	// router.HandleFunc("/api/match/individualpunishment/{tournamentId}/{matchId}/{playerRegNo}", controller.DeleteAnIndividualPunishment).Methods("DELETE")
 	// get id from url
