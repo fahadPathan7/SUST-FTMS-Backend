@@ -154,8 +154,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		Expires: expirationTime,
 		// access from all urls
 		Path: "/", // root directory
+		HttpOnly: true,
+		Domain: "localhost",
 	})
-
 
 
 	// set response header as ok

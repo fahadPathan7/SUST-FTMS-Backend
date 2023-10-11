@@ -27,7 +27,9 @@ func main() {
 	// wrapping is done to allow api to be accessed from any origin
 	handler := c.Handler(r)
 
-	http.Handle("/", handler) // registering router with http Handle.
+	//connect  my frontend dir G:\SUST_FTMS_Frontend with my backend dir G:\SUST_FTMS_Backend also handle handler
+	http.Handle("/", http.FileServer(http.Dir("G:/SUST_FTMS_Frontend"))) // registering router with http Handle.
+	http.Handle("/api/", handler) // registering router with http Handle.
 	// it will handle all the incoming requests. "/" means all incoming requests.
 	// second parameter is the router. here it is wrapped with CORS handler.
 
