@@ -11,6 +11,8 @@ func Router() *mux.Router {
 
 	// operator login
 	router.HandleFunc("/api/operator/login", controller.Login).Methods("POST") // to login as an operator
+	router.HandleFunc("/api/token/generate/{userEmail}", controller.GenerateToken).Methods("GET") // to generate token (for operator)
+	router.HandleFunc("/api/token/validate", controller.IsTokenValid).Methods("GET") // to validate token
 
 	// POST operations
 	router.HandleFunc("/api/dept", controller.InsertNewDept).Methods("POST") // to insert new dept

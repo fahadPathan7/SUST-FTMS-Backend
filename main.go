@@ -12,7 +12,7 @@ import (
 func main() {
 	controller.CreateDbConnection() // creating database connection
 
-	fmt.Println("Server is running at port 5000...") // shows that server is running
+	fmt.Println("Server is running at port 5050...") // shows that server is running
 
 	r := router.Router() // create router. it will be used to register routes.
 
@@ -28,12 +28,12 @@ func main() {
 	handler := c.Handler(r)
 
 	//connect  my frontend dir G:\SUST_FTMS_Frontend with my backend dir G:\SUST_FTMS_Backend also handle handler
-	http.Handle("/", http.FileServer(http.Dir("G:/SUST_FTMS_Frontend"))) // registering router with http Handle.
+	http.Handle("/", http.FileServer(http.Dir("G:\\SUST_FTMS_Frontend"))) // registering router with http Handle.
 	http.Handle("/api/", handler) // registering router with http Handle.
 	// it will handle all the incoming requests. "/" means all incoming requests.
 	// second parameter is the router. here it is wrapped with CORS handler.
 
-	http.ListenAndServe(":5000", nil) // this will start the server.
+	http.ListenAndServe(":5050", nil) // this will start the server.
 	// second parameter is the handler. nil means use default handler.
 	// default handler is router. so it will use router to handle all the incoming requests.
 
