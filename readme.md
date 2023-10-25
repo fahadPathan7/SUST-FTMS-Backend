@@ -4,10 +4,24 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 
 **Note:** For PUT and POST operations, ensure that all required information is provided.
 
+## Table of Contents
+- [Operator](#operator)
+- [Department](#department)
+- [Player](#player)
+- [Team](#team)
+- [Tournament](#tournament)
+- [Referee](#referee)
+- [Match](#match)
+- [Starting Eleven](#starting-eleven)
+- [Individual Punishment](#individual-punishment)
+- [Individual Score](#individual-score)
+- [Tiebreaker](#tiebreaker)
+- [Setting up the backend](#setting-up-the-backend)
+
 
 ## Endpoints
 
-### Operator
+### <a name="operator"></a> Operator
 
 - `POST /api/operator/login` - Operator login
 - `GET /api/token/generate/{userEmail}` - Generate token
@@ -21,12 +35,13 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 }
 ```
 
-### Department
+### <a name="department"></a> Department
 
 - `POST /api/dept` - Insert a new department
 - `PUT /api/dept/{deptCode}` - Update a department
 - `GET /api/depts` - Get all departments
 - `GET /api/dept/{deptCode}` - Get a specific department
+- `DELETE /api/dept/{deptCode}` - Delete a department
 
 **A JSON sample for department**
 ```json
@@ -38,11 +53,13 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 }
 ```
 
-### Player
+### <a name="player"></a> Player
 
 - `POST /api/player` - Insert a new player
 - `PUT /api/player/{playerRegNo}` - Update a player
 - `GET /api/player/{playerRegNo}` - Get a specific player
+- `GET /api/dept/players/{deptCode}` - Get all players of a department
+- `DELETE /api/player/{playerRegNo}` - Delete a player
 
 **A JSON sample for player**
 ```json
@@ -56,11 +73,13 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 }
 ```
 
-### Team
+### <a name="team"></a> Team
 
 - `POST /api/team` - Insert a new team
 - `PUT /api/tournament/team/{tournamentId}/{deptCode}` - Update a team
-- `GET /api/tournament/team/{tournamentId}/{deptCode}` - Get a team in a tournament
+- `GET /api/tournament/team/{tournamentId}/{deptCode}` - Get a team
+- `GET /api/tournament/teams/{tournamentId}` - Get all teams of a tournament
+- `DELETE /api/tournament/team/{tournamentId}/{deptCode}` - Delete a team
 
 **A JSON sample for team**
 ```json
@@ -76,12 +95,13 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 }
 ```
 
-### Tournament
+### <a name="tournament"></a> Tournament
 
 - `POST /api/tournament` - Insert a new tournament
 - `PUT /api/tournament/{tournamentId}` - Update a tournament
 - `GET /api/tournaments` - Get all tournaments
 - `GET /api/tournament/{tournamentId}` - Get a specific tournament
+- `DELETE /api/tournament/{tournamentId}` - Delete a tournament
 
 **A JSON sample for tournament**
 ```json
@@ -93,12 +113,13 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 }
 ```
 
-### Referee
+### <a name="referee"></a> Referee
 
 - `POST /api/referee` - Insert a new referee
 - `PUT /api/referee/{refereeId}` - Update a referee
 - `GET /api/referees` - Get all referees
 - `GET /api/referee/{refereeId}` - Get a specific referee
+- `DELETE /api/referee/{refereeId}` - Delete a specific referee
 
 **A JSON sample for referee**
 ```json
@@ -109,10 +130,12 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 }
 ```
 
-### Match
+### <a name="match"></a> Match
 
 - `POST /api/match` - Insert a new match
 - `PUT /api/match/{tournamentId}/{matchId}` - Update a match
+- `GET /api/tournament/matches/{tournamentId}` - Get all matches of a tournament
+- `GET /api/tournament/match/{tournamentId}/{matchId}` - Get a specific match in a tournament
 - `DELETE /api/match/{tournamentId}/{matchId}` - Delete a match
 
 **A JSON sample for match**
@@ -133,10 +156,11 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 }
 ```
 
-### Starting Eleven
+### <a name="startingeleven"></a> Starting Eleven
 
 - `POST /api/match/startingeleven` - Insert a new starting eleven
 - `PUT /api/match/startingeleven/{tournamentId}/{matchId}/{teamDeptCode}` - Update a starting eleven
+- `GET /api/match/startingeleven/{tournamentId}/{matchId}/{deptCode}` - Get the starting eleven of a team in a match
 - `DELETE /api/match/startingeleven/{tournamentId}/{matchId}/{teamDeptCode}` - Delete a starting eleven
 
 **A JSON sample for starting eleven**
@@ -151,10 +175,13 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 }
 ```
 
-### Individual Punishment
+### <a name="individualpunishment"></a> Individual Punishment
 
 - `POST /api/individualpunishment` - Insert a new individual punishment
 - `PUT /api/individualpunishment/{tournamentId}/{matchId}/{playerRegNo}` - Update an individual punishment
+- `GET /api/tournament/individualpunishments/{tournamentId}` - Get all individual punishments (all players) of a tournament
+- `GET /api/tournament/match/team/individualpunishments/{tournamentId}/{matchId}/{teamDeptCode}` - Get all individual punishments of a match by a team
+- `GET /api/tournament/player/individualpunishments/{tournamentId}/{playerRegNo}` - Get all individual punishments of a player in a tournament
 - `DELETE /api/individualpunishment/{tournamentId}/{matchId}/{playerRegNo}` - Delete an individual punishment
 
 **A JSON sample for individual punishment**
@@ -168,10 +195,13 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 }
 ```
 
-### Individual Score
+### <a name="individualscore"></a> Individual Score
 
 - `POST /api/individualscore` - Insert a new individual score
 - `PUT /api/individualscore/{tournamentId}/{matchId}/{playerRegNo}` - Update an individual score
+- `GET /api/tournament/individualscores/{tournamentId}` - Get all individual scores (all players) of a tournament
+- `GET /api/tournament/player/individualscores/{tournamentId}/{playerRegNo}` - Get all individual scores of a player in a tournament
+- `GET /api/tournament/match/team/individualscores/{tournamentId}/{matchId}/{teamDeptCode}` - Get all individual scores of a match by a team
 - `DELETE /api/individualscore/{tournamentId}/{matchId}/{playerRegNo}` - Delete an individual score
 
 **A JSON sample for individual score**
@@ -185,10 +215,12 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 }
 ```
 
-### Tiebreaker
+### <a name="tiebreaker"></a> Tiebreaker
 
 - `POST /api/tiebreaker` - Insert a new tiebreaker
 - `PUT /api/tiebreaker/{tournamentId}/{matchId}` - Update a tiebreaker
+- `GET /api/tournament/tiebreakers/{tournamentId}` - Get all tiebreakers of a tournament
+- `GET /api/tournament/tiebreaker/{tournamentId}/{matchId}` - Get a tiebreaker of a match of a tournament
 - `DELETE /api/tiebreaker/{tournamentId}/{matchId}` - Delete a tiebreaker
 
 **A JSON sample for tiebreaker**
@@ -203,7 +235,7 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 }
 ```
 
-## Setting Up the Backend
+## <a name="backup"></a> Setting Up the Backend
 
 **1. Database Setup**
 
