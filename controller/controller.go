@@ -31,10 +31,6 @@ func CreateDbConnection() {
 		panic(err.Error())
 	}
 
-	
-    db.SetMaxOpenConns(10)
-    db.SetMaxIdleConns(5)
-
     // Ping the database to ensure the connection is valid.
     if err := db.Ping(); err != nil {
         fmt.Printf("Could not connect to the database: %v", err)
