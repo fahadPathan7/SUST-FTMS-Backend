@@ -156,7 +156,7 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 }
 ```
 
-### <a name="startingeleven"></a> Starting Eleven
+### <a name="starting-eleven"></a> Starting Eleven
 
 - `POST /api/match/startingeleven` - Insert a new starting eleven
 - `PUT /api/match/startingeleven/{tournamentId}/{matchId}/{teamDeptCode}` - Update a starting eleven
@@ -175,7 +175,7 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 }
 ```
 
-### <a name="individualpunishment"></a> Individual Punishment
+### <a name="individual-punishment"></a> Individual Punishment
 
 - `POST /api/individualpunishment` - Insert a new individual punishment
 - `PUT /api/individualpunishment/{tournamentId}/{matchId}/{playerRegNo}` - Update an individual punishment
@@ -195,7 +195,7 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 }
 ```
 
-### <a name="individualscore"></a> Individual Score
+### <a name="individual-score"></a> Individual Score
 
 - `POST /api/individualscore` - Insert a new individual score
 - `PUT /api/individualscore/{tournamentId}/{matchId}/{playerRegNo}` - Update an individual score
@@ -235,7 +235,7 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 }
 ```
 
-## <a name="backup"></a> Setting Up the Backend
+## <a name="setting-up-the-backend"></a> Setting Up the Backend
 
 **1. Database Setup**
 
@@ -244,7 +244,7 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 **2. Table Creation**
 
 - Copy the codes inside `allTables.txt` file from the `Database` folder.
-- Paste the contents of `allTables.sql` into your MySQL client (XAAMP) and execute the script to create the necessary tables.
+- Paste the contents of `allTables.txt` into your MySQL client (XAAMP) and execute the script to create the necessary tables.
 
 **3. Running the Backend**
 
