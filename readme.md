@@ -5,9 +5,11 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 **Note:** For PUT and POST operations, ensure that all required information is provided.
 
 ## Table of Contents
+- [JSON Web Token](#jwt)
 - [Operator](#operator)
 - [Department](#department)
 - [Player](#player)
+- [Team Manager](#team-manager)
 - [Team](#team)
 - [Tournament](#tournament)
 - [Referee](#referee)
@@ -21,20 +23,26 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 
 ## Endpoints
 
+### <a name="jwt"></a> JSON Web Token
+
+- `GET /api/token/generate/{userEmail}` - Generate token
+- `GET /api/token/validate` - Validate token
+<br><br>
 ### <a name="operator"></a> Operator
 
 - `POST /api/operator/login` - Operator login
-- `GET /api/token/generate/{userEmail}` - Generate token
-- `GET /api/token/validate` - Validate token
+- `GET /api/operator/{email}` - Get operator info (password will be null)
 
 **A JSON sample for operator**
 ```json
 {
   "email": "YourEmail",
-  "password": "YourPassword"
+  "password": "YourPassword",
+  "name": "YourName",
+  "office": "YourOffice"
 }
 ```
-
+<br><br>
 ### <a name="department"></a> Department
 
 - `POST /api/dept` - Insert a new department
@@ -52,7 +60,7 @@ This comprehensive RESTful API facilitates the management of tournaments, player
   "deptShortName": "DeptShortName"
 }
 ```
-
+<br><br>
 ### <a name="player"></a> Player
 
 - `POST /api/player` - Insert a new player
@@ -72,7 +80,21 @@ This comprehensive RESTful API facilitates the management of tournaments, player
   "playerJerseyNo": 10
 }
 ```
+<br><br>
+### <a name="team-manager"></a> Team Manager
 
+- `POST /api/teammanager` - Insert a new team manager
+- `GET /api/teammanager/{email}` - Get a team manager
+
+**A JSON sample for team manager**
+```json
+{
+  "email": "Manager email",
+  "name": "Manager name",
+  "deptCode": 1
+}
+```
+<br><br>
 ### <a name="team"></a> Team
 
 - `POST /api/team` - Insert a new team
@@ -87,14 +109,13 @@ This comprehensive RESTful API facilitates the management of tournaments, player
   "tournamentId": "Tournament ID",
   "teamSubmissionDate": "Submission Date",
   "deptCode": 1,
-  "teamManager": "Team Manager",
+  "teamManagerEmail": "Team Manager",
   "teamCaptainRegID": 1,
-  "playerRegNo": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-                  11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+  "playerRegNo": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
   "isKnockedOut": false
 }
 ```
-
+<br><br>
 ### <a name="tournament"></a> Tournament
 
 - `POST /api/tournament` - Insert a new tournament
@@ -112,7 +133,7 @@ This comprehensive RESTful API facilitates the management of tournaments, player
   "endingDate": "Ending Date"
 }
 ```
-
+<br><br>
 ### <a name="referee"></a> Referee
 
 - `POST /api/referee` - Insert a new referee
@@ -129,7 +150,7 @@ This comprehensive RESTful API facilitates the management of tournaments, player
   "refereeInstitute": "Referee Institute"
 }
 ```
-
+<br><br>
 ### <a name="match"></a> Match
 
 - `POST /api/match` - Insert a new match
@@ -137,6 +158,8 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 - `GET /api/tournament/matches/{tournamentId}` - Get all matches of a tournament
 - `GET /api/tournament/match/{tournamentId}/{matchId}` - Get a specific match in a tournament
 - `DELETE /api/match/{tournamentId}/{matchId}` - Delete a match
+
+**Note:** For POST, everything can be nill except tournamentId and matchId.
 
 **A JSON sample for match**
 ```json
@@ -152,10 +175,11 @@ This comprehensive RESTful API facilitates the management of tournaments, player
   "matchRefereeID": 5,
   "matchLinesman1ID": 6,
   "matchLinesman2ID": 7,
-  "matchFourthRefereeID": 8
+  "matchFourthRefereeID": 8,
+  "venue": "SUST Central Field"
 }
 ```
-
+<br><br>
 ### <a name="starting-eleven"></a> Starting Eleven
 
 - `POST /api/match/startingeleven` - Insert a new starting eleven
@@ -174,7 +198,7 @@ This comprehensive RESTful API facilitates the management of tournaments, player
   "substituedPlayerRegNo": [1, 2, 3]
 }
 ```
-
+<br><br>
 ### <a name="individual-punishment"></a> Individual Punishment
 
 - `POST /api/individualpunishment` - Insert a new individual punishment
@@ -194,7 +218,7 @@ This comprehensive RESTful API facilitates the management of tournaments, player
   "punishmentType": "Punishment Type"
 }
 ```
-
+<br><br>
 ### <a name="individual-score"></a> Individual Score
 
 - `POST /api/individualscore` - Insert a new individual score
@@ -214,7 +238,7 @@ This comprehensive RESTful API facilitates the management of tournaments, player
   "goals": 2
 }
 ```
-
+<br><br>
 ### <a name="tiebreaker"></a> Tiebreaker
 
 - `POST /api/tiebreaker` - Insert a new tiebreaker
@@ -234,7 +258,7 @@ This comprehensive RESTful API facilitates the management of tournaments, player
   "team2TieBreakerScore": 4
 }
 ```
-
+<br><br>
 ## <a name="setting-up-the-backend"></a> Setting Up the Backend
 
 **1. Database Setup**

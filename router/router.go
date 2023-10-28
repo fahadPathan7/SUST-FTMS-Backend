@@ -15,6 +15,7 @@ func Router() *mux.Router {
 	router.HandleFunc("/api/token/validate", controller.IsTokenValid).Methods("GET") // to validate token
 
 	// POST operations
+	router.HandleFunc("/api/teammanager", controller.InsertNewTeamManager).Methods("POST") // to insert new team manager
 	router.HandleFunc("/api/dept", controller.InsertNewDept).Methods("POST") // to insert new dept
 	router.HandleFunc("/api/player", controller.InsertNewPlayer).Methods("POST") // to insert new player
 	router.HandleFunc("/api/team", controller.InsertNewTeam).Methods("POST") // to insert new team
@@ -27,6 +28,8 @@ func Router() *mux.Router {
 	router.HandleFunc("/api/individualscore", controller.InsertNewIndividualScore).Methods("POST") // to insert new individualscore
 
 	// GET operations
+	router.HandleFunc("/api/operator/{email}", controller.GetAnOperator).Methods("GET") // to get an operator. pass will be nill
+	router.HandleFunc("/api/teammanager/{email}", controller.GetATeamManager).Methods("GET") // to get a team manager
 	router.HandleFunc("/api/player/{playerRegNo}", controller.GetAPlayer).Methods("GET") // to get a specific player
 	router.HandleFunc("/api/depts", controller.GetAllDepts).Methods("GET") // to get all depts
 	router.HandleFunc("/api/dept/{deptCode}", controller.GetADept).Methods("GET") // to get a specific dept

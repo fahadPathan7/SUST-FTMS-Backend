@@ -7,6 +7,14 @@ import (
 type Operator struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+	Name     string `json:"name"`
+	Office   string `json:"office"`
+}
+
+type TeamManager struct {
+	Email    string `json:"email"`
+	Name     string `json:"name"`
+	DeptCode int    `json:"deptCode"`
 }
 
 type Claims struct {
@@ -34,7 +42,7 @@ type Team struct {
 	TournamentId       string  `json:"tournamentId"`
 	TeamSubmissionDate string  `json:"teamSubmissionDate"`
 	DeptCode           int     `json:"deptCode"`
-	TeamManager        string  `json:"teamManager"`
+	TeamManagerEmail   string  `json:"teamManagerEmail"`
 	TeamCaptainRegID   int     `json:"teamCaptainRegID"`
 	PlayerRegNo        [20]int `json:"playerRegNo"`
 	IsKnockedOut       bool    `json:"isKnockedOut"`
@@ -85,14 +93,15 @@ type Match struct {
 	MatchLinesman1ID     int    `json:"matchLinesman1ID"`
 	MatchLinesman2ID     int    `json:"matchLinesman2ID"`
 	MatchFourthRefereeID int    `json:"matchFourthRefereeID"`
+	Venue                string `json:"venue"`
 }
 
 type StartingEleven struct {
-	TournamentId          string  `json:"tournamentId"`
-	MatchId               string  `json:"matchId"`
-	TeamDeptCode          int     `json:"teamDeptCode"`
-	StartingPlayerRegNo   [11]int `json:"startingPlayerRegNo"`
-	SubstitutePlayerRegNo [3]int  `json:"substitutePlayerRegNo"`
+	TournamentId           string  `json:"tournamentId"`
+	MatchId                string  `json:"matchId"`
+	TeamDeptCode           int     `json:"teamDeptCode"`
+	StartingPlayerRegNo    [11]int `json:"startingPlayerRegNo"`
+	SubstitutePlayerRegNo  [3]int  `json:"substitutePlayerRegNo"`
 	SubstitutedPlayerRegNo [3]int  `json:"substituedPlayerRegNo"`
 }
 
