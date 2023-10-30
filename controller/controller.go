@@ -524,6 +524,22 @@ func InsertNewTeamManager(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// check if tournament exists
+	if !tournamentExists(teamManager.TournamentId) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("Tournament doesn't exist!")
+		return
+	}
+
+	// check if teacher exists
+	if !teacherExists(teamManager.Email) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("Teacher doesn't exist!")
+		return
+	}
+
 	// insert new teamManager
 	insertNewTeamManager(teamManager)
 	json.NewEncoder(w).Encode(teamManager)
