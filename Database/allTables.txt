@@ -50,6 +50,7 @@ CREATE TABLE tblteacher(
     email varchar(50),
     name varchar(50),
     deptCode int,
+    title varchar(30),
 
     PRIMARY KEY(email),
     FOREIGN KEY(deptCode) REFERENCES tblDept(deptCode)

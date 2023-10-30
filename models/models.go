@@ -15,6 +15,7 @@ type Teacher struct {
 	Email    string `json:"email"`
 	Name	 string `json:"name"`
 	DeptCode int    `json:"deptCode"`
+	Title    string `json:"title"`
 }
 
 type TeamManager struct {

@@ -413,7 +413,7 @@ func playerIsInATeamOfATournament(tournamentId string, deptCode int, playerRegNo
 // insert a teacher into database
 func insertNewTeacher(teacher models.Teacher) {
 	// teacher.TeacherID is int type. and it is primary key.
-	insert, err := db.Query("INSERT INTO tblteacher VALUES (?, ?, ?)", teacher.Email, teacher.Name, teacher.DeptCode)
+	insert, err := db.Query("INSERT INTO tblteacher VALUES (?, ?, ?, ?)", teacher.Email, teacher.Name, teacher.DeptCode, teacher.Title)
 
 	if err != nil {
 		panic(err.Error())
@@ -436,7 +436,7 @@ func InsertNewTeacher(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&teacher)
 
 	// null check
-	if teacher.Email == "" || teacher.Name == "" || teacher.DeptCode == 0 {
+	if teacher.Email == "" || teacher.Name == "" || teacher.DeptCode == 0 || teacher.Title == "" {
 		// set response header as forbidden
 		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("All fields are required!")
@@ -467,7 +467,7 @@ func InsertNewTeacher(w http.ResponseWriter, r *http.Request) {
 // teacher exists in database or not
 func teacherExists(teacherEmail string) bool {
 	var teacher models.Teacher
-	err := db.QueryRow("SELECT * FROM tblteacher WHERE email = ?", teacherEmail).Scan(&teacher.Email, &teacher.Name, &teacher.DeptCode)
+	err := db.QueryRow("SELECT * FROM tblteacher WHERE email = ?", teacherEmail).Scan(&teacher.Email, &teacher.Name, &teacher.DeptCode, &teacher.Title)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -1534,7 +1534,7 @@ func InsertNewIndividualPunishment(w http.ResponseWriter, r *http.Request) {
 func getATeacher(email string) models.Teacher {
 	var teacher models.Teacher
 
-	err := db.QueryRow("SELECT * FROM tblteacher WHERE email = ?", email).Scan(&teacher.Email, &teacher.Name, &teacher.DeptCode)
+	err := db.QueryRow("SELECT * FROM tblteacher WHERE email = ?", email).Scan(&teacher.Email, &teacher.Name, &teacher.DeptCode, &teacher.Title)
 
 	if err != nil {
 		return models.Teacher{}
