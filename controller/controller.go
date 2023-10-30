@@ -22,7 +22,7 @@ var db *sql.DB
 // connecting to mysql database
 func CreateDbConnection() {
 	var err error
-	db, err = sql.Open("mysql", "root:@tcp(localhost:3306)/ftms2")
+	db, err = sql.Open("mysql", "root:@tcp(localhost:3306)/ftms")
 	// port 3306 is the default port for mysql in xampp
 	// here ftms is the database name
 
