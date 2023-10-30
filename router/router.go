@@ -11,10 +11,13 @@ func Router() *mux.Router {
 
 	// operator login
 	router.HandleFunc("/api/operator/login", controller.Login).Methods("POST") // to login as an operator
+
+	// token operations
 	router.HandleFunc("/api/token/generate/{userEmail}", controller.GenerateToken).Methods("GET") // to generate token (for operator)
 	router.HandleFunc("/api/token/validate", controller.IsTokenValid).Methods("GET") // to validate token
 
 	// POST operations
+	router.HandleFunc("/api/teacher", controller.InsertNewTeacher).Methods("POST") // to insert new teacher
 	router.HandleFunc("/api/teammanager", controller.InsertNewTeamManager).Methods("POST") // to insert new team manager
 	router.HandleFunc("/api/dept", controller.InsertNewDept).Methods("POST") // to insert new dept
 	router.HandleFunc("/api/player", controller.InsertNewPlayer).Methods("POST") // to insert new player
@@ -28,6 +31,7 @@ func Router() *mux.Router {
 	router.HandleFunc("/api/individualscore", controller.InsertNewIndividualScore).Methods("POST") // to insert new individualscore
 
 	// GET operations
+	router.HandleFunc("/api/teacher/{email}", controller.GetATeacher).Methods("GET") // to get a teacher
 	router.HandleFunc("/api/operator/{email}", controller.GetAnOperator).Methods("GET") // to get an operator. pass will be nill
 	router.HandleFunc("/api/teammanager/{email}", controller.GetATeamManager).Methods("GET") // to get a team manager
 	router.HandleFunc("/api/player/{playerRegNo}", controller.GetAPlayer).Methods("GET") // to get a specific player

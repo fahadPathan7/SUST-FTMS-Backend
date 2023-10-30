@@ -9,6 +9,7 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 - [Operator](#operator)
 - [Department](#department)
 - [Player](#player)
+- [Teacher](#teacher)
 - [Team Manager](#team-manager)
 - [Team](#team)
 - [Tournament](#tournament)
@@ -81,6 +82,20 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 }
 ```
 <br><br>
+### <a name="teacher"></a> Teacher
+
+- `POST /api/techer` - Insert a new teacher
+- `GET /api/teacher/{email}` - Get a teacher
+
+**A JSON sample for teacher**
+```json
+{
+  "email": "teacher email",
+  "name": "teacher name",
+  "deptCode": 1
+}
+```
+<br><br>
 ### <a name="team-manager"></a> Team Manager
 
 - `POST /api/teammanager` - Insert a new team manager
@@ -90,8 +105,7 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 ```json
 {
   "email": "Manager email",
-  "name": "Manager name",
-  "deptName": "Manager dept name"
+  "TournamentId": "TournamentID"
 }
 ```
 <br><br>

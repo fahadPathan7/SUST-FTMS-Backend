@@ -11,10 +11,15 @@ type Operator struct {
 	Office   string `json:"office"`
 }
 
-type TeamManager struct {
+type Teacher struct {
 	Email    string `json:"email"`
-	Name     string `json:"name"`
-	DeptName string `json:"deptName"`
+	Name	 string `json:"name"`
+	DeptCode int    `json:"deptCode"`
+}
+
+type TeamManager struct {
+	Email        string `json:"email"`
+	TournamentId string `json:"tournamentId"`
 }
 
 type Claims struct {

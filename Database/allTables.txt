@@ -16,15 +16,6 @@ CREATE TABLE tblDept (
     PRIMARY KEY(deptCode)
 );
 
-CREATE TABLE tblTeamManager(
-    email varchar(50),
-    name varchar(50),
-    deptName varchar(100),
-
-    PRIMARY KEY(email),
-    FOREIGN KEY(deptName) REFERENCES tblDept(deptName)
-);
-
 CREATE TABLE tblReferee(
     refereeID int,
     refereeName varchar(40),
@@ -55,6 +46,24 @@ CREATE TABLE tblTournament(
     PRIMARY KEY(tournamentId)
 );
 
+CREATE TABLE tblteacher(
+    email varchar(50),
+    name varchar(50),
+    deptCode int,
+
+    PRIMARY KEY(email),
+    FOREIGN KEY(deptCode) REFERENCES tblDept(deptCode)
+);
+
+CREATE TABLE tblTeamManager(
+    email varchar(50),
+    tournamentId varchar(60),
+
+    PRIMARY KEY(email, tournamentId),
+    FOREIGN KEY(email) REFERENCES tblteacher(email),
+    FOREIGN KEY(tournamentId) REFERENCES tblTournament(tournamentId)
+);
+
 CREATE TABLE tblTeam(
     tournamentId varchar(60),
 
@@ -83,7 +92,7 @@ CREATE TABLE tblTeam(
     player18RegNo int,
     player19RegNo int,
     player20RegNo int,
-    isKnockedOut bool,
+    isKnockedOut tinyint(1) DEFAULT 0,
 
 
     PRIMARY KEY (tournamentId, deptCode),

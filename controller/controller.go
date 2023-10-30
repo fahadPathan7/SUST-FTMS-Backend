@@ -22,7 +22,7 @@ var db *sql.DB
 // connecting to mysql database
 func CreateDbConnection() {
 	var err error
-	db, err = sql.Open("mysql", "root:@tcp(localhost:3306)/ftms")
+	db, err = sql.Open("mysql", "root:@tcp(localhost:3306)/ftms2")
 	// port 3306 is the default port for mysql in xampp
 	// here ftms is the database name
 
@@ -410,10 +410,83 @@ func playerIsInATeamOfATournament(tournamentId string, deptCode int, playerRegNo
 
 // insert operations
 
+// insert a teacher into database
+func insertNewTeacher(teacher models.Teacher) {
+	// teacher.TeacherID is int type. and it is primary key.
+	insert, err := db.Query("INSERT INTO tblteacher VALUES (?, ?, ?)", teacher.Email, teacher.Name, teacher.DeptCode)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer insert.Close()
+}
+
+// controller function to insert new teacher
+func InsertNewTeacher(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
+	w.Header().Set("Allow-Control-Allow-Methods", "POST")
+
+	// // token validation check
+	// if isTokenValid(w, r) == false {
+	// 	return
+	// }
+
+	var teacher models.Teacher
+	_ = json.NewDecoder(r.Body).Decode(&teacher)
+
+	// null check
+	if teacher.Email == "" || teacher.Name == "" || teacher.DeptCode == 0 {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("All fields are required!")
+		return
+	}
+
+	// check if teacher already exists
+	if teacherExists(teacher.Email) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("Teacher already exists!")
+		return
+	}
+
+	// check if dept exists
+	if !deptExists(teacher.DeptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("Dept doesn't exist!")
+		return
+	}
+
+	// insert new teacher
+	insertNewTeacher(teacher)
+	json.NewEncoder(w).Encode(teacher)
+}
+
+// teacher exists in database or not
+func teacherExists(teacherEmail string) bool {
+	var teacher models.Teacher
+	err := db.QueryRow("SELECT * FROM tblteacher WHERE email = ?", teacherEmail).Scan(&teacher.Email, &teacher.Name, &teacher.DeptCode)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false
+		} else {
+			panic(err.Error())
+		}
+	}
+
+	return true
+}
+
+
+
+
 // insert a teamManager into database
 func insertNewTeamManager(teamManager models.TeamManager) {
 	// teamManager.TeamManagerRegNo is int type. and it is primary key.
-	insert, err := db.Query("INSERT INTO tblteammanager VALUES (?, ?, ?)", teamManager.Email, teamManager.Name, teamManager.DeptName)
+	insert, err := db.Query("INSERT INTO tblteammanager VALUES (?, ?)", teamManager.Email, teamManager.TournamentId)
 
 	if err != nil {
 		panic(err.Error())
@@ -436,7 +509,7 @@ func InsertNewTeamManager(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&teamManager)
 
 	// null check
-	if teamManager.Email == "" || teamManager.Name == "" || teamManager.DeptName == "" {
+	if teamManager.Email == "" || teamManager.TournamentId == "" {
 		// set response header as forbidden
 		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("All fields are required!")
@@ -459,7 +532,7 @@ func InsertNewTeamManager(w http.ResponseWriter, r *http.Request) {
 // teamManager exists in database or not
 func teamManagerExists(teamManagerEmail string) bool {
 	var teamManager models.TeamManager
-	err := db.QueryRow("SELECT * FROM tblteammanager WHERE email = ?", teamManagerEmail).Scan(&teamManager.Email, &teamManager.Name, &teamManager.DeptName)
+	err := db.QueryRow("SELECT * FROM tblteammanager WHERE email = ?", teamManagerEmail).Scan(&teamManager.Email, &teamManager.TournamentId)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -1448,7 +1521,44 @@ func InsertNewIndividualPunishment(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(individualPunishment)
 }
 
+
+
+
+
+
+
+
 // getting info from database
+
+// get a techer
+func getATeacher(email string) models.Teacher {
+	var teacher models.Teacher
+
+	err := db.QueryRow("SELECT * FROM tblteacher WHERE email = ?", email).Scan(&teacher.Email, &teacher.Name, &teacher.DeptCode)
+
+	if err != nil {
+		return models.Teacher{}
+	}
+
+	return teacher
+}
+
+// controller function to get a teacher
+func GetATeacher(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/teacher/{email}", controller.GetATeacher).Methods("GET")
+	// get email from url
+	params := mux.Vars(r)
+
+	teacher := getATeacher(params["email"])
+
+	json.NewEncoder(w).Encode(teacher)
+}
+
+
+
+
 
 // get an operator
 func getAnOperator(email string) models.Operator {
@@ -1483,7 +1593,7 @@ func GetAnOperator(w http.ResponseWriter, r *http.Request) {
 func getATeamManager(email string) models.TeamManager {
 	var teamManager models.TeamManager
 
-	err := db.QueryRow("SELECT * FROM tblteammanager WHERE email = ?", email).Scan(&teamManager.Email, &teamManager.Name, &teamManager.DeptName)
+	err := db.QueryRow("SELECT * FROM tblteammanager WHERE email = ?", email).Scan(&teamManager.Email, &teamManager.TournamentId)
 
 	if err != nil {
 		return models.TeamManager{}
