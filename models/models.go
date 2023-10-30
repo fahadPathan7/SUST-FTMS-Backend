@@ -14,7 +14,7 @@ type Operator struct {
 type TeamManager struct {
 	Email    string `json:"email"`
 	Name     string `json:"name"`
-	DeptCode int    `json:"deptCode"`
+	DeptName string `json:"deptName"`
 }
 
 type Claims struct {

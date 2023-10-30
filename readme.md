@@ -91,7 +91,7 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 {
   "email": "Manager email",
   "name": "Manager name",
-  "deptCode": 1
+  "deptName": "Manager dept name"
 }
 ```
 <br><br>

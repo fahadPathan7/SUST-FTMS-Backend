@@ -413,7 +413,7 @@ func playerIsInATeamOfATournament(tournamentId string, deptCode int, playerRegNo
 // insert a teamManager into database
 func insertNewTeamManager(teamManager models.TeamManager) {
 	// teamManager.TeamManagerRegNo is int type. and it is primary key.
-	insert, err := db.Query("INSERT INTO tblteammanager VALUES (?, ?, ?)", teamManager.Email, teamManager.Name, teamManager.DeptCode)
+	insert, err := db.Query("INSERT INTO tblteammanager VALUES (?, ?, ?)", teamManager.Email, teamManager.Name, teamManager.DeptName)
 
 	if err != nil {
 		panic(err.Error())
@@ -436,7 +436,7 @@ func InsertNewTeamManager(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&teamManager)
 
 	// null check
-	if teamManager.Email == "" || teamManager.Name == "" || teamManager.DeptCode == 0 {
+	if teamManager.Email == "" || teamManager.Name == "" || teamManager.DeptName == "" {
 		// set response header as forbidden
 		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("All fields are required!")
@@ -451,14 +451,6 @@ func InsertNewTeamManager(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// check if dept exists
-	if !deptExists(teamManager.DeptCode) {
-		// set response header as forbidden
-		w.WriteHeader(http.StatusForbidden)
-		json.NewEncoder(w).Encode("Dept doesn't exist!")
-		return
-	}
-
 	// insert new teamManager
 	insertNewTeamManager(teamManager)
 	json.NewEncoder(w).Encode(teamManager)
@@ -467,7 +459,7 @@ func InsertNewTeamManager(w http.ResponseWriter, r *http.Request) {
 // teamManager exists in database or not
 func teamManagerExists(teamManagerEmail string) bool {
 	var teamManager models.TeamManager
-	err := db.QueryRow("SELECT * FROM tblteammanager WHERE email = ?", teamManagerEmail).Scan(&teamManager.Email, &teamManager.Name, &teamManager.DeptCode)
+	err := db.QueryRow("SELECT * FROM tblteammanager WHERE email = ?", teamManagerEmail).Scan(&teamManager.Email, &teamManager.Name, &teamManager.DeptName)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -1491,7 +1483,7 @@ func GetAnOperator(w http.ResponseWriter, r *http.Request) {
 func getATeamManager(email string) models.TeamManager {
 	var teamManager models.TeamManager
 
-	err := db.QueryRow("SELECT * FROM tblteammanager WHERE email = ?", email).Scan(&teamManager.Email, &teamManager.Name, &teamManager.DeptCode)
+	err := db.QueryRow("SELECT * FROM tblteammanager WHERE email = ?", email).Scan(&teamManager.Email, &teamManager.Name, &teamManager.DeptName)
 
 	if err != nil {
 		return models.TeamManager{}

@@ -19,11 +19,10 @@ CREATE TABLE tblDept (
 CREATE TABLE tblTeamManager(
     email varchar(50),
     name varchar(50),
-    deptCode int,
+    deptName varchar(100),
 
     PRIMARY KEY(email),
-
-    FOREIGN KEY(deptCode) REFERENCES tblDept(deptCode)
+    FOREIGN KEY(deptName) REFERENCES tblDept(deptName)
 );
 
 CREATE TABLE tblReferee(
