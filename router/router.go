@@ -32,6 +32,7 @@ func Router() *mux.Router {
 
 	// GET operations
 	router.HandleFunc("/api/teacher/{email}", controller.GetATeacher).Methods("GET") // to get a teacher
+	router.HandleFunc("/api/teachers/{deptCode}", controller.GetAllTeachersOfADept).Methods("GET") // to get all teachers of a dept
 	router.HandleFunc("/api/operator/{email}", controller.GetAnOperator).Methods("GET") // to get an operator. pass will be nill
 	router.HandleFunc("/api/teammanager/{email}", controller.GetATeamManager).Methods("GET") // to get a team manager
 	router.HandleFunc("/api/player/{playerRegNo}", controller.GetAPlayer).Methods("GET") // to get a specific player

@@ -86,6 +86,7 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 
 - `POST /api/techer` - Insert a new teacher
 - `GET /api/teacher/{email}` - Get a teacher
+- `GET /api/teachers/{deptCode}` - Get all the teachers of a dept
 
 **A JSON sample for teacher**
 ```json

@@ -1576,6 +1576,63 @@ func GetATeacher(w http.ResponseWriter, r *http.Request) {
 
 
 
+// get all teachers of a dept
+func getAllTeachersOfADept(deptCode int) []models.Teacher {
+	var teacher models.Teacher
+	var teachers []models.Teacher
+
+	result, err := db.Query("SELECT * FROM tblteacher WHERE deptCode = ?", deptCode)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for result.Next() {
+		err = result.Scan(&teacher.Email, &teacher.Name, &teacher.DeptCode, &teacher.Title)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		teachers = append(teachers, teacher)
+	}
+
+	return teachers
+}
+
+// controller function to get all teachers of a dept
+func GetAllTeachersOfADept(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/teachers/{deptCode}", controller.GetAllTeachersOfADept).Methods("GET")
+	// get deptCode from url
+	params := mux.Vars(r)
+
+	// convert deptCode from string to int
+	deptCode, err := strconv.Atoi(params["deptCode"])
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	// dept exists or not
+	if !deptExists(deptCode) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("Dept doesn't exist!")
+		return
+	}
+
+	var teachers []models.Teacher
+	teachers = getAllTeachersOfADept(deptCode)
+
+	json.NewEncoder(w).Encode(teachers)
+}
+
+
+
+
+
 // get an operator
 func getAnOperator(email string) models.Operator {
 	var operator models.Operator
