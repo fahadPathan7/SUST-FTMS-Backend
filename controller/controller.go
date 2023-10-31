@@ -1690,6 +1690,55 @@ func GetATeamManager(w http.ResponseWriter, r *http.Request) {
 
 
 
+
+// get all team managers of a tournament
+func getAllTeamManagersOfATournament(tournamentId string) []models.TeamManager {
+	var teamManager models.TeamManager
+	var teamManagers []models.TeamManager
+
+	result, err := db.Query("SELECT * FROM tblteammanager WHERE tournamentId = ?", tournamentId)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for result.Next() {
+		err = result.Scan(&teamManager.Email, &teamManager.TournamentId)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		teamManagers = append(teamManagers, teamManager)
+	}
+
+	return teamManagers
+}
+
+// controller function to get all team managers of a tournament
+func GetAllTeamManagersOfATournament(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/teammanagers/{tournamentId}", controller.GetAllTeamManagersOfATournament).Methods("GET")
+	// get tournamentId from url
+	params := mux.Vars(r)
+
+	// tournament exists or not
+	if !tournamentExists(params["tournamentId"]) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("Tournament doesn't exist!")
+		return
+	}
+
+	var teamManagers []models.TeamManager
+	teamManagers = getAllTeamManagersOfATournament(params["tournamentId"])
+
+	json.NewEncoder(w).Encode(teamManagers)
+}
+
+
+
 // get all depts from database
 func getAllDepts() []models.Dept {
 	var dept models.Dept
