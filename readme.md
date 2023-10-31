@@ -100,9 +100,10 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 <br><br>
 ### <a name="team-manager"></a> Team Manager
 
-- `POST /api/teammanager` - Insert a new team manager
-- `GET /api/teammanager/{email}` - Get a team manager
+- `POST /api/teammanager` - Insert a new team manager in a tournament
+- `GET /api/teammanager/{tournamentId}/{email}` - Get a team manager of a tournament
 - `GET /api/teammanagers/{tournamentId}` - Get all team managers of a tournament
+- `DELETE /api/tournament/teammanager/{tournamentId}/{teamManagerEmail}` - Delete a team manager of a tournament
 
 **A JSON sample for team manager**
 ```json

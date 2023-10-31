@@ -517,7 +517,7 @@ func InsertNewTeamManager(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check if teamManager already exists
-	if teamManagerExists(teamManager.Email) {
+	if teamManagerExists(teamManager.Email, teamManager.TournamentId) {
 		// set response header as forbidden
 		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team manager already exists!")
@@ -546,9 +546,9 @@ func InsertNewTeamManager(w http.ResponseWriter, r *http.Request) {
 }
 
 // teamManager exists in database or not
-func teamManagerExists(teamManagerEmail string) bool {
+func teamManagerExists(teamManagerEmail string, tournamentId string) bool {
 	var teamManager models.TeamManager
-	err := db.QueryRow("SELECT * FROM tblteammanager WHERE email = ?", teamManagerEmail).Scan(&teamManager.Email, &teamManager.TournamentId)
+	err := db.QueryRow("SELECT * FROM tblteammanager WHERE email = ? AND tournamentId = ?", teamManagerEmail, tournamentId).Scan(&teamManager.Email, &teamManager.TournamentId)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -560,7 +560,6 @@ func teamManagerExists(teamManagerEmail string) bool {
 
 	return true
 }
-
 
 
 
@@ -794,7 +793,7 @@ func InsertNewTeam(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check if team manager exists
-	if !teamManagerExists(team.TeamManagerEmail) {
+	if !teamManagerExists(team.TeamManagerEmail, team.TournamentId) {
 		// set response header as forbidden
 		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team manager doesn't exist!")
@@ -1662,11 +1661,11 @@ func GetAnOperator(w http.ResponseWriter, r *http.Request) {
 
 
 
-// get a team manager
-func getATeamManager(email string) models.TeamManager {
+// get a team manager of a tournament
+func getATeamManagerOfATournament(tournamentId string, email string) models.TeamManager {
 	var teamManager models.TeamManager
 
-	err := db.QueryRow("SELECT * FROM tblteammanager WHERE email = ?", email).Scan(&teamManager.Email, &teamManager.TournamentId)
+	err := db.QueryRow("SELECT * FROM tblteammanager WHERE tournamentId = ? AND email = ?", tournamentId, email).Scan(&teamManager.Email, &teamManager.TournamentId)
 
 	if err != nil {
 		return models.TeamManager{}
@@ -1675,15 +1674,23 @@ func getATeamManager(email string) models.TeamManager {
 	return teamManager
 }
 
-// controller function to get a team manager
-func GetATeamManager(w http.ResponseWriter, r *http.Request) {
+// controller function to get a team manager of a tournament
+func GetATeamManagerOfATournament(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// router.HandleFunc("/api/teammanager/{email}", controller.GetATeamManager).Methods("GET")
-	// get email from url
+	// router.HandleFunc("/api/teammanager/{tournamentId}/{email}", controller.GetATeamManagerOfATournament).Methods("GET")
+	// get tournamentId and email from url
 	params := mux.Vars(r)
 
-	teamManager := getATeamManager(params["email"])
+	// team manager exists or not
+	if !teamManagerExists(params["tournamentId"], params["email"]) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("Team manager doesn't exist!")
+		return
+	}
+
+	teamManager := getATeamManagerOfATournament(params["tournamentId"], params["email"])
 
 	json.NewEncoder(w).Encode(teamManager)
 }
@@ -3090,7 +3097,7 @@ func UpdateATeam(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check if team manager exists
-	if !teamManagerExists(team.TeamManagerEmail) {
+	if !teamManagerExists(team.TeamManagerEmail, team.TournamentId) {
 		// set response header as forbidden
 		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Team manager doesn't exist!")
@@ -3962,6 +3969,52 @@ func anyTeamExistsInATournament(w http.ResponseWriter, r *http.Request, tourname
 
 	return true
 }
+
+// delete a team manager email and tournament id given
+func deleteATeamManagerOfATournament(tournamentId string, teamManagerEmail string) {
+	_, err := db.Query("DELETE FROM tblteammanager WHERE email = ? AND tournamentId = ?", teamManagerEmail, tournamentId)
+
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
+// controller function to delete a team manager of a tournament
+func DeleteATeamManagerOfATournament(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// router.HandleFunc("/api/tournament/teammanager/{tournamentId}/{teamManagerEmail}", controller.DeleteATeamManagerOfATournament).Methods("DELETE")
+	// get id from url
+	params := mux.Vars(r)
+
+	id := params["tournamentId"]
+	// id is string type
+
+	// tournament exists or not
+	if !tournamentExists(id) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("Tournament doesn't exist!")
+		return
+	}
+
+	// get teamManagerEmail from url
+	teamManagerEmail := params["teamManagerEmail"]
+
+	// team manager exists or not
+	if !teamManagerExists(teamManagerEmail, id) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("Team manager doesn't exist!")
+		return
+	}
+
+	deleteATeamManagerOfATournament(id, teamManagerEmail)
+
+	json.NewEncoder(w).Encode("Team manager deleted successfully!")
+}
+
+
 
 // delete a player
 func deleteAPlayer(playerRegNo int) {

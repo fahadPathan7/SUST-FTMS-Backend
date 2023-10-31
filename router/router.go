@@ -18,7 +18,7 @@ func Router() *mux.Router {
 
 	// POST operations
 	router.HandleFunc("/api/teacher", controller.InsertNewTeacher).Methods("POST") // to insert new teacher
-	router.HandleFunc("/api/teammanager", controller.InsertNewTeamManager).Methods("POST") // to insert new team manager
+	router.HandleFunc("/api/teammanager", controller.InsertNewTeamManager).Methods("POST") // to insert new team manager in a tournament
 	router.HandleFunc("/api/dept", controller.InsertNewDept).Methods("POST") // to insert new dept
 	router.HandleFunc("/api/player", controller.InsertNewPlayer).Methods("POST") // to insert new player
 	router.HandleFunc("/api/team", controller.InsertNewTeam).Methods("POST") // to insert new team
@@ -34,7 +34,7 @@ func Router() *mux.Router {
 	router.HandleFunc("/api/teacher/{email}", controller.GetATeacher).Methods("GET") // to get a teacher
 	router.HandleFunc("/api/teachers/{deptCode}", controller.GetAllTeachersOfADept).Methods("GET") // to get all teachers of a dept
 	router.HandleFunc("/api/operator/{email}", controller.GetAnOperator).Methods("GET") // to get an operator. pass will be nill
-	router.HandleFunc("/api/teammanager/{email}", controller.GetATeamManager).Methods("GET") // to get a team manager
+	router.HandleFunc("/api/teammanager/{tournamentId}/{email}", controller.GetATeamManagerOfATournament).Methods("GET") // to get a team manager of a tournament
 	router.HandleFunc("/api/teammanagers/{tournamentId}", controller.GetAllTeamManagersOfATournament).Methods("GET") // to get all team managers of a tournament
 	router.HandleFunc("/api/player/{playerRegNo}", controller.GetAPlayer).Methods("GET") // to get a specific player
 	router.HandleFunc("/api/depts", controller.GetAllDepts).Methods("GET") // to get all depts
@@ -71,6 +71,7 @@ func Router() *mux.Router {
 	router.HandleFunc("/api/match/individualpunishment/{tournamentId}/{matchId}/{playerRegNo}", controller.UpdateAnIndividualPunishment).Methods("PUT") // to update an individual punishment of a match
 
 	// DELETE operations
+	router.HandleFunc("/api/tournament/teammanager/{tournamentId}/{teamManagerEmail}", controller.DeleteATeamManagerOfATournament).Methods("DELETE") // to delete a team manager of a tournament
 	router.HandleFunc("/api/match/individualpunishment/{tournamentId}/{matchId}/{playerRegNo}", controller.DeleteAnIndividualPunishment).Methods("DELETE") // to delete an individual punishment of a match
 	router.HandleFunc("/api/match/individualscore/{tournamentId}/{matchId}/{playerRegNo}", controller.DeleteAnIndividualScore).Methods("DELETE") // to delete an individual score of a match
 	router.HandleFunc("/api/match/tiebreaker/{tournamentId}/{matchId}", controller.DeleteATiebreaker).Methods("DELETE") // to delete a tiebreaker of a match
