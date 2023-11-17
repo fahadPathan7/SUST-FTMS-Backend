@@ -25,15 +25,14 @@ CREATE TABLE tblReferee(
 );
 
 CREATE TABLE tblPlayer(
-     playerRegNo int,
-     playerSession varchar(10),
-     playerSemester int,
-     playerName varchar(50),
-     playerDeptCode int,
-     playerJerseyNo int,
+    playerRegNo int,
+    playerName varchar(50),
+    playerDeptCode int,
+    playerEmail varchar(50),
+    playerPassword varchar(50),
+    playerImage varchar(100),
 
     PRIMARY KEY(playerRegNo),
-
     FOREIGN KEY(playerDeptCode) REFERENCES tblDept(deptCode)
 );
 

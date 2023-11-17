@@ -217,7 +217,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 // check if player exists in database
 func playerExists(playerRegNo int) bool {
 	var player models.Player
-	err := db.QueryRow("SELECT * FROM tblplayer WHERE playerRegNo = ?", playerRegNo).Scan(&player.PlayerRegNo, &player.PlayerSession, &player.PlayerSemester, &player.PlayerName, &player.PlayerDeptCode, &player.PlayerJerseyNo)
+	err := db.QueryRow("SELECT * FROM tblplayer WHERE playerRegNo = ?", playerRegNo).Scan(&player.PlayerRegNo, &player.PlayerName, &player.PlayerDeptCode, &player.PlayerEmail, &player.PlayerPassword, &player.PlayerImage)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -613,7 +613,7 @@ func InsertNewDept(w http.ResponseWriter, r *http.Request) {
 // insert player info into database
 func insertNewPlayer(player models.Player) {
 	// player.PlayerRegNo is int type. and it is primary key.
-	insert, err := db.Query("INSERT INTO tblplayer VALUES (?, ?, ?, ?, ?, ?)", player.PlayerRegNo, player.PlayerSession, player.PlayerSemester, player.PlayerName, player.PlayerDeptCode, player.PlayerJerseyNo)
+	insert, err := db.Query("INSERT INTO tblplayer VALUES (?, ?, ?, ?, ?, ?)", player.PlayerRegNo, player.PlayerName, player.PlayerDeptCode, player.PlayerEmail, player.PlayerPassword, player.PlayerImage)
 
 	if err != nil {
 		panic(err.Error())
@@ -635,13 +635,13 @@ func InsertNewPlayer(w http.ResponseWriter, r *http.Request) {
 	var player models.Player
 	_ = json.NewDecoder(r.Body).Decode(&player)
 
-	// null check
-	if player.PlayerRegNo == 0 || player.PlayerSession == "" || player.PlayerSemester == 0 || player.PlayerName == "" || player.PlayerDeptCode == 0 || player.PlayerJerseyNo == 0 {
-		// set response header as forbidden
-		w.WriteHeader(http.StatusForbidden)
-		json.NewEncoder(w).Encode("All fields are required!")
-		return
-	}
+	// // null check
+	// if player.PlayerRegNo == 0 || player.PlayerSession == "" || player.PlayerSemester == 0 || player.PlayerName == "" || player.PlayerDeptCode == 0 || player.PlayerJerseyNo == 0 {
+	// 	// set response header as forbidden
+	// 	w.WriteHeader(http.StatusForbidden)
+	// 	json.NewEncoder(w).Encode("All fields are required!")
+	// 	return
+	// }
 
 	// check if player already exists
 	if playerExists(player.PlayerRegNo) {
@@ -679,7 +679,7 @@ func insertNewTeam(team models.Team) {
 // return player's dept code from tblplayer in database
 func getPlayerDeptCode(playerRegNo int) int {
 	var player models.Player
-	err := db.QueryRow("SELECT * FROM tblplayer WHERE playerRegNo = ?", playerRegNo).Scan(&player.PlayerRegNo, &player.PlayerSession, &player.PlayerSemester, &player.PlayerName, &player.PlayerDeptCode, &player.PlayerJerseyNo)
+	err := db.QueryRow("SELECT * FROM tblplayer WHERE playerRegNo = ?", playerRegNo).Scan(&player.PlayerRegNo, &player.PlayerName, &player.PlayerDeptCode, &player.PlayerEmail, &player.PlayerPassword, &player.PlayerImage)
 
 	if err != nil {
 		panic(err.Error())
@@ -1959,8 +1959,7 @@ func getPlayersOfADept(deptCode int) []models.Player {
 	}
 
 	for result.Next() {
-		err = result.Scan(&player.PlayerRegNo, &player.PlayerSession, &player.PlayerSemester, &player.PlayerName, &player.PlayerDeptCode, &player.PlayerJerseyNo)
-
+		err = result.Scan(&player.PlayerRegNo, &player.PlayerName, &player.PlayerDeptCode, &player.PlayerEmail, &player.PlayerPassword, &player.PlayerImage)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -2200,8 +2199,7 @@ func GetStartingElevenOfATeamOfAMatch(w http.ResponseWriter, r *http.Request) {
 func getAPlayer(playerRegNo int) models.Player {
 	var player models.Player
 
-	err := db.QueryRow("SELECT * FROM tblplayer WHERE playerRegNo = ?", playerRegNo).Scan(&player.PlayerRegNo, &player.PlayerSession, &player.PlayerSemester, &player.PlayerName, &player.PlayerDeptCode, &player.PlayerJerseyNo)
-
+	err := db.QueryRow("SELECT * FROM tblplayer WHERE playerRegNo = ?", playerRegNo).Scan(&player.PlayerRegNo, &player.PlayerName, &player.PlayerDeptCode, &player.PlayerEmail, &player.PlayerPassword, &player.PlayerImage)
 	if err != nil {
 		//panic(err.Error())
 		return models.Player{}
@@ -2837,9 +2835,9 @@ func UpdateATournament(w http.ResponseWriter, r *http.Request) {
 
 // update a player
 func updateAPlayer(playerRegNo int, player models.Player) {
-	query := "UPDATE tblplayer SET playerSession = ?, playerSemester = ?, playerName = ?, playerDeptCode = ?, playerJerseyNo = ? WHERE playerRegNo = ?"
+	query := "UPDATE tblplayer SET playerName = ?, playerDeptCode = ?, playerEmail = ?, playerPassword = ?, playerImage = ? WHERE playerRegNo = ?"
 
-	_, err := db.Exec(query, player.PlayerSession, player.PlayerSemester, player.PlayerName, player.PlayerDeptCode, player.PlayerJerseyNo, playerRegNo)
+	_, err := db.Exec(query, player.PlayerName, player.PlayerDeptCode, player.PlayerEmail, player.PlayerPassword, player.PlayerImage, playerRegNo)
 
 	if err != nil {
 		panic(err.Error())
@@ -2878,11 +2876,11 @@ func UpdateAPlayer(w http.ResponseWriter, r *http.Request) {
 	var player models.Player
 	_ = json.NewDecoder(r.Body).Decode(&player)
 
-	// null value check
-	if player.PlayerSession == "" || player.PlayerSemester == 0 || player.PlayerName == "" || player.PlayerDeptCode == 0 || player.PlayerJerseyNo == 0 {
-		json.NewEncoder(w).Encode("All fields must be filled!")
-		return
-	}
+	// // null value check
+	// if player.PlayerSession == "" || player.PlayerSemester == 0 || player.PlayerName == "" || player.PlayerDeptCode == 0 || player.PlayerJerseyNo == 0 {
+	// 	json.NewEncoder(w).Encode("All fields must be filled!")
+	// 	return
+	// }
 
 	// check if the playerRegNo is changed
 	if id != player.PlayerRegNo {
@@ -3880,6 +3878,7 @@ func DeleteATournament(w http.ResponseWriter, r *http.Request) {
 	// prequisite check
 	matchExistsInATournament(w, r, id)
 	anyTeamExistsInATournament(w, r, id)
+	teamManagerExistsInATournament(w, r, id)
 
 	deleteATournament(id)
 
@@ -3905,7 +3904,49 @@ func matchExistsInATournament(w http.ResponseWriter, r *http.Request, tournament
 		if err != nil {
 			panic(err.Error())
 		}
-		url := host + "http://localhost:5000/api/tournament/match/" + match.TournamentId + "/" + match.MatchId
+		url := host + "/api/tournament/match/" + match.TournamentId + "/" + match.MatchId
+		// // get cookie and set it in request header
+		// cookie, err := r.Cookie("jwtToken")
+		// if err != nil {
+		// 	panic(err.Error())
+		// }
+		// // set cookie in request header
+		// w.Header().Set("Cookie", cookie.String())
+		req, err := http.NewRequest("DELETE", url, nil)
+		if err != nil {
+			panic(err.Error())
+		}
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			panic(err.Error())
+		}
+		defer resp.Body.Close()
+	}
+
+	return true
+}
+
+// team manager exists in a tournament or not
+func teamManagerExistsInATournament(w http.ResponseWriter, r *http.Request, tournamentId string) bool {
+	query := "SELECT * FROM tblteammanager WHERE tournamentId = ?"
+	rows, err := db.Query(query, tournamentId)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false
+		}
+		panic(err.Error())
+	}
+
+	for rows.Next() {
+		// delete all team managers of this tournament using api call
+		var teamManager models.TeamManager
+		err = rows.Scan(&teamManager.Email, &teamManager.TournamentId)
+		if err != nil {
+			panic(err.Error())
+		}
+		url := host + "/api/tournament/teammanager/" + teamManager.TournamentId + "/" + teamManager.Email
 		// // get cookie and set it in request header
 		// cookie, err := r.Cookie("jwtToken")
 		// if err != nil {
@@ -3947,7 +3988,7 @@ func anyTeamExistsInATournament(w http.ResponseWriter, r *http.Request, tourname
 		if err != nil {
 			panic(err.Error())
 		}
-		url := host + "http://localhost:5000/api/tournament/team/" + tournamentId + "/" + strconv.Itoa(deptCode)
+		url := host + "/api/tournament/team/" + tournamentId + "/" + strconv.Itoa(deptCode)
 		// // get cookie and set it in request header
 		// cookie, err := r.Cookie("jwtToken")
 		// if err != nil {
@@ -4085,7 +4126,7 @@ func playerExistsInAPlayingEleven(w http.ResponseWriter, r *http.Request, player
 			panic(err.Error())
 		}
 		// now call delete playing eleven api
-		url := host + "http://localhost:5000/api/match/startingeleven/" + playingEleven.TournamentId + "/" + playingEleven.MatchId + "/" + strconv.Itoa(playingEleven.TeamDeptCode)
+		url := host + "/api/match/startingeleven/" + playingEleven.TournamentId + "/" + playingEleven.MatchId + "/" + strconv.Itoa(playingEleven.TeamDeptCode)
 		// // get cookie and set it in request header
 		// cookie, err := r.Cookie("jwtToken")
 		// if err != nil {
@@ -4128,7 +4169,7 @@ func playerIsInATeam(w http.ResponseWriter, r *http.Request, playerRegNo int) bo
 			panic(err.Error())
 		}
 		// now call delete team api
-		url := host + "http://localhost:5000/api/tournament/team/" + team.TournamentId + "/" + strconv.Itoa(team.DeptCode)
+		url := host + "/api/tournament/team/" + team.TournamentId + "/" + strconv.Itoa(team.DeptCode)
 		// // get cookie and set it in request header
 		// cookie, err := r.Cookie("jwtToken")
 		// if err != nil {
@@ -4171,7 +4212,7 @@ func playerHasIndividualPunishment(w http.ResponseWriter, r *http.Request, playe
 			panic(err.Error())
 		}
 		// now call delete individual punishment api
-		url := host + "http://localhost:5000/api/match/individualpunishment/" + individualPunishment.TournamentId + "/" + individualPunishment.MatchId + "/" + strconv.Itoa(individualPunishment.PlayerRegNo)
+		url := host + "/api/match/individualpunishment/" + individualPunishment.TournamentId + "/" + individualPunishment.MatchId + "/" + strconv.Itoa(individualPunishment.PlayerRegNo)
 		// // get cookie and set it in request header
 		// cookie, err := r.Cookie("jwtToken")
 		// if err != nil {
@@ -4214,7 +4255,7 @@ func playerHasIndividualScore(w http.ResponseWriter, r *http.Request, playerRegN
 			panic(err.Error())
 		}
 		// now call delete individual score api
-		url := host + "http://localhost:5000/api/match/individualscore/" + individualScore.TournamentId + "/" + individualScore.MatchId + "/" + strconv.Itoa(individualScore.PlayerRegNo)
+		url := host + "/api/match/individualscore/" + individualScore.TournamentId + "/" + individualScore.MatchId + "/" + strconv.Itoa(individualScore.PlayerRegNo)
 		// // get cookie and set it in request header
 		// cookie, err := r.Cookie("jwtToken")
 		// if err != nil {
@@ -4431,7 +4472,7 @@ func deptExistsInAPlayer(w http.ResponseWriter, r *http.Request, deptCode int) b
 	for rows.Next() {
 		// get the playerRegNo and delete the player
 		var player models.Player
-		err = rows.Scan(&player.PlayerRegNo, &player.PlayerSession, &player.PlayerSemester, &player.PlayerName, &player.PlayerDeptCode, &player.PlayerJerseyNo)
+		err = rows.Scan(&player.PlayerRegNo, &player.PlayerName, &player.PlayerDeptCode, &player.PlayerEmail, &player.PlayerPassword, &player.PlayerImage)
 		if err != nil {
 			panic(err.Error())
 		}

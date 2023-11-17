@@ -74,11 +74,11 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 ```json
 {
   "playerRegNo": 1,
-  "playerSession": "Player Session",
-  "playerSemester": 1,
   "playerName": "Player Name",
   "playerDeptCode": 1,
-  "playerJerseyNo": 10
+  "playerEmail": "abc@student.sust.edu",
+  "playerPassword": "***",
+  "playerImage": "local loc"
 }
 ```
 <br><br>

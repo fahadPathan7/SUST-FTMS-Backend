@@ -13,7 +13,7 @@ type Operator struct {
 
 type Teacher struct {
 	Email    string `json:"email"`
-	Name	 string `json:"name"`
+	Name     string `json:"name"`
 	DeptCode int    `json:"deptCode"`
 	Title    string `json:"title"`
 }
@@ -37,11 +37,11 @@ type Dept struct {
 
 type Player struct {
 	PlayerRegNo    int    `json:"playerRegNo"`
-	PlayerSession  string `json:"playerSession"`
-	PlayerSemester int    `json:"playerSemester"`
 	PlayerName     string `json:"playerName"`
 	PlayerDeptCode int    `json:"playerDeptCode"`
-	PlayerJerseyNo int    `json:"playerJerseyNo"`
+	PlayerEmail    string `json:"playerEmail"`
+	PlayerPassword string `json:"playerPassword"`
+	PlayerImage    string `json:"playerImage"`
 }
 
 type Team struct {
