@@ -664,6 +664,57 @@ func InsertNewPlayer(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(player)
 }
 
+// check login credentials for player
+func checkPlayerWithEmailAndPassword(playerEmail string, playerPassword string) bool {
+	var player models.Player
+	err := db.QueryRow("SELECT * FROM tblplayer WHERE playerEmail = ?", playerEmail).Scan(&player.PlayerRegNo, &player.PlayerName, &player.PlayerDeptCode, &player.PlayerEmail, &player.PlayerPassword, &player.PlayerImage)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false
+		} else {
+			panic(err.Error())
+		}
+	}
+
+	if player.PlayerPassword != playerPassword {
+		return false
+	}
+
+	return true
+}
+
+// controller function to login as a player with email and password
+func LoginAsPlayerWithEmailAndPassword(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
+
+	// api link is /api/player/login
+
+	var player models.Player
+	_ = json.NewDecoder(r.Body).Decode(&player)
+
+	// null check
+	if player.PlayerEmail == "" || player.PlayerPassword == "" {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("All fields are required!")
+		return
+	}
+
+	// check credentials
+	if !checkPlayerWithEmailAndPassword(player.PlayerEmail, player.PlayerPassword) {
+		// set response header as forbidden
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode("Invalid credentials!")
+		return
+	}
+
+	// set response header as ok
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode("Login successful!")
+}
+
+
 // insert team info into database
 func insertNewTeam(team models.Team) {
 	// team.TournamentId is int type. and team.deptCode is int type. and both are primary key.

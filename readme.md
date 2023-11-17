@@ -34,6 +34,8 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 - `POST /api/operator/login` - Operator login
 - `GET /api/operator/{email}` - Get operator info (password will be null)
 
+**Note:** to login as operator only email and password is required.
+
 **A JSON sample for operator**
 ```json
 {
@@ -65,10 +67,13 @@ This comprehensive RESTful API facilitates the management of tournaments, player
 ### <a name="player"></a> Player
 
 - `POST /api/player` - Insert a new player
+- `POST /api/player/login` - Login a player
 - `PUT /api/player/{playerRegNo}` - Update a player
 - `GET /api/player/{playerRegNo}` - Get a specific player
 - `GET /api/dept/players/{deptCode}` - Get all players of a department
 - `DELETE /api/player/{playerRegNo}` - Delete a player
+
+**Note:** to login as player only email and password is required.
 
 **A JSON sample for player**
 ```json
